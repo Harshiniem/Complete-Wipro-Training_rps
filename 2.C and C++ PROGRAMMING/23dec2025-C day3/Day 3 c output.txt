@@ -1,0 +1,287 @@
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi char_array.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ char_array.c -o ca
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./ca.exe
+Name One
+Name Two
+Name Three
+Name Four
+Name Five
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi sum.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ sum.c -o sum
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./sum.exe
+8
+9
+Sum = 17
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi simpleinterest.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ simpleinterest.c -o si
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./si.exe
+1000
+10
+2
+Interest = 200.00
+Amount = 1200.00
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi swap.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ swap.c -o swap
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./swap.exe
+10
+56
+a=56 b=10
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi school.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ harshinie
+bash: harshinie: command not found
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ school.c -o school
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./school.exe
+harshinie
+20
+Under Graduation
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi largeof3.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ largeof3.c -o of3
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./of3.exe
+23
+12
+78
+78
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi leapyear.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ leapyear.c -o leap
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./leap.exe
+2007
+Not a Leap Year
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi fibonacci.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ fibonacci.c -o fibo
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./fibo.exe
+17
+0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi sumfirstn.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ sumfirstn.c -o firstn
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./firstn.exe
+7
+Sum = 28
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi series.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ series.c -o series
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./series.exe
+8
+Sum = 511
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi countdigits.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ countdigits.c -o cd
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./cd.exe
+5
+Digits = 1
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi reversenum.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ reversenum.c -o rn
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./rn.exe
+89
+Reverse = 98
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi loop1.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ loop1.c -o loop1
+loop1.c:13:1: error: expected unqualified-id before 'for'
+ for(int i=1;i<=n;i++){
+ ^~~
+loop1.c:13:13: error: 'i' does not name a type
+ for(int i=1;i<=n;i++){
+             ^
+loop1.c:13:18: error: 'i' does not name a type
+ for(int i=1;i<=n;i++){
+                  ^
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi loop1.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ loop1.c -o loop1
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./loop1
+1 2 3 4 5
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi loop1.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ loop1.c -o loop1
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./loop1
+Enter number of lines: 4
+
+Pattern 1:
+*
+* *
+* * *
+* * * *
+
+Pattern 2:
+1
+1 2
+1 2 3
+1 2 3 4
+
+Pattern 3:
+* * * *
+* * *
+* *
+*
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi countwsc.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ countwsc.c -o wsc
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./wsc.exe
+Chars=26 Words=5 Spaces=4
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi uplowtitle.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ uplowtitle.c -o ult
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./ult.exe
+Have A Nice Day
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi uplowtitle.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ uplowtitle.c -o ult
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./ult.exe
+Enter a string:
+have a nice day
+
+Upper Case:
+HAVE A NICE DAY
+
+Lower Case:
+have a nice day
+
+Title Case:
+ave A Nice Day
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi revstr.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ revstr.c -o revstr
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./revstr.exe
+olleh
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi f&r.c
+[1] 579
+bash: r.c: command not found
+
+[1]+  Stopped                 vi f
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi fandr.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ fandr.c -o fr
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./fr.exe
+I love C language
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi longstr.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ longstr.c -o lstr
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./lstr.exe
+Longest string: Programming
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi sort.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ sort.c -o sort
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./sort.exe
+Sorted names:
+Anu
+Kiran
+Ravi
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ vi 2darray.c
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ g++ 2darray.c -o 2d
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$ ./2d.exe
+C
+programming
+is
+easy
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/23dec2025-C day3 (master)
+$

@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRC - Cyclic Redundancy Check - Interactive Learning Environment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-card: rgba(15, 23, 42, 0.7);
+            --neon-blue: #00d4ff;
+            --neon-purple: #b829ff;
+            --neon-green: #00ff88;
+            --neon-orange: #ff6b35;
+            --neon-pink: #ff006e;
+            --neon-yellow: #ffd60a;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --grid-color: rgba(0, 212, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                linear-gradient(45deg, transparent 30%, rgba(0, 212, 255, 0.03) 50%, transparent 70%),
+                radial-gradient(circle at 20% 50%, rgba(184, 41, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%);
+            animation: bgShift 20s ease infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Grid Lines */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(184, 41, 255, 0.1));
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-blue);
+            padding: 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Section */
+        section {
+            margin-bottom: 4rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--neon-blue);
+            border-left: 4px solid var(--neon-blue);
+            padding-left: 1rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--neon-purple);
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            margin: 1rem 0 0.5rem;
+            color: var(--neon-green);
+        }
+
+        /* Block Diagram */
+        .block-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .block {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(184, 41, 255, 0.1));
+            border: 2px solid var(--neon-blue);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); }
+        }
+
+        .block.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(184, 41, 255, 0.3));
+            border-color: var(--neon-green);
+            animation: pulseActive 1s ease-in-out infinite;
+        }
+
+        @keyframes pulseActive {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .arrow {
+            color: var(--neon-blue);
+            font-size: 2rem;
+            animation: flowRight 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flowRight {
+            0%, 100% { opacity: 0.3; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+
+        /* Algorithm Box */
+        .algo-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--neon-purple);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .math-formula {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Code Block */
+        .code-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .code-header {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-comment {
+            color: var(--neon-green);
+        }
+
+        .code-keyword {
+            color: var(--neon-purple);
+        }
+
+        .code-function {
+            color: var(--neon-blue);
+        }
+
+        /* XOR Animation */
+        .xor-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .xor-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .xor-bit {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid var(--neon-blue);
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .xor-bit.active {
+            background: var(--neon-green);
+            color: var(--bg-dark);
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green);
+            transform: scale(1.1);
+        }
+
+        .xor-operator {
+            font-size: 1.5rem;
+            color: var(--neon-purple);
+            font-weight: bold;
+        }
+
+        .xor-line {
+            width: 100%;
+            height: 2px;
+            background: var(--neon-blue);
+            margin: 0.5rem 0;
+        }
+
+        /* Division Animation */
+        .division-demo {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .division-step {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid var(--neon-green);
+            border-radius: 5px;
+            opacity: 0.3;
+            transition: all 0.5s ease;
+        }
+
+        .division-step.active {
+            opacity: 1;
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        /* Simulator */
+        .simulator {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(184, 41, 255, 0.05));
+            border: 2px solid var(--neon-blue);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 10px rgba(184, 41, 255, 0.5);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover:before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Bit Display */
+        .bit-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin: 1rem 0;
+            min-height: 80px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bit {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid var(--neon-blue);
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .bit.data {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: var(--neon-blue);
+        }
+
+        .bit.crc {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: var(--neon-green);
+        }
+
+        .bit.error {
+            background: rgba(255, 107, 53, 0.3);
+            border-color: var(--neon-orange);
+            animation: errorBlink 1s ease-in-out infinite;
+        }
+
+        @keyframes errorBlink {
+            0%, 100% { box-shadow: 0 0 10px var(--neon-orange); }
+            50% { box-shadow: 0 0 20px var(--neon-orange); }
+        }
+
+        .bit.highlight {
+            background: rgba(184, 41, 255, 0.5);
+            border-color: var(--neon-purple);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px var(--neon-purple);
+        }
+
+        /* Stats Display */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            color: var(--neon-blue);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-value.success {
+            color: var(--neon-green);
+        }
+
+        .stat-value.error {
+            color: var(--neon-orange);
+        }
+
+        /* Process Flow */
+        .process-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .process-step {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid var(--neon-blue);
+            padding: 1.5rem;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .process-step.active {
+            background: rgba(0, 212, 255, 0.1);
+            border-left-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .process-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .process-step.active::before {
+            background: var(--neon-green);
+            animation: pulse-step 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-step {
+            0%, 100% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.2); }
+        }
+
+        /* Info Boxes */
+        .info-box {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid var(--neon-green);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .warning-box {
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 4px solid var(--neon-orange);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .note-box {
+            background: rgba(255, 214, 10, 0.1);
+            border-left: 4px solid var(--neon-yellow);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--neon-blue);
+            border-bottom-color: var(--neon-blue);
+        }
+
+        .tab:hover {
+            color: var(--neon-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Animation Controls */
+        .animation-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .anim-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--neon-blue);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .anim-btn:hover {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+        }
+
+        .anim-btn.active {
+            background: var(--neon-green);
+            border-color: var(--neon-green);
+            color: var(--bg-dark);
+        }
+
+        /* Polynomial Display */
+        .polynomial-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--neon-purple);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .polynomial {
+            font-size: 1.2rem;
+            color: var(--neon-purple);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* CRC Standards Table */
+        .crc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .crc-table th,
+        .crc-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .crc-table th {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--neon-blue);
+            font-weight: 600;
+        }
+
+        .crc-table tr:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 2px solid var(--neon-blue);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-credit {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .footer-credit strong {
+            color: var(--neon-blue);
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .bit, .xor-bit {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+
+    <header>
+        <h1>🔐 CRC - Cyclic Redundancy Check</h1>
+        <p class="subtitle">Interactive Learning & Simulation Environment</p>
+    </header>
+
+    <div class="container">
+        <!-- Section 1: Concept & Purpose -->
+        <section id="concept">
+            <h2>📚 Section 1: Concept & Purpose</h2>
+            
+            <div class="card">
+                <h3>What is CRC?</h3>
+                <p><strong>Cyclic Redundancy Check (CRC)</strong> is an error-detecting code commonly used in digital networks and storage devices to detect accidental changes to raw data. It's based on polynomial division in binary arithmetic.</p>
+                
+                <div class="info-box">
+                    <strong>💡 Core Purpose:</strong> CRC adds redundancy bits (checksum) to data, allowing the receiver to detect if the data has been corrupted during transmission or storage.
+                </div>
+
+                <h3>Why CRC?</h3>
+                <ul style="margin: 1rem 0 1rem 2rem; line-height: 2;">
+                    <li>✅ <strong>High Error Detection:</strong> Can detect burst errors up to the degree of the polynomial</li>
+                    <li>⚡ <strong>Efficient:</strong> Simple hardware implementation using shift registers</li>
+                    <li>🎯 <strong>Reliable:</strong> Detects all single-bit and double-bit errors</li>
+                    <li>📡 <strong>Widely Used:</strong> Ethernet, USB, Bluetooth, ZIP files, PNG images</li>
+                </ul>
+
+                <h3>Position in Communication Chain</h3>
+                <div class="block-diagram">
+                    <div class="block">Data Source</div>
+                    <div class="arrow">→</div>
+                    <div class="block active">CRC Encoder<br>(Add Checksum)</div>
+                    <div class="arrow">→</div>
+                    <div class="block">Channel<br>(Transmission)</div>
+                    <div class="arrow">→</div>
+                    <div class="block active">CRC Checker<br>(Verify)</div>
+                    <div class="arrow">→</div>
+                    <div class="block">Data Sink</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>How CRC Works - High Level</h3>
+                
+                <div class="process-flow">
+                    <div class="process-step" data-step="1">
+                        <h4>Sender Side</h4>
+                        <p>1. Take data bits and append zeros (equal to CRC size)</p>
+                        <p>2. Divide by generator polynomial using XOR</p>
+                        <p>3. The remainder is the CRC checksum</p>
+                        <p>4. Replace appended zeros with CRC checksum</p>
+                    </div>
+
+                    <div class="process-step" data-step="2">
+                        <h4>Receiver Side</h4>
+                        <p>1. Receive data + CRC checksum</p>
+                        <p>2. Divide entire received data by same generator polynomial</p>
+                        <p>3. If remainder is zero → No errors detected ✓</p>
+                        <p>4. If remainder is non-zero → Error detected ✗</p>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ Important:</strong> CRC can <strong>detect</strong> errors but cannot <strong>correct</strong> them. For error correction, use FEC codes like Hamming or Reed-Solomon.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Common CRC Standards</h3>
+                <table class="crc-table">
+                    <thead>
+                        <tr>
+                            <th>CRC Name</th>
+                            <th>Polynomial</th>
+                            <th>Width</th>
+                            <th>Applications</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CRC-8</strong></td>
+                            <td>x⁸ + x² + x + 1</td>
+                            <td>8 bits</td>
+                            <td>1-Wire, Dallas/Maxim devices</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CRC-16</strong></td>
+                            <td>x¹⁶ + x¹⁵ + x² + 1</td>
+                            <td>16 bits</td>
+                            <td>Modbus, USB, Bluetooth</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CRC-24</strong></td>
+                            <td>x²⁴ + x²³ + x⁶ + x⁵ + x + 1</td>
+                            <td>24 bits</td>
+                            <td>5G NR, LTE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CRC-32</strong></td>
+                            <td>x³² + x²⁶ + x²³ + ... + x + 1</td>
+                            <td>32 bits</td>
+                            <td>Ethernet, ZIP, PNG, MPEG-2</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 2: Mathematical Model -->
+        <section id="mathematical">
+            <h2>🧮 Section 2: Mathematical & Algorithmic Model</h2>
+
+            <div class="card">
+                <h3>Binary Polynomial Arithmetic</h3>
+                
+                <h4>1. Polynomial Representation</h4>
+                <p>In CRC, binary strings are treated as polynomials in GF(2) - Galois Field with 2 elements.</p>
+                
+                <div class="math-formula">
+                    Binary: 1101<br>
+                    Polynomial: 1·x³ + 1·x² + 0·x¹ + 1·x⁰ = x³ + x² + 1
+                </div>
+
+                <h4>2. XOR Operation (Modulo-2 Addition)</h4>
+                <p>Addition and subtraction in GF(2) are the same operation - XOR:</p>
+                
+                <div class="xor-demo">
+                    <div class="xor-row">
+                        <div class="xor-bit">1</div>
+                        <div class="xor-bit">0</div>
+                        <div class="xor-bit">1</div>
+                        <div class="xor-bit">1</div>
+                    </div>
+                    <div class="xor-operator">⊕</div>
+                    <div class="xor-row">
+                        <div class="xor-bit">1</div>
+                        <div class="xor-bit">1</div>
+                        <div class="xor-bit">0</div>
+                        <div class="xor-bit">1</div>
+                    </div>
+                    <div class="xor-line"></div>
+                    <div class="xor-row">
+                        <div class="xor-bit active">0</div>
+                        <div class="xor-bit active">1</div>
+                        <div class="xor-bit active">1</div>
+                        <div class="xor-bit active">0</div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <strong>📝 XOR Rules:</strong> 0 ⊕ 0 = 0, 0 ⊕ 1 = 1, 1 ⊕ 0 = 1, 1 ⊕ 1 = 0
+                </div>
+
+                <h4>3. Generator Polynomial</h4>
+                <p>The generator polynomial G(x) defines the CRC algorithm. For CRC-8:</p>
+                
+                <div class="polynomial-display">
+                    <div class="polynomial">
+                        G(x) = x⁸ + x² + x + 1
+                    </div>
+                    <div style="margin-top: 1rem; color: var(--text-secondary);">
+                        Binary: 100000111 (9 bits, degree 8)
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>CRC Calculation Algorithm</h3>
+                
+                <div class="algo-box">
+                    <strong>Input:</strong><br>
+                    • Data D(x) = d[n-1]...d[1]d[0]  (n bits)<br>
+                    • Generator G(x)  (degree r, so r+1 bits)<br><br>
+                    
+                    <strong>Process:</strong><br>
+                    1. Append r zero bits to data → D(x)·x^r<br>
+                    2. Divide D(x)·x^r by G(x) using modulo-2 division<br>
+                    3. Remainder R(x) is the CRC (r bits)<br>
+                    4. Transmitted data = D(x)·x^r + R(x)<br><br>
+                    
+                    <strong>Output:</strong><br>
+                    • Codeword C(x) = Data + CRC
+                </div>
+
+                <h4>Division Example (Visual)</h4>
+                <p>Calculating CRC-3 for data "1101" with generator "1011":</p>
+                
+                <div class="division-demo" id="divisionDemo">
+                    <div style="font-weight: bold; margin-bottom: 1rem; color: var(--neon-green);">
+                        Step-by-step Binary Division:
+                    </div>
+                    <div class="division-step active">
+                        <div>Step 1: Append 3 zeros: 1101<strong style="color: var(--neon-orange);">000</strong></div>
+                    </div>
+                    <div class="division-step">
+                        <div>Step 2: Align divisor (1011) with leftmost 1</div>
+                        <div style="margin-top: 0.5rem;">
+                            &nbsp;&nbsp;1101000<br>
+                            ⊕ 1011<br>
+                            ________
+                        </div>
+                    </div>
+                    <div class="division-step">
+                        <div>Step 3: XOR operation</div>
+                        <div style="margin-top: 0.5rem;">
+                            &nbsp;&nbsp;&nbsp;0110000
+                        </div>
+                    </div>
+                    <div class="division-step">
+                        <div>Step 4: Bring down next bits, repeat</div>
+                        <div style="margin-top: 0.5rem;">
+                            &nbsp;&nbsp;&nbsp;0110000<br>
+                            &nbsp;⊕ 1011<br>
+                            ________<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;1010
+                        </div>
+                    </div>
+                    <div class="division-step">
+                        <div>Step 5: Continue division</div>
+                        <div style="margin-top: 0.5rem;">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;101000<br>
+                            &nbsp;&nbsp;⊕ 1011<br>
+                            ________<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;000 → Remainder (CRC)
+                        </div>
+                    </div>
+                    <div class="division-step">
+                        <div><strong style="color: var(--neon-green);">✓ Result:</strong> CRC = 000, Transmitted = 1101<strong style="color: var(--neon-green);">000</strong></div>
+                    </div>
+                </div>
+
+                <div class="animation-controls">
+                    <button class="anim-btn" id="divPlayBtn">▶ Play Division</button>
+                    <button class="anim-btn" id="divStepBtn">⏭ Step</button>
+                    <button class="anim-btn" id="divResetBtn">↺ Reset</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Mathematical Properties</h3>
+                
+                <h4>Detection Capabilities</h4>
+                <div class="math-formula">
+                    CRC with degree r can detect:<br><br>
+                    • All single-bit errors<br>
+                    • All double-bit errors<br>
+                    • All odd number of bit errors (if G(x) has even parity)<br>
+                    • All burst errors of length ≤ r<br>
+                    • Most burst errors of length > r (probability 1-2^(-r))
+                </div>
+
+                <h4>Verification at Receiver</h4>
+                <div class="algo-box">
+                    <strong>Received data:</strong> C(x) = Data + CRC<br><br>
+                    
+                    <strong>Verification:</strong><br>
+                    Divide C(x) by G(x)<br><br>
+                    
+                    <strong>If remainder = 0:</strong><br>
+                    &nbsp;&nbsp;→ No errors detected ✓<br>
+                    &nbsp;&nbsp;→ C(x) is divisible by G(x)<br><br>
+                    
+                    <strong>If remainder ≠ 0:</strong><br>
+                    &nbsp;&nbsp;→ Error detected ✗<br>
+                    &nbsp;&nbsp;→ Request retransmission
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: CRC Workflow -->
+        <section id="workflow">
+            <h2>⚙️ Section 3: CRC Encoding & Checking Workflow</h2>
+
+            <div class="card">
+                <h3>Complete CRC Process</h3>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="encoding">Encoding Process</button>
+                    <button class="tab" data-tab="checking">Checking Process</button>
+                    <button class="tab" data-tab="errors">Error Detection</button>
+                </div>
+
+                <!-- Encoding Tab -->
+                <div class="tab-content active" id="encoding">
+                    <h4>CRC Encoding (Sender)</h4>
+                    
+                    <div class="process-flow" id="encodingFlow">
+                        <div class="process-step active" data-step="1">
+                            <h4>Step 1: Prepare Data</h4>
+                            <p>Original data bits: D = [d₀, d₁, d₂, ..., d_{n-1}]</p>
+                            <div style="margin-top: 1rem;">
+                                <strong>Example:</strong> D = 11010011 (8 bits)
+                            </div>
+                        </div>
+
+                        <div class="process-step" data-step="2">
+                            <h4>Step 2: Append Zeros</h4>
+                            <p>Append r zeros where r = degree of generator polynomial</p>
+                            <div style="margin-top: 1rem;">
+                                <strong>For CRC-8:</strong> Append 8 zeros → 11010011<span style="color: var(--neon-orange);">00000000</span>
+                            </div>
+                        </div>
+
+                        <div class="process-step" data-step="3">
+                            <h4>Step 3: Polynomial Division</h4>
+                            <p>Divide augmented data by generator polynomial using XOR operations</p>
+                            <div style="margin-top: 1rem;">
+                                Perform modulo-2 division (XOR-based, no carries/borrows)
+                            </div>
+                        </div>
+
+                        <div class="process-step" data-step="4">
+                            <h4>Step 4: Extract Remainder</h4>
+                            <p>The remainder from division is the CRC checksum</p>
+                            <div style="margin-top: 1rem;">
+                                <strong>CRC Checksum:</strong> R = r-bit remainder
+                            </div>
+                        </div>
+
+                        <div class="process-step" data-step="5">
+                            <h4>Step 5: Form Codeword</h4>
+                            <p>Replace appended zeros with CRC checksum</p>
+                            <div style="margin-top: 1rem;">
+                                <strong>Transmitted:</strong> 11010011<span style="color: var(--neon-green);">RRRRRRRR</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="animation-controls">
+                        <button class="anim-btn active" id="encPlayBtn">▶ Play</button>
+                        <button class="anim-btn" id="encPauseBtn">⏸ Pause</button>
+                        <button class="anim-btn" id="encStepBtn">⏭ Step</button>
+                        <button class="anim-btn" id="encResetBtn">↺ Reset</button>
+                    </div>
+                </div>
+
+                <!-- Checking Tab -->
+                <div class="tab-content" id="checking">
+                    <h4>CRC Checking (Receiver)</h4>
+                    
+                    <div class="process-flow">
+                        <div class="process-step active" data-step="1">
+                            <h4>Step 1: Receive Data</h4>
+                            <p>Receive transmitted codeword (data + CRC)</p>
+                            <div style="margin-top: 1rem;">
+                                <strong>Received:</strong> C = Data || CRC
+                            </div>
+                        </div>
+
+                        <div class="process-step" data-step="2">
+                            <h4>Step 2: Polynomial Division</h4>
+                            <p>Divide entire received codeword by generator polynomial</p>
+                            <div style="margin-top: 1rem;">
+                                No need to append zeros - CRC already included
+                            </div>
+                        </div>
+
+                        <div class="process-step" data-step="3">
+                            <h4>Step 3: Check Remainder</h4>
+                            <p>Examine the remainder from division</p>
+                            <div style="margin-top: 1rem;">
+                                <strong style="color: var(--neon-green);">Remainder = 0:</strong> No errors<br>
+                                <strong style="color: var(--neon-orange);">Remainder ≠ 0:</strong> Error detected
+                            </div>
+                        </div>
+
+                        <div class="process-step" data-step="4">
+                            <h4>Step 4: Take Action</h4>
+                            <p>Based on check result:</p>
+                            <div style="margin-top: 1rem;">
+                                ✓ <strong>No errors:</strong> Accept data, strip CRC, deliver to upper layer<br>
+                                ✗ <strong>Error detected:</strong> Discard data, request retransmission (ARQ)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Errors Tab -->
+                <div class="tab-content" id="errors">
+                    <h4>Error Detection Examples</h4>
+                    
+                    <div class="info-box">
+                        <strong>✓ Single-Bit Error:</strong> CRC will always detect any single flipped bit
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>✓ Burst Error:</strong> CRC detects all burst errors up to length r (polynomial degree)
+                    </div>
+
+                    <div class="note-box">
+                        <strong>⚠️ Undetectable Errors:</strong> Rare cases where multiple errors create a valid codeword (very low probability: ~2^(-r))
+                    </div>
+
+                    <h4>Error Scenarios</h4>
+                    <table class="crc-table">
+                        <thead>
+                            <tr>
+                                <th>Error Type</th>
+                                <th>Detection</th>
+                                <th>Explanation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Single Bit</td>
+                                <td style="color: var(--neon-green);">100%</td>
+                                <td>Always detected by any CRC</td>
+                            </tr>
+                            <tr>
+                                <td>Two Bits</td>
+                                <td style="color: var(--neon-green);">100%</td>
+                                <td>Detected if G(x) has 3+ terms</td>
+                            </tr>
+                            <tr>
+                                <td>Odd # Bits</td>
+                                <td style="color: var(--neon-green);">100%</td>
+                                <td>If G(x) contains (x+1) factor</td>
+                            </tr>
+                            <tr>
+                                <td>Burst ≤ r</td>
+                                <td style="color: var(--neon-green);">100%</td>
+                                <td>r = degree of polynomial</td>
+                            </tr>
+                            <tr>
+                                <td>Burst > r</td>
+                                <td style="color: var(--neon-yellow);">1-2^(-r)</td>
+                                <td>Very high probability</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Implementation -->
+        <section id="implementation">
+            <h2>💻 Section 4: Coding Implementation</h2>
+
+            <div class="card">
+                <h3>CRC Implementation in C++</h3>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="basic">Basic Implementation</button>
+                    <button class="tab" data-tab="optimized">Table-Driven (Fast)</button>
+                    <button class="tab" data-tab="standards">Standard CRCs</button>
+                </div>
+
+                <!-- Basic Implementation -->
+                <div class="tab-content active" id="basic">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span>Basic CRC Calculation</span>
+                        </div>
+                        <pre><code><span class="code-comment">// Basic CRC implementation using polynomial division</span>
+
+<span class="code-keyword">#include</span> &lt;cstdint&gt;
+<span class="code-keyword">#include</span> &lt;vector&gt;
+
+<span class="code-comment">// CRC calculation using bit-by-bit division</span>
+<span class="code-keyword">uint32_t</span> <span class="code-function">calculateCRC</span>(
+    <span class="code-keyword">const uint8_t</span>* data,        <span class="code-comment">// Input data</span>
+    <span class="code-keyword">size_t</span> length,               <span class="code-comment">// Data length in bytes</span>
+    <span class="code-keyword">uint32_t</span> polynomial,         <span class="code-comment">// Generator polynomial</span>
+    <span class="code-keyword">uint8_t</span> width                <span class="code-comment">// CRC width in bits</span>
+) {
+    <span class="code-keyword">uint32_t</span> crc = 0;
+    <span class="code-keyword">uint32_t</span> msb_mask = (1U << (width - 1));
+    <span class="code-keyword">uint32_t</span> crc_mask = (1U << width) - 1;
+    
+    <span class="code-comment">// Process each byte</span>
+    <span class="code-keyword">for</span> (<span class="code-keyword">size_t</span> i = 0; i < length; i++) {
+        <span class="code-comment">// XOR byte into CRC</span>
+        crc ^= (data[i] << (width - 8));
+        
+        <span class="code-comment">// Process each bit</span>
+        <span class="code-keyword">for</span> (<span class="code-keyword">int</span> j = 0; j < 8; j++) {
+            <span class="code-keyword">if</span> (crc & msb_mask) {
+                <span class="code-comment">// MSB is 1, XOR with polynomial</span>
+                crc = (crc << 1) ^ polynomial;
+            } <span class="code-keyword">else</span> {
+                <span class="code-comment">// MSB is 0, just shift</span>
+                crc = crc << 1;
+            }
+        }
+    }
+    
+    <span class="code-keyword">return</span> crc & crc_mask;
+}
+
+<span class="code-comment">// CRC-8 example</span>
+<span class="code-keyword">uint8_t</span> <span class="code-function">crc8</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+    <span class="code-comment">// CRC-8: x^8 + x^2 + x + 1 = 0x107</span>
+    <span class="code-keyword">const uint32_t</span> polynomial = 0x107;
+    <span class="code-keyword">return</span> (<span class="code-keyword">uint8_t</span>)calculateCRC(data, length, polynomial, 8);
+}
+
+<span class="code-comment">// CRC-16 example (CCITT)</span>
+<span class="code-keyword">uint16_t</span> <span class="code-function">crc16</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+    <span class="code-comment">// CRC-16-CCITT: x^16 + x^12 + x^5 + 1 = 0x11021</span>
+    <span class="code-keyword">const uint32_t</span> polynomial = 0x11021;
+    <span class="code-keyword">return</span> (<span class="code-keyword">uint16_t</span>)calculateCRC(data, length, polynomial, 16);
+}
+
+<span class="code-comment">// Verify CRC at receiver</span>
+<span class="code-keyword">bool</span> <span class="code-function">verifyCRC</span>(
+    <span class="code-keyword">const uint8_t</span>* data,        <span class="code-comment">// Received data + CRC</span>
+    <span class="code-keyword">size_t</span> totalLength,         <span class="code-comment">// Total length including CRC</span>
+    <span class="code-keyword">uint32_t</span> polynomial,
+    <span class="code-keyword">uint8_t</span> width
+) {
+    <span class="code-comment">// Calculate CRC over entire received data</span>
+    <span class="code-keyword">uint32_t</span> remainder = calculateCRC(data, totalLength, polynomial, width);
+    
+    <span class="code-comment">// If remainder is 0, no errors detected</span>
+    <span class="code-keyword">return</span> (remainder == 0);
+}
+
+<span class="code-comment">// Example usage</span>
+<span class="code-keyword">void</span> <span class="code-function">exampleUsage</span>() {
+    <span class="code-keyword">uint8_t</span> data[] = {0xAB, 0xCD, 0xEF, 0x12};
+    <span class="code-keyword">size_t</span> dataLen = <span class="code-keyword">sizeof</span>(data);
+    
+    <span class="code-comment">// Calculate CRC-8</span>
+    <span class="code-keyword">uint8_t</span> crcValue = crc8(data, dataLen);
+    
+    <span class="code-comment">// Append CRC to data for transmission</span>
+    <span class="code-keyword">uint8_t</span> transmitted[5];
+    memcpy(transmitted, data, dataLen);
+    transmitted[dataLen] = crcValue;
+    
+    <span class="code-comment">// Receiver verifies</span>
+    <span class="code-keyword">bool</span> valid = verifyCRC(transmitted, dataLen + 1, 0x107, 8);
+    <span class="code-keyword">if</span> (valid) {
+        printf(<span class="code-comment">"✓ CRC check passed!\n"</span>);
+    } <span class="code-keyword">else</span> {
+        printf(<span class="code-comment">"✗ Error detected!\n"</span>);
+    }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Optimized Implementation -->
+                <div class="tab-content" id="optimized">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span>Table-Driven CRC (Optimized)</span>
+                        </div>
+                        <pre><code><span class="code-comment">// Fast CRC using lookup table (256 entries)</span>
+
+<span class="code-keyword">class</span> <span class="code-function">CRCCalculator</span> {
+<span class="code-keyword">private</span>:
+    <span class="code-keyword">uint32_t</span> table[256];
+    <span class="code-keyword">uint32_t</span> polynomial;
+    <span class="code-keyword">uint8_t</span> width;
+    <span class="code-keyword">uint32_t</span> msb_mask;
+    <span class="code-keyword">uint32_t</span> crc_mask;
+
+    <span class="code-comment">// Build lookup table</span>
+    <span class="code-keyword">void</span> <span class="code-function">buildTable</span>() {
+        <span class="code-keyword">for</span> (<span class="code-keyword">uint32_t</span> i = 0; i < 256; i++) {
+            <span class="code-keyword">uint32_t</span> crc = i << (width - 8);
+            
+            <span class="code-keyword">for</span> (<span class="code-keyword">int</span> j = 0; j < 8; j++) {
+                <span class="code-keyword">if</span> (crc & msb_mask) {
+                    crc = (crc << 1) ^ polynomial;
+                } <span class="code-keyword">else</span> {
+                    crc = crc << 1;
+                }
+            }
+            
+            table[i] = crc & crc_mask;
+        }
+    }
+
+<span class="code-keyword">public</span>:
+    <span class="code-function">CRCCalculator</span>(<span class="code-keyword">uint32_t</span> poly, <span class="code-keyword">uint8_t</span> w) 
+        : polynomial(poly), width(w) {
+        msb_mask = (1U << (width - 1));
+        crc_mask = (1U << width) - 1;
+        buildTable();
+    }
+
+    <span class="code-comment">// Fast CRC calculation using table</span>
+    <span class="code-keyword">uint32_t</span> <span class="code-function">calculate</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+        <span class="code-keyword">uint32_t</span> crc = 0;
+        
+        <span class="code-keyword">for</span> (<span class="code-keyword">size_t</span> i = 0; i < length; i++) {
+            <span class="code-comment">// Table lookup - much faster than bit-by-bit</span>
+            <span class="code-keyword">uint8_t</span> index = ((crc >> (width - 8)) ^ data[i]) & 0xFF;
+            crc = ((crc << 8) ^ table[index]) & crc_mask;
+        }
+        
+        <span class="code-keyword">return</span> crc;
+    }
+
+    <span class="code-comment">// Verify received data</span>
+    <span class="code-keyword">bool</span> <span class="code-function">verify</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+        <span class="code-keyword">return</span> (calculate(data, length) == 0);
+    }
+};
+
+<span class="code-comment">// Performance comparison</span>
+<span class="code-keyword">void</span> <span class="code-function">performanceTest</span>() {
+    <span class="code-keyword">const</span> <span class="code-keyword">size_t</span> TEST_SIZE = 1000000;  <span class="code-comment">// 1 MB</span>
+    <span class="code-keyword">uint8_t</span>* testData = <span class="code-keyword">new</span> <span class="code-keyword">uint8_t</span>[TEST_SIZE];
+    
+    <span class="code-comment">// Fill with random data</span>
+    <span class="code-keyword">for</span> (<span class="code-keyword">size_t</span> i = 0; i < TEST_SIZE; i++) {
+        testData[i] = rand() & 0xFF;
+    }
+    
+    <span class="code-comment">// Create calculator</span>
+    CRCCalculator crc32(0x104C11DB7, 32);  <span class="code-comment">// CRC-32</span>
+    
+    <span class="code-comment">// Calculate CRC</span>
+    <span class="code-keyword">auto</span> start = std::chrono::high_resolution_clock::now();
+    <span class="code-keyword">uint32_t</span> result = crc32.calculate(testData, TEST_SIZE);
+    <span class="code-keyword">auto</span> end = std::chrono::high_resolution_clock::now();
+    
+    <span class="code-keyword">auto</span> duration = std::chrono::duration_cast&lt;std::chrono::microseconds&gt;(end - start);
+    
+    printf(<span class="code-comment">"Table-driven CRC: %lu μs\n"</span>, duration.count());
+    printf(<span class="code-comment">"Throughput: %.2f MB/s\n"</span>, 
+           TEST_SIZE / (<span class="code-keyword">double</span>)duration.count());
+    
+    <span class="code-keyword">delete</span>[] testData;
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Standard CRCs -->
+                <div class="tab-content" id="standards">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span>Standard CRC Implementations</span>
+                        </div>
+                        <pre><code><span class="code-comment">// Common CRC standards with proper parameters</span>
+
+<span class="code-keyword">class</span> <span class="code-function">StandardCRCs</span> {
+<span class="code-keyword">public</span>:
+    <span class="code-comment">// CRC-8 (used in 1-Wire, SMBus)</span>
+    <span class="code-keyword">static uint8_t</span> <span class="code-function">CRC8</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+        CRCCalculator calc(0x107, 8);  <span class="code-comment">// x^8 + x^2 + x + 1</span>
+        <span class="code-keyword">return</span> (<span class="code-keyword">uint8_t</span>)calc.calculate(data, length);
+    }
+
+    <span class="code-comment">// CRC-16-CCITT (X.25, Bluetooth, SD)</span>
+    <span class="code-keyword">static uint16_t</span> <span class="code-function">CRC16_CCITT</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+        CRCCalculator calc(0x11021, 16);  <span class="code-comment">// x^16 + x^12 + x^5 + 1</span>
+        <span class="code-keyword">return</span> (<span class="code-keyword">uint16_t</span>)calc.calculate(data, length);
+    }
+
+    <span class="code-comment">// CRC-16-MODBUS</span>
+    <span class="code-keyword">static uint16_t</span> <span class="code-function">CRC16_MODBUS</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+        CRCCalculator calc(0x18005, 16);  <span class="code-comment">// x^16 + x^15 + x^2 + 1</span>
+        <span class="code-keyword">return</span> (<span class="code-keyword">uint16_t</span>)calc.calculate(data, length);
+    }
+
+    <span class="code-comment">// CRC-24 (5G NR, LTE)</span>
+    <span class="code-keyword">static uint32_t</span> <span class="code-function">CRC24</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+        <span class="code-comment">// CRC24A: x^24 + x^23 + x^6 + x^5 + x + 1</span>
+        CRCCalculator calc(0x1864CFB, 24);
+        <span class="code-keyword">return</span> calc.calculate(data, length) & 0xFFFFFF;
+    }
+
+    <span class="code-comment">// CRC-32 (Ethernet, ZIP, PNG)</span>
+    <span class="code-keyword">static uint32_t</span> <span class="code-function">CRC32</span>(<span class="code-keyword">const uint8_t</span>* data, <span class="code-keyword">size_t</span> length) {
+        <span class="code-comment">// x^32 + x^26 + x^23 + x^22 + x^16 + x^12 + x^11 + </span>
+        <span class="code-comment">// x^10 + x^8 + x^7 + x^5 + x^4 + x^2 + x + 1</span>
+        CRCCalculator calc(0x104C11DB7, 32);
+        <span class="code-keyword">return</span> calc.calculate(data, length);
+    }
+};
+
+<span class="code-comment">// Usage examples</span>
+<span class="code-keyword">void</span> <span class="code-function">demonstrateStandardCRCs</span>() {
+    <span class="code-keyword">const char</span>* message = <span class="code-comment">"Hello, World!"</span>;
+    <span class="code-keyword">const uint8_t</span>* data = (<span class="code-keyword">const uint8_t</span>*)message;
+    <span class="code-keyword">size_t</span> len = strlen(message);
+    
+    printf(<span class="code-comment">"Message: %s\n"</span>, message);
+    printf(<span class="code-comment">"CRC-8:  0x%02X\n"</span>, StandardCRCs::CRC8(data, len));
+    printf(<span class="code-comment">"CRC-16: 0x%04X\n"</span>, StandardCRCs::CRC16_CCITT(data, len));
+    printf(<span class="code-comment">"CRC-24: 0x%06X\n"</span>, StandardCRCs::CRC24(data, len));
+    printf(<span class="code-comment">"CRC-32: 0x%08X\n"</span>, StandardCRCs::CRC32(data, len));
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Interactive Simulator -->
+        <section id="simulator">
+            <h2>🎮 Section 5: Live Interactive CRC Simulator</h2>
+
+            <div class="simulator">
+                <h3 style="text-align: center; margin-bottom: 2rem;">CRC Calculation & Verification Laboratory</h3>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>CRC Standard</label>
+                        <select id="crcStandard">
+                            <option value="crc8">CRC-8</option>
+                            <option value="crc16">CRC-16 (CCITT)</option>
+                            <option value="crc24">CRC-24 (5G NR)</option>
+                            <option value="crc32">CRC-32 (Ethernet)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Generator Polynomial (Hex)</label>
+                        <input type="text" id="polynomial" value="107" placeholder="e.g., 107 for CRC-8">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Input Data (Binary or Hex)</label>
+                        <input type="text" id="inputData" value="11010011" placeholder="Enter binary or hex">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Input Format</label>
+                        <select id="inputFormat">
+                            <option value="binary">Binary</option>
+                            <option value="hex">Hexadecimal</option>
+                            <option value="text">ASCII Text</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="calculateBtn">🔢 Calculate CRC</button>
+                    <button id="verifyBtn">✓ Verify CRC</button>
+                    <button id="injectErrorBtn">⚡ Inject Error</button>
+                    <button id="clearSimBtn">🗑️ Clear</button>
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats" id="crcStats">
+                    <div class="stat-card">
+                        <div class="stat-label">Data Length</div>
+                        <div class="stat-value" id="statDataLen">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">CRC Value</div>
+                        <div class="stat-value" id="statCrcValue">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Polynomial Degree</div>
+                        <div class="stat-value" id="statPolyDegree">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Verification</div>
+                        <div class="stat-value" id="statVerification">-</div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div style="background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 2rem; margin: 2rem 0;">
+                    <h4 style="text-align: center; margin-bottom: 1rem;">Data Bits</h4>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(0, 212, 255, 0.3); border-color: var(--neon-blue);"></div>
+                            <span>Data Bits</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(0, 255, 136, 0.3); border-color: var(--neon-green);"></div>
+                            <span>CRC Checksum</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(255, 107, 53, 0.3); border-color: var(--neon-orange);"></div>
+                            <span>Error Bit</span>
+                        </div>
+                    </div>
+                    <div class="bit-display" id="dataBitsDisplay">
+                        <div style="color: var(--text-secondary);">Enter data and click "Calculate CRC"</div>
+                    </div>
+
+                    <h4 style="text-align: center; margin: 2rem 0 1rem;">Complete Codeword (Data + CRC)</h4>
+                    <div class="bit-display" id="codewordDisplay">
+                        <div style="color: var(--text-secondary);">Codeword will appear here</div>
+                    </div>
+
+                    <div id="resultMessage" style="text-align: center; margin-top: 2rem; padding: 1rem; border-radius: 8px; display: none;"></div>
+                </div>
+
+                <!-- Division Process Visualization -->
+                <div style="background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 2rem; margin: 2rem 0;">
+                    <h4 style="text-align: center; margin-bottom: 1rem;">Division Process</h4>
+                    <div id="divisionProcess" style="font-family: 'Courier New', monospace; line-height: 1.8; color: var(--text-secondary);">
+                        Division steps will appear here during calculation...
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-credit">
+            Designed by <strong>Group 3</strong>
+        </div>
+        <div style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+            CRC - Cyclic Redundancy Check Interactive Learning Environment © 2024
+        </div>
+    </footer>
+
+    <script>
+        // CRC Calculator Class
+        class CRCCalculator {
+            constructor(polynomial, width) {
+                this.polynomial = polynomial;
+                this.width = width;
+                this.msbMask = 1 << (width - 1);
+                this.crcMask = (1 << width) - 1;
+            }
+
+            calculate(data) {
+                let crc = 0;
+                
+                for (let i = 0; i < data.length; i++) {
+                    crc ^= (data[i] << (this.width - 8));
+                    
+                    for (let j = 0; j < 8; j++) {
+                        if (crc & this.msbMask) {
+                            crc = ((crc << 1) ^ this.polynomial) & this.crcMask;
+                        } else {
+                            crc = (crc << 1) & this.crcMask;
+                        }
+                    }
+                }
+                
+                return crc;
+            }
+
+            verify(data) {
+                return this.calculate(data) === 0;
+            }
+        }
+
+        // Utility Functions
+        function binaryToBytes(binary) {
+            // Remove spaces and validate
+            binary = binary.replace(/\s/g, '');
+            if (!/^[01]+$/.test(binary)) {
+                throw new Error('Invalid binary string');
+            }
+            
+            // Pad to multiple of 8
+            while (binary.length % 8 !== 0) {
+                binary = '0' + binary;
+            }
+            
+            const bytes = [];
+            for (let i = 0; i < binary.length; i += 8) {
+                bytes.push(parseInt(binary.substr(i, 8), 2));
+            }
+            return bytes;
+        }
+
+        function hexToBytes(hex) {
+            hex = hex.replace(/\s/g, '');
+            if (!/^[0-9A-Fa-f]+$/.test(hex)) {
+                throw new Error('Invalid hex string');
+            }
+            
+            if (hex.length % 2 !== 0) {
+                hex = '0' + hex;
+            }
+            
+            const bytes = [];
+            for (let i = 0; i < hex.length; i += 2) {
+                bytes.push(parseInt(hex.substr(i, 2), 16));
+            }
+            return bytes;
+        }
+
+        function textToBytes(text) {
+            const bytes = [];
+            for (let i = 0; i < text.length; i++) {
+                bytes.push(text.charCodeAt(i));
+            }
+            return bytes;
+        }
+
+        function bytesToBinary(bytes) {
+            return bytes.map(b => b.toString(2).padStart(8, '0')).join('');
+        }
+
+        function displayBits(containerId, bits, crcStart = -1) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            for (let i = 0; i < bits.length; i++) {
+                const bitDiv = document.createElement('div');
+                bitDiv.className = 'bit';
+                bitDiv.textContent = bits[i];
+                
+                if (crcStart >= 0 && i >= crcStart) {
+                    bitDiv.classList.add('crc');
+                } else {
+                    bitDiv.classList.add('data');
+                }
+                
+                container.appendChild(bitDiv);
+            }
+        }
+
+        // Standard CRC configurations
+        const crcStandards = {
+            crc8: { polynomial: 0x107, width: 8, name: 'CRC-8' },
+            crc16: { polynomial: 0x11021, width: 16, name: 'CRC-16 (CCITT)' },
+            crc24: { polynomial: 0x1864CFB, width: 24, name: 'CRC-24 (5G NR)' },
+            crc32: { polynomial: 0x104C11DB7, width: 32, name: 'CRC-32' }
+        };
+
+        // Update polynomial when standard changes
+        document.getElementById('crcStandard').addEventListener('change', (e) => {
+            const standard = crcStandards[e.target.value];
+            document.getElementById('polynomial').value = standard.polynomial.toString(16).toUpperCase();
+        });
+
+        // Calculate CRC
+        document.getElementById('calculateBtn').addEventListener('click', () => {
+            try {
+                const format = document.getElementById('inputFormat').value;
+                const input = document.getElementById('inputData').value;
+                const polyHex = document.getElementById('polynomial').value;
+                const standard = document.getElementById('crcStandard').value;
+                
+                // Parse input
+                let dataBytes;
+                if (format === 'binary') {
+                    dataBytes = binaryToBytes(input);
+                } else if (format === 'hex') {
+                    dataBytes = hexToBytes(input);
+                } else {
+                    dataBytes = textToBytes(input);
+                }
+                
+                // Get CRC configuration
+                const config = crcStandards[standard];
+                const polynomial = parseInt(polyHex, 16);
+                
+                // Calculate CRC
+                const calculator = new CRCCalculator(polynomial, config.width);
+                const crcValue = calculator.calculate(dataBytes);
+                
+                // Display data bits
+                const dataBinary = bytesToBinary(dataBytes);
+                displayBits('dataBitsDisplay', dataBinary);
+                
+                // Create codeword (data + CRC)
+                const crcBinary = crcValue.toString(2).padStart(config.width, '0');
+                const codeword = dataBinary + crcBinary;
+                displayBits('codewordDisplay', codeword, dataBinary.length);
+                
+                // Update stats
+                document.getElementById('statDataLen').textContent = dataBytes.length + ' bytes';
+                document.getElementById('statCrcValue').textContent = '0x' + crcValue.toString(16).toUpperCase();
+                document.getElementById('statPolyDegree').textContent = config.width;
+                document.getElementById('statVerification').textContent = '-';
+                
+                // Show division process
+                const divProcess = document.getElementById('divisionProcess');
+                divProcess.innerHTML = `
+                    <div style="color: var(--neon-green);">✓ CRC Calculation Complete</div>
+                    <div style="margin-top: 1rem;">
+                        Data: ${dataBinary} (${dataBytes.length} bytes)<br>
+                        Generator: ${polynomial.toString(2)}<br>
+                        CRC: ${crcBinary} (0x${crcValue.toString(16).toUpperCase()})<br>
+                        Codeword: ${codeword}
+                    </div>
+                `;
+                
+                // Hide result message
+                document.getElementById('resultMessage').style.display = 'none';
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Verify CRC
+        document.getElementById('verifyBtn').addEventListener('click', () => {
+            try {
+                const codewordDiv = document.getElementById('codewordDisplay');
+                if (!codewordDiv.children.length) {
+                    alert('Please calculate CRC first!');
+                    return;
+                }
+                
+                // Get codeword bits
+                let codeword = '';
+                Array.from(codewordDiv.children).forEach(child => {
+                    codeword += child.textContent;
+                });
+                
+                // Convert to bytes
+                const codewordBytes = binaryToBytes(codeword);
+                
+                // Get configuration
+                const standard = document.getElementById('crcStandard').value;
+                const config = crcStandards[standard];
+                const polynomial = parseInt(document.getElementById('polynomial').value, 16);
+                
+                // Verify
+                const calculator = new CRCCalculator(polynomial, config.width);
+                const isValid = calculator.verify(codewordBytes);
+                
+                // Update display
+                const statDiv = document.getElementById('statVerification');
+                const resultDiv = document.getElementById('resultMessage');
+                
+                if (isValid) {
+                    statDiv.textContent = '✓ Valid';
+                    statDiv.className = 'stat-value success';
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = 'rgba(0, 255, 136, 0.2)';
+                    resultDiv.style.borderLeft = '4px solid var(--neon-green)';
+                    resultDiv.innerHTML = '<strong style="color: var(--neon-green);">✓ No Errors Detected!</strong><br>CRC verification passed. Data integrity confirmed.';
+                } else {
+                    statDiv.textContent = '✗ Error';
+                    statDiv.className = 'stat-value error';
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = 'rgba(255, 107, 53, 0.2)';
+                    resultDiv.style.borderLeft = '4px solid var(--neon-orange)';
+                    resultDiv.innerHTML = '<strong style="color: var(--neon-orange);">✗ Error Detected!</strong><br>CRC check failed. Data may be corrupted.';
+                }
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Inject Error
+        document.getElementById('injectErrorBtn').addEventListener('click', () => {
+            const codewordDiv = document.getElementById('codewordDisplay');
+            if (!codewordDiv.children.length) {
+                alert('Please calculate CRC first!');
+                return;
+            }
+            
+            // Flip a random bit
+            const bits = Array.from(codewordDiv.children);
+            const randomIndex = Math.floor(Math.random() * bits.length);
+            const bitElement = bits[randomIndex];
+            
+            // Flip bit
+            bitElement.textContent = bitElement.textContent === '0' ? '1' : '0';
+            bitElement.classList.add('error');
+            
+            // Update verification status
+            document.getElementById('statVerification').textContent = 'Error Injected';
+            document.getElementById('statVerification').className = 'stat-value error';
+            
+            // Show message
+            const resultDiv = document.getElementById('resultMessage');
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = 'rgba(255, 214, 10, 0.2)';
+            resultDiv.style.borderLeft = '4px solid var(--neon-yellow)';
+            resultDiv.innerHTML = `<strong style="color: var(--neon-yellow);">⚡ Error Injected at bit ${randomIndex}</strong><br>Click "Verify CRC" to detect the error.`;
+        });
+
+        // Clear
+        document.getElementById('clearSimBtn').addEventListener('click', () => {
+            document.getElementById('dataBitsDisplay').innerHTML = '<div style="color: var(--text-secondary);">Enter data and click "Calculate CRC"</div>';
+            document.getElementById('codewordDisplay').innerHTML = '<div style="color: var(--text-secondary);">Codeword will appear here</div>';
+            document.getElementById('divisionProcess').innerHTML = 'Division steps will appear here during calculation...';
+            document.getElementById('resultMessage').style.display = 'none';
+            
+            document.getElementById('statDataLen').textContent = '-';
+            document.getElementById('statCrcValue').textContent = '-';
+            document.getElementById('statPolyDegree').textContent = '-';
+            document.getElementById('statVerification').textContent = '-';
+            document.getElementById('statVerification').className = 'stat-value';
+        });
+
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                const parent = tab.closest('.card');
+                
+                // Update tabs
+                parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update content
+                parent.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                parent.querySelector('#' + targetTab).classList.add('active');
+            });
+        });
+
+        // Division animation
+        let divStep = 0;
+        let divInterval = null;
+
+        function updateDivisionStep(step) {
+            const steps = document.querySelectorAll('#divisionDemo .division-step');
+            steps.forEach((s, i) => {
+                s.classList.toggle('active', i === step);
+            });
+        }
+
+        document.getElementById('divPlayBtn').addEventListener('click', () => {
+            if (divInterval) return;
+            
+            divInterval = setInterval(() => {
+                divStep = (divStep + 1) % 6;
+                updateDivisionStep(divStep);
+                if (divStep === 5) {
+                    clearInterval(divInterval);
+                    divInterval = null;
+                }
+            }, 2000);
+        });
+
+        document.getElementById('divStepBtn').addEventListener('click', () => {
+            if (divInterval) clearInterval(divInterval);
+            divInterval = null;
+            divStep = (divStep + 1) % 6;
+            updateDivisionStep(divStep);
+        });
+
+        document.getElementById('divResetBtn').addEventListener('click', () => {
+            if (divInterval) clearInterval(divInterval);
+            divInterval = null;
+            divStep = 0;
+            updateDivisionStep(0);
+        });
+
+        // Encoding animation
+        let encStep = 0;
+        let encInterval = null;
+
+        function updateEncodingStep(step) {
+            const steps = document.querySelectorAll('#encodingFlow .process-step');
+            steps.forEach((s, i) => {
+                s.classList.toggle('active', i === step);
+            });
+        }
+
+        document.getElementById('encPlayBtn').addEventListener('click', () => {
+            if (encInterval) return;
+            document.getElementById('encPlayBtn').classList.add('active');
+            
+            encInterval = setInterval(() => {
+                encStep = (encStep + 1) % 5;
+                updateEncodingStep(encStep);
+                if (encStep === 4) {
+                    setTimeout(() => {
+                        clearInterval(encInterval);
+                        encInterval = null;
+                        document.getElementById('encPlayBtn').classList.remove('active');
+                    }, 2000);
+                }
+            }, 2000);
+        });
+
+        document.getElementById('encPauseBtn').addEventListener('click', () => {
+            if (encInterval) clearInterval(encInterval);
+            encInterval = null;
+            document.getElementById('encPlayBtn').classList.remove('active');
+        });
+
+        document.getElementById('encStepBtn').addEventListener('click', () => {
+            if (encInterval) {
+                clearInterval(encInterval);
+                encInterval = null;
+            }
+            document.getElementById('encPlayBtn').classList.remove('active');
+            encStep = (encStep + 1) % 5;
+            updateEncodingStep(encStep);
+        });
+
+        document.getElementById('encResetBtn').addEventListener('click', () => {
+            if (encInterval) clearInterval(encInterval);
+            encInterval = null;
+            document.getElementById('encPlayBtn').classList.remove('active');
+            encStep = 0;
+            updateEncodingStep(0);
+        });
+
+        // Initialize
+        updateDivisionStep(0);
+        updateEncodingStep(0);
+    </script>
+</body>
+</html>

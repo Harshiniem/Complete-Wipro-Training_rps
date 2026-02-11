@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR Architecture & Protocol Stack | Professional Deep-Dive</title>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card-bg: #161b2a;
+            --accent-blue: #00d2ff;
+            --accent-purple: #9d50bb;
+            --user-plane: #00f2fe;
+            --control-plane: #ff5f6d;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --border: #2d3748;
+            --success: #00ff87;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-bottom: 50px;
+        }
+
+        /* --- Header & Layout --- */
+        header {
+            background: linear-gradient(135deg, #161b2a 0%, #0b0f19 100%);
+            padding: 3rem 1rem;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--accent-blue);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid var(--accent-blue);
+        }
+
+        /* --- Controls --- */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+        .btn.active { background: var(--accent-blue); color: var(--bg); }
+        .btn-up.active { background: var(--user-plane); color: var(--bg); border-color: var(--user-plane); }
+        .btn-cp.active { background: var(--control-plane); color: var(--bg); border-color: var(--control-plane); }
+
+        /* --- Architecture Diagram (CSS Only) --- */
+        .arch-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 40px;
+            margin: 50px 0;
+            position: relative;
+            align-items: center;
+        }
+
+        .node-box {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .node-box:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.2);
+        }
+
+        .node-label {
+            font-weight: 800;
+            display: block;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+        }
+
+        .gnb-split {
+            display: grid;
+            gap: 10px;
+        }
+
+        .split-module {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+            font-size: 0.85rem;
+            cursor: help;
+        }
+
+        .split-module:hover { background: rgba(0, 210, 255, 0.1); border-style: solid; }
+
+        /* --- Interfaces / Lines --- */
+        .interface-line {
+            position: absolute;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .if-uu { width: 100px; left: 22%; top: 50%; }
+        .if-ng { width: 100px; right: 22%; top: 50%; }
+
+        .if-tag {
+            background: var(--bg);
+            padding: 2px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+
+        /* --- Protocol Stacks --- */
+        .stack-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stack-header {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .layer {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .layer::after {
+            content: "➔";
+            position: absolute;
+            right: 15px;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .layer:hover::after { opacity: 1; }
+        .layer:hover { transform: scale(1.03); filter: brightness(1.2); }
+
+        .up-layer { background: rgba(0, 242, 254, 0.1); border-left: 6px solid var(--user-plane); color: var(--user-plane); }
+        .cp-layer { background: rgba(255, 95, 109, 0.1); border-left: 6px solid var(--control-plane); color: var(--control-plane); }
+
+        /* --- Info Panel --- */
+        .info-panel {
+            background: #1e2536;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 1px solid var(--accent-blue);
+            min-height: 250px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        .info-panel h2 { color: var(--accent-blue); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .info-list { margin-left: 20px; margin-top: 15px; }
+        .info-list li { margin-bottom: 8px; }
+
+        .highlight-box {
+            background: rgba(0, 255, 135, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* --- Animation: Data Flow --- */
+        .packet {
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            z-index: 10;
+            box-shadow: 0 0 15px var(--success);
+            display: none;
+        }
+
+        @keyframes flow {
+            0% { left: 20%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 80%; opacity: 0; }
+        }
+
+        /* --- Tables --- */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 40px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table th { background: rgba(0, 210, 255, 0.1); color: var(--accent-blue); }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .arch-grid { grid-template-columns: 1fr; gap: 20px; }
+            .stack-container { grid-template-columns: 1fr; }
+            .interface-line { display: none; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="badge">Next Gen Standards</span>
+    <h1>5G NR Architecture Masterclass</h1>
+    <p style="color: var(--text-dim)">Control Plane & User Plane Protocol Analysis</p>
+</header>
+
+<div class="container">
+    
+    <!-- User Controls -->
+    <div class="controls">
+        <button class="btn active" id="btn-all" onclick="setView('all')">Full Architecture</button>
+        <button class="btn btn-up" id="btn-up" onclick="setView('up')">User Plane Path</button>
+        <button class="btn btn-cp" id="btn-cp" onclick="setView('cp')">Control Plane Path</button>
+        <button class="btn" style="color: var(--success); border-color: var(--success);" onclick="startSimulation()">Simulate Data Flow</button>
+    </div>
+
+    <!-- Architecture Visual -->
+    <div class="arch-grid" id="architecture-diagram">
+        <div class="packet" id="packet-sim"></div>
+        
+        <!-- UE -->
+        <div class="node-box" id="node-ue">
+            <span class="node-label">UE</span>
+            <div style="font-size: 0.8rem; color: var(--text-dim)">User Equipment</div>
+            <div style="margin-top:10px; font-size: 1.2rem;">📱</div>
+        </div>
+
+        <div class="interface-line if-uu"><span class="if-tag">Uu (NR)</span></div>
+
+        <!-- gNB -->
+        <div class="node-box" id="node-gnb">
+            <span class="node-label">NG-RAN (gNB)</span>
+            <div class="gnb-split">
+                <div class="split-module" onmouseover="showDetail('CU')">
+                    <strong>CU</strong> (Centralized Unit)
+                    <div style="font-size:0.7rem">RRC | SDAP | PDCP</div>
+                </div>
+                <div class="split-module" onmouseover="showDetail('DU')">
+                    <strong>DU</strong> (Distributed Unit)
+                    <div style="font-size:0.7rem">RLC | MAC | High-PHY</div>
+                </div>
+                <div class="split-module" onmouseover="showDetail('RU')">
+                    <strong>RU</strong> (Radio Unit)
+                    <div style="font-size:0.7rem">Low-PHY | RF</div>
+                </div>
+            </div>
+            <div style="position:absolute; right: -60px; top: 35%;" class="if-tag cp-node">N2</div>
+            <div style="position:absolute; right: -60px; top: 55%;" class="if-tag up-node">N3</div>
+        </div>
+
+        <div class="interface-line if-ng"></div>
+
+        <!-- 5GC -->
+        <div class="node-box" id="node-core">
+            <span class="node-label">5G Core (5GC)</span>
+            <div class="gnb-split">
+                <div class="split-module cp-node" style="border-color: var(--control-plane)">
+                    <strong>AMF / SMF</strong>
+                    <div style="font-size:0.7rem">Signaling & Session</div>
+                </div>
+                <div class="split-module up-node" style="border-color: var(--user-plane)">
+                    <strong>UPF</strong>
+                    <div style="font-size:0.7rem">User Plane Gateway</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Protocol Stacks -->
+    <div class="stack-container">
+        <!-- User Plane -->
+        <div id="up-stack">
+            <div class="stack-header" style="color: var(--user-plane)">USER PLANE</div>
+            <div class="layer up-layer" onclick="showLayer('SDAP')">SDAP</div>
+            <div class="layer up-layer" onclick="showLayer('PDCP')">PDCP</div>
+            <div class="layer up-layer" onclick="showLayer('RLC')">RLC</div>
+            <div class="layer up-layer" onclick="showLayer('MAC')">MAC</div>
+            <div class="layer up-layer" onclick="showLayer('PHY')">PHY</div>
+        </div>
+
+        <!-- Control Plane -->
+        <div id="cp-stack">
+            <div class="stack-header" style="color: var(--control-plane)">CONTROL PLANE</div>
+            <div class="layer cp-layer" onclick="showLayer('NAS')">NAS (Non-Access Stratum)</div>
+            <div class="layer cp-layer" onclick="showLayer('RRC')">RRC (Radio Resource Control)</div>
+            <div class="layer cp-layer" onclick="showLayer('NGAP')">NGAP / SCTP</div>
+            <div class="layer cp-layer" onclick="showLayer('HTTP2')">HTTP/2 (SBA)</div>
+            <div class="layer cp-layer" onclick="showLayer('L1L2')">L1 / L2 (MAC/RLC/PHY)</div>
+        </div>
+    </div>
+
+    <!-- Dynamic Info Panel -->
+    <div class="info-panel" id="detail-panel">
+        <div style="text-align: center; color: var(--text-dim); padding-top: 40px;">
+            <h3>Interactive Protocol Explorer</h3>
+            <p>Click on a protocol layer above or hover over network nodes to see technical specifications.</p>
+        </div>
+    </div>
+
+    <!-- NSA vs SA Table -->
+    <h2 style="margin-top: 60px; color: var(--accent-purple)">Deployment Modes</h2>
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Standalone (SA)</th>
+                <th>Non-Standalone (NSA)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Core Network</strong></td>
+                <td>5GC (5G Core)</td>
+                <td>EPC (4G Core)</td>
+            </tr>
+            <tr>
+                <td><strong>Control Plane</strong></td>
+                <td>NR gNB (Direct)</td>
+                <td>LTE eNB (Master)</td>
+            </tr>
+            <tr>
+                <td><strong>NR Interface</strong></td>
+                <td>Option 2</td>
+                <td>Option 3/3a/3x</td>
+            </tr>
+            <tr>
+                <td><strong>Primary Advantage</strong></td>
+                <td>Full 5G capabilities (Slicing, URLLC)</td>
+                <td>Rapid deployment using 4G footprint</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+    const protocolDetails = {
+        'SDAP': {
+            title: 'SDAP: Service Data Adaptation Protocol',
+            role: 'Mapping between QoS Flows and Data Radio Bearers (DRB).',
+            list: [
+                'Unique to 5G NR (Not in 4G LTE)',
+                'Handles Flow-based Quality of Service (QoS)',
+                'Adds QFI (QoS Flow ID) to packets',
+                'Ensures specific application traffic gets the right priority'
+            ],
+            tip: 'Exam Tip: SDAP is the topmost layer of the User Plane in the gNB CU.'
+        },
+        'PDCP': {
+            title: 'PDCP: Packet Data Convergence Protocol',
+            role: 'Robustness and Security layer.',
+            list: [
+                'IP Header Compression (ROHC)',
+                'Ciphering and Integrity Protection (Security)',
+                'Sequence Numbering and Duplicate Detection',
+                'Reordering during handovers'
+            ],
+            tip: 'Real World: PDCP is responsible for making sure your data isn\'t intercepted over the air.'
+        },
+        'RLC': {
+            title: 'RLC: Radio Link Control',
+            role: 'Segmentation and Error Correction.',
+            list: [
+                'ARQ (Automatic Repeat Request) for error recovery',
+                'Segmentation of PDCP PDUs',
+                'Three modes: TM (Transparent), UM (Unacknowledged), AM (Acknowledged)',
+                'Ensures packets fit into MAC transport blocks'
+            ],
+            tip: 'Architecture: RLC sits in the DU (Distributed Unit) in split architectures.'
+        },
+        'MAC': {
+            title: 'MAC: Medium Access Control',
+            role: 'The dynamic scheduler and traffic controller.',
+            list: [
+                'Logical Channel Multiplexing',
+                'HARQ (Hybrid ARQ) - Fast retransmissions at hardware level',
+                'Priority handling between UEs',
+                'Random Access (RACH) procedure management'
+            ],
+            tip: 'Key Function: The gNB MAC layer makes scheduling decisions every 0.125ms to 1ms.'
+        },
+        'PHY': {
+            title: 'PHY: Physical Layer',
+            role: 'Turning bits into radio waves.',
+            list: [
+                'Modulation (QPSK, 64QAM, 256QAM)',
+                'Channel Coding (LDPC for data, Polar for control)',
+                'Multi-antenna processing (MIMO)',
+                'Beamforming and digital-to-analog conversion'
+            ],
+            tip: '5G Fact: NR Physical layer supports Flexible Numerology (Subcarrier Spacing up to 120kHz).'
+        },
+        'NAS': {
+            title: 'NAS: Non-Access Stratum',
+            role: 'Signaling between UE and 5G Core AMF.',
+            list: [
+                'Registration and Authentication',
+                'Mobility management (Tracking Area updates)',
+                'PDU Session establishment',
+                'Transparent to the gNB (carried as a payload)'
+            ],
+            tip: 'Interface: NAS messages travel over the N1 interface.'
+        },
+        'RRC': {
+            title: 'RRC: Radio Resource Control',
+            role: 'The controller of the radio interface.',
+            list: [
+                'Broadcast of System Information (MIB/SIBs)',
+                'RRC Connection establishment and release',
+                'Radio Bearer configuration',
+                'Measurement reporting for Handovers'
+            ],
+            tip: 'States: 5G NR introduces the "RRC Inactive" state to save UE battery.'
+        },
+        'NGAP': {
+            title: 'NGAP: NG Application Protocol',
+            role: 'Communication protocol between gNB and 5GC.',
+            list: [
+                'Runs over the N2 interface',
+                'Uses SCTP as the transport layer for reliability',
+                'Handles UE context transfer and paging requests',
+                'Manages the setup of NG-C resources'
+            ],
+            tip: 'Comparison: This is the 5G equivalent of 4G\'s S1-AP protocol.'
+        },
+        'HTTP2': {
+            title: 'HTTP/2 (Service Based Architecture)',
+            role: 'Modern communication within the 5G Core.',
+            list: [
+                'NFs (Network Functions) interact via RESTful APIs',
+                'Uses JSON for data serialization',
+                'Allows for cloud-native deployment and network slicing',
+                'Replaces heavy Diameter/GTP-C signaling used in 4G'
+            ],
+            tip: 'Exam Tip: SBA (Service Based Architecture) is a hallmark of 5G Standalone (SA).'
+        }
+    };
+
+    function showLayer(layerId) {
+        const data = protocolDetails[layerId];
+        if(!data) return;
+
+        const panel = document.getElementById('detail-panel');
+        let listHtml = data.list.map(item => `<li>${item}</li>`).join('');
+
+        panel.innerHTML = `
+            <div style="animation: fadeIn 0.4s ease;">
+                <h2>${data.title}</h2>
+                <p><strong>Primary Function:</strong> ${data.role}</p>
+                <ul class="info-list">${listHtml}</ul>
+                <div class="highlight-box">
+                    <strong>Technical Note:</strong> ${data.tip}
+                </div>
+            </div>
+        `;
+    }
+
+    function setView(mode) {
+        // Update Buttons
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        
+        const upNodes = document.querySelectorAll('.up-node');
+        const cpNodes = document.querySelectorAll('.cp-node');
+        const upStack = document.getElementById('up-stack');
+        const cpStack = document.getElementById('cp-stack');
+
+        if (mode === 'up') {
+            document.getElementById('btn-up').classList.add('active');
+            upNodes.forEach(n => n.style.opacity = '1');
+            cpNodes.forEach(n => n.style.opacity = '0.2');
+            upStack.style.opacity = '1';
+            cpStack.style.opacity = '0.2';
+        } else if (mode === 'cp') {
+            document.getElementById('btn-cp').classList.add('active');
+            upNodes.forEach(n => n.style.opacity = '0.2');
+            cpNodes.forEach(n => n.style.opacity = '1');
+            upStack.style.opacity = '0.2';
+            cpStack.style.opacity = '1';
+        } else {
+            document.getElementById('btn-all').classList.add('active');
+            upNodes.forEach(n => n.style.opacity = '1');
+            cpNodes.forEach(n => n.style.opacity = '1');
+            upStack.style.opacity = '1';
+            cpStack.style.opacity = '1';
+        }
+    }
+
+    function showDetail(module) {
+        const panel = document.getElementById('detail-panel');
+        const content = {
+            'CU': '<h3>Centralized Unit (CU)</h3><p>Handles non-real-time protocols (RRC, SDAP, PDCP). One CU can control multiple DUs. It is typically virtualized in a regional data center.</p>',
+            'DU': '<h3>Distributed Unit (DU)</h3><p>Handles real-time protocol layers (RLC, MAC, High-PHY). Located closer to the antenna to meet strict timing requirements.</p>',
+            'RU': '<h3>Radio Unit (RU)</h3><p>The physical hardware at the cell site. Converts digital signals to analog RF. Handles beamforming and MIMO processing.</p>'
+        };
+        panel.innerHTML = content[module];
+    }
+
+    function startSimulation() {
+        const packet = document.getElementById('packet-sim');
+        packet.style.display = 'block';
+        packet.style.animation = 'none';
+        setTimeout(() => {
+            packet.style.animation = 'flow 2s infinite linear';
+        }, 10);
+        
+        const panel = document.getElementById('detail-panel');
+        panel.innerHTML = `
+            <div style="text-align: center; color: var(--success);">
+                <h3>Simulation Active: User Data Flow</h3>
+                <p>Data is traversing from the UE through the Uu interface to the gNB (RU-DU-CU) and out to the UPF via N3.</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 10px;">Note: In User Plane, the AMF (Control Plane) is bypassed.</p>
+            </div>
+        `;
+    }
+
+    // Initialize with a welcome message
+    window.onload = () => {
+        showLayer('SDAP');
+    };
+</script>
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+</body>
+</html>

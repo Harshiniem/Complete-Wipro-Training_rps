@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NAS Architecture | Interactive Protocol Masterclass</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+            --primary: #6366f1;
+            --primary-soft: rgba(99, 102, 241, 0.1);
+            --mm-color: #3b82f6; /* Mobility Management Blue */
+            --sm-color: #8b5cf6; /* Session Management Purple */
+            --as-color: #64748b; /* Access Stratum Grey */
+            --success: #10b981;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.75);
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* --- Header --- */
+        header {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--white);
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        h1 { font-size: 3rem; font-weight: 900; letter-spacing: -2px; color: #1e1b4b; }
+        p.subtitle { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 10px auto; }
+
+        /* --- Architecture Dashboard --- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        /* --- Network Path Visualization --- */
+        .path-visual {
+            position: relative;
+            height: 250px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .node { text-align: center; z-index: 10; cursor: help; }
+        .node-icon {
+            width: 70px; height: 70px;
+            background: var(--white);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+            border: 1px solid var(--white);
+        }
+        .node-label { font-size: 0.8rem; font-weight: 800; color: #1e1b4b; }
+
+        .n1-interface {
+            position: absolute;
+            top: 45%; left: 110px; right: 110px;
+            height: 3px;
+            background: repeating-linear-gradient(90deg, var(--primary), var(--primary) 10px, transparent 10px, transparent 20px);
+            opacity: 0.2;
+            z-index: 1;
+        }
+
+        .interface-tag {
+            position: absolute;
+            top: -25px; left: 50%; transform: translateX(-50%);
+            font-size: 0.65rem; font-weight: 900; color: var(--primary);
+            background: var(--white); padding: 4px 12px; border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Packet Animation */
+        .packet {
+            position: absolute;
+            top: -15px; left: 0;
+            width: 34px; height: 34px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+            display: none;
+            z-index: 20;
+        }
+
+        /* --- X-Ray Packet Peeler --- */
+        .peeler-container {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .layer {
+            padding: 18px;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+            color: var(--white);
+        }
+
+        .layer:hover { transform: scale(1.03); }
+        .layer.active { border-color: var(--text-main); transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+        .l-phy { background: #cbd5e1; color: #475569; }
+        .l-l2 { background: #94a3b8; }
+        .l-as { background: var(--as-color); }
+        .l-mm { background: var(--mm-color); }
+        .l-sm { background: var(--sm-color); }
+
+        /* --- Inspector Panel --- */
+        .inspector {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #f1f5f9;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+            min-height: 400px;
+        }
+
+        .inspector-header {
+            font-weight: 800;
+            color: var(--primary);
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .data-row {
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .data-key { font-weight: 600; color: var(--text-dim); }
+        .data-value { font-family: 'Courier New', monospace; color: var(--text-main); font-weight: 700; }
+
+        /* --- Controls --- */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: var(--white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-weight: 700;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid transparent;
+        }
+
+        .btn:hover { color: var(--primary); transform: translateY(-2px); }
+        .btn.active { background: var(--primary); color: var(--white); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+
+        /* Key Highlights Table */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-box {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--primary);
+        }
+
+        .info-box h4 { font-weight: 800; margin-bottom: 10px; color: var(--primary); font-size: 0.9rem; }
+        .info-box p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.4; }
+
+        /* Animations */
+        @keyframes packetFlow {
+            0% { left: 0%; opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; transform: scale(1.1); }
+            90% { opacity: 1; transform: scale(1.1); }
+            100% { left: 93%; opacity: 0; transform: scale(0.5); }
+        }
+
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="badge">N1 Interface • Control Plane</span>
+        <h1>5G NAS Architecture</h1>
+        <p class="subtitle">An interactive deep-dive into Non-Access Stratum protocols, the fundamental bridge between the UE and the 5G Core AMF.</p>
+    </header>
+
+    <div class="controls">
+        <button class="btn active" onclick="simulate('Registration')">Registration Request</button>
+        <button class="btn" onclick="simulate('PDUSession')">PDU Session Est.</button>
+        <button class="btn" onclick="simulate('ServiceRequest')">Service Request</button>
+        <button class="btn" onclick="simulate('Deregistration')">Deregistration</button>
+    </div>
+
+    <div class="dashboard">
+        <!-- Visualization Area -->
+        <div class="glass-card">
+            <h3 style="margin-bottom: 20px; font-weight: 800; color: #1e1b4b;">Protocol Interaction Map</h3>
+            <div class="path-visual">
+                <div class="node">
+                    <div class="node-icon">📱</div>
+                    <div class="node-label">UE</div>
+                </div>
+
+                <div class="n1-interface">
+                    <span class="interface-tag">N1 (Logical Interface)</span>
+                    <div id="packet" class="packet">✉</div>
+                </div>
+
+                <div class="node" style="opacity: 0.3;">
+                    <div class="node-icon" style="border-style: dashed;">📡</div>
+                    <div class="node-label">gNB</div>
+                </div>
+
+                <div class="node">
+                    <div class="node-icon" style="border-color: var(--primary);">☁️</div>
+                    <div class="node-label">AMF</div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 15px; font-weight: 800; color: #1e1b4b;">X-Ray Encapsulation</h3>
+            <div class="peeler-container">
+                <div class="layer l-sm" onclick="inspect('SM')">5G Session Management (5GSM)</div>
+                <div class="layer l-mm" onclick="inspect('MM')">5G Mobility Management (5GMM)</div>
+                <div class="layer l-as" onclick="inspect('AS')">RRC (Access Stratum Payload)</div>
+                <div class="layer l-l2" onclick="inspect('L2')">Data Link (PDCP/RLC/MAC)</div>
+                <div class="layer l-phy" onclick="inspect('L1')">Physical Layer (L1)</div>
+            </div>
+        </div>
+
+        <!-- Inspector Area -->
+        <div class="glass-card">
+            <div class="inspector">
+                <div class="inspector-header">
+                    <span id="inspect-title">Protocol Inspector</span>
+                    <span id="inspect-type" style="font-size: 0.6rem; color: var(--text-dim);">SELECT LAYER</span>
+                </div>
+                <div id="inspect-content">
+                    <div style="text-align: center; margin-top: 100px; color: var(--text-dim);">
+                        <p style="font-size: 2rem; margin-bottom: 10px;">🔍</p>
+                        <p>Click on any protocol layer or run a simulation to inspect live data packets.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-box">
+            <h4>5G Mobility Mgmt (5GMM)</h4>
+            <p>Handles UE registration, security context setup, and reachability. Manages CM (Connection) and RM (Registration) states.</p>
+        </div>
+        <div class="info-box" style="border-top-color: var(--sm-color);">
+            <h4>5G Session Mgmt (5GSM)</h4>
+            <p>Responsible for PDU Session establishment, modification, and release. Relayed via AMF but handled logically by the SMF.</p>
+        </div>
+        <div class="info-box" style="border-top-color: var(--as-color);">
+            <h4>Transparency Principle</h4>
+            <p>The gNB (Access Stratum) does not process NAS content. It merely treats it as a payload inside RRC containers.</p>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 40px; color: var(--text-dim); font-size: 0.8rem;">
+        Senior 5G Architect Educational Tool • University Technical Showcase Edition
+    </footer>
+</div>
+
+<script>
+    const protocolData = {
+        'SM': {
+            title: "5G Session Management",
+            type: "NAS-PDU / 5GSM",
+            rows: [
+                ["Message Type", "PDU Session Establishment Req"],
+                ["PDU Session ID", "0x05"],
+                ["S-NSSAI", "SST: 1 (eMBB), SD: 000001"],
+                ["DNN", "internet.operator.com"],
+                ["PDU Type", "IPv4v6"],
+                ["SSC Mode", "Mode 1 (Stable IP)"]
+            ]
+        },
+        'MM': {
+            title: "5G Mobility Management",
+            type: "NAS-PDU / 5GMM",
+            rows: [
+                ["Message Type", "Registration Request"],
+                ["UE ID Type", "5G-GUTI"],
+                ["Value", "208-95-0000-00001"],
+                ["Security Context", "128-NIA2 (Integrity)"],
+                ["Capabilities", "Voice over NR, LPP, S1 Mode"],
+                ["Network Slicing", "Requested NSSAI Included"]
+            ]
+        },
+        'AS': {
+            title: "Radio Resource Control",
+            type: "RRC-CONTAINER",
+            rows: [
+                ["Message", "UL Information Transfer"],
+                ["Critical Extensions", "c1 : ulInformationTransfer-r15"],
+                ["Dedicated NAS PDU", "[OCTET STRING Encapsulated]"],
+                ["Radio Bearer", "SRB1 (High Priority)"]
+            ]
+        },
+        'L2': {
+            title: "Data Link Layer",
+            type: "PDCP / RLC / MAC",
+            rows: [
+                ["PDCP", "Ciphering: AES-128 Enabled"],
+                ["RLC", "Mode: AM (Acknowledged Mode)"],
+                ["MAC", "Logical Channel ID: 1"],
+                ["HARQ", "Process ID: 3"]
+            ]
+        },
+        'L1': {
+            title: "Physical Layer",
+            type: "NR-PHY",
+            rows: [
+                ["Modulation", "256QAM"],
+                ["Numerology", "μ=1 (30kHz SCS)"],
+                ["Waveform", "CP-OFDM"],
+                ["Band", "n78 (Mid-Band)"]
+            ]
+        }
+    };
+
+    function simulate(procedure) {
+        const packet = document.getElementById('packet');
+        const btns = document.querySelectorAll('.btn');
+        
+        // Reset buttons
+        btns.forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Animation
+        packet.style.display = 'flex';
+        packet.style.animation = 'none';
+        void packet.offsetWidth;
+        packet.style.animation = 'packetFlow 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+
+        // Auto-inspect
+        if(procedure === 'Registration') inspect('MM');
+        if(procedure === 'PDUSession') inspect('SM');
+    }
+
+    function inspect(id) {
+        const content = document.getElementById('inspect-content');
+        const title = document.getElementById('inspect-title');
+        const type = document.getElementById('inspect-type');
+        const layers = document.querySelectorAll('.layer');
+        const data = protocolData[id];
+
+        layers.forEach(l => l.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        title.innerText = data.title;
+        type.innerText = data.type;
+
+        let html = '';
+        data.rows.forEach(row => {
+            html += `
+                <div class="data-row">
+                    <span class="data-key">${row[0]}</span>
+                    <span class="data-value">${row[1]}</span>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = `<div style="animation: fadeIn 0.4s ease;">${html}</div>`;
+    }
+
+    // Styles for dynamic animation
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
+</body>
+</html>

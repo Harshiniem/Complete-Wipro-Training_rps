@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G UE Architecture - Harshinie M</title>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --ue-accent: #ff4757; /* Vibrant Coral for UE Focus */
+            --gnb-color: #2f3542;
+            --core-blue: #1e90ff;
+            --text-dark: #2f3542;
+            --border: #dcdde1;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* HEADER SECTION */
+        #top-header {
+            padding: 20px 40px;
+            background: white;
+            border-bottom: 2px solid var(--ue-accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        #top-header h1 { margin: 0; font-size: 22px; letter-spacing: 1px; }
+        #top-header .brand { font-weight: bold; color: var(--ue-accent); }
+
+        /* VIZ CONTAINER (Fixed Screen) */
+        #architecture-viewport {
+            width: 100%;
+            height: 75vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 25px 25px;
+            overflow: hidden;
+        }
+
+        svg {
+            width: 100%;
+            height: 95%;
+            max-width: 1000px;
+        }
+
+        /* NODE STYLING */
+        .node { cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .node:hover { transform: scale(1.05); }
+        .node rect { fill: #fff; stroke: var(--border); stroke-width: 2; rx: 12; }
+        .node text { fill: var(--text-dark); font-size: 11px; font-weight: bold; text-anchor: middle; pointer-events: none; }
+
+        /* UE Primary Node */
+        .node-ue rect { stroke: var(--ue-accent); stroke-width: 4; fill: #fff5f6; }
+        .node-ue text { fill: var(--ue-accent); font-size: 14px; }
+
+        /* Connection Lines */
+        .link { 
+            stroke: var(--border); 
+            stroke-width: 2; 
+            fill: none; 
+            opacity: 0.2; 
+            transition: 0.4s; 
+            stroke-dasharray: 4;
+        }
+
+        .label { font-size: 10px; fill: var(--text-dark); opacity: 0; transition: 0.3s; pointer-events: none; }
+
+        /* Interaction Highlighting */
+        .active-ue .link.ue-path { opacity: 1; stroke: var(--ue-accent); stroke-width: 3; stroke-dasharray: 0; }
+        .active-ue .label.ue-lab { opacity: 1; font-weight: bold; }
+        
+        .flow-reg .link.path-sig { stroke: var(--core-blue); stroke-width: 3; stroke-dasharray: 8; animation: dash 1s linear infinite; opacity: 1; }
+        .flow-data .link.path-data { stroke: var(--ue-accent); stroke-width: 3; stroke-dasharray: 8; animation: dash 0.6s linear infinite; opacity: 1; }
+
+        @keyframes dash { to { stroke-dashoffset: -16; } }
+
+        /* CONTROL BUTTONS */
+        .ui-controls {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.3s;
+        }
+        .btn:hover { border-color: var(--ue-accent); }
+        .btn.active-sig { background: var(--core-blue); color: white; border-color: var(--core-blue); }
+        .btn.active-data { background: var(--ue-accent); color: white; border-color: var(--ue-accent); }
+
+        /* SCROLL SECTION */
+        #details-section {
+            background: white;
+            padding: 60px 10%;
+            border-top: 1px solid var(--border);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--bg-light);
+            padding: 25px;
+            border-radius: 15px;
+            border-bottom: 4px solid var(--border);
+        }
+
+        .card h3 { color: var(--ue-accent); margin-top: 0; font-size: 18px; }
+        .card p { font-size: 14px; line-height: 1.6; color: #57606f; }
+        .api-badge { background: #2f3542; color: white; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+        .credits {
+            text-align: center;
+            padding: 50px;
+            font-weight: bold;
+            color: var(--ue-accent);
+            font-size: 18px;
+        }
+
+        .hint { position: absolute; bottom: 80px; font-size: 11px; opacity: 0.5; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+<header id="top-header">
+    <h1>5G Architecture: User Equipment (UE) Perspective</h1>
+    <div class="brand">Made by Harshinie M</div>
+</header>
+
+<div id="architecture-viewport">
+    <svg viewBox="0 0 1000 600" id="main-svg">
+        <!-- SBA Bus (Control Plane) -->
+        <rect x="200" y="50" width="700" height="6" rx="3" fill="#eee" />
+        <text x="550" y="40" fill="#ccc" font-size="10" text-anchor="middle">CORE SERVICE BUS</text>
+
+        <!-- UE INTERFACES -->
+        <path class="link ue-path path-sig" d="M120 300 L300 300" /> <!-- Uu -->
+        <path class="link ue-path path-sig" d="M120 300 C 250 200, 350 200, 500 200" /> <!-- N1 Logic -->
+        <path class="link ue-path path-data" d="M300 300 L600 450 L850 450" /> <!-- Data Flow -->
+
+        <!-- Passive Core Connections -->
+        <path class="link path-sig" d="M300 300 L500 200" /> <!-- N2 -->
+        <path class="link path-sig" d="M500 200 L700 200" /> <!-- N11 -->
+        <path class="link" d="M500 200 L500 55" /> <!-- AMF to Bus -->
+
+        <!-- Labels -->
+        <text x="210" y="290" class="label ue-lab">Uu (Radio)</text>
+        <text x="250" y="180" class="label ue-lab">N1 (NAS Signaling)</text>
+        <text x="450" y="400" class="label ue-lab">User Data Path</text>
+
+        <!-- UE NODE (START) -->
+        <g class="node node-ue" onclick="toggleUE()">
+            <rect x="20" y="270" width="100" height="60" />
+            <text x="70" y="305">UE</text>
+        </g>
+
+        <!-- ACCESS NODE -->
+        <g class="node"><rect x="300" y="270" width="100" height="60"/><text x="350" y="305">gNodeB</text></g>
+
+        <!-- CONTROL PLANE CORE -->
+        <g class="node"><rect x="500" y="175" width="100" height="50"/><text x="550" y="205">AMF</text></g>
+        <g class="node"><rect x="700" y="175" width="100" height="50"/><text x="750" y="205">SMF</text></g>
+        
+        <!-- USER PLANE CORE -->
+        <g class="node"><rect x="600" y="420" width="100" height="60"/><text x="650" y="455">UPF</text></g>
+        <g class="node"><rect x="850" y="425" width="100" height="50"/><text x="900" y="455">Internet</text></g>
+
+        <!-- DATABASE (SBA) -->
+        <g class="node"><rect x="450" y="35" width="80" height="30"/><text x="490" y="55" style="font-size:9px">UDM</text></g>
+        <g class="node"><rect x="550" y="35" width="80" height="30"/><text x="590" y="55" style="font-size:9px">PCF</text></g>
+    </svg>
+
+    <div class="hint">Click UE to Highlight Reference Points</div>
+
+    <div class="ui-controls">
+        <button class="btn" id="sig-btn" onclick="toggleFlow('sig')">Signaling Flow (NAS)</button>
+        <button class="btn" id="data-btn" onclick="toggleFlow('data')">App Data Flow (PDU)</button>
+    </div>
+</div>
+
+<section id="details-section">
+    <div class="grid">
+        <div class="card">
+            <h3>UE Identities (SUPI & SUCI)</h3>
+            <p>To ensure privacy, 5G UE never sends its permanent ID (<strong>SUPI</strong>) over the air. Instead, it uses Public Key Infrastructure to generate a Concealed ID (<strong>SUCI</strong>) during every connection attempt.</p>
+        </div>
+
+        <div class="card">
+            <h3>N1: The Signaling Highway</h3>
+            <p>The <span class="api-badge">N1</span> interface is a virtual link between the UE and the AMF. The gNodeB simply acts as a relay, allowing the UE to negotiate security and mobility parameters directly with the Core.</p>
+        </div>
+
+        <div class="card">
+            <h3>PDU Session & QoS</h3>
+            <p>The UE can maintain multiple <strong>PDU Sessions</strong> (e.g., one for Internet, one for IMS/Voice). Each session has specific Quality of Service (QoS) rules dictated by the PCF and enforced by the UE's modem.</p>
+        </div>
+
+        <div class="card">
+            <h3>State Management</h3>
+            <p>UE operates in different 3GPP states:<br>
+               • <strong>CM-IDLE:</strong> Power saving mode.<br>
+               • <strong>CM-CONNECTED:</strong> Active data transfer.<br>
+               • <strong>RM-REGISTERED:</strong> Known by the network and ready for paging.</p>
+        </div>
+    </div>
+    <div class="credits">Made by Harshinie M</div>
+</section>
+
+<script>
+    const svg = document.getElementById('main-svg');
+    const sigBtn = document.getElementById('sig-btn');
+    const dataBtn = document.getElementById('data-btn');
+
+    function toggleUE() {
+        svg.classList.toggle('active-ue');
+    }
+
+    function toggleFlow(type) {
+        if(type === 'sig') {
+            svg.classList.toggle('flow-reg');
+            sigBtn.classList.toggle('active-sig');
+            svg.classList.remove('flow-data');
+            dataBtn.classList.remove('active-data');
+        } else {
+            svg.classList.toggle('flow-data');
+            dataBtn.classList.toggle('active-data');
+            svg.classList.remove('flow-reg');
+            sigBtn.classList.remove('active-sig');
+        }
+    }
+</script>
+
+</body>
+</html>

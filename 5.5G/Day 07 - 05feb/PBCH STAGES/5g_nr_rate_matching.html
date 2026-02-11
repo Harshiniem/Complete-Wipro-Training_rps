@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR Rate Matching - Interactive Learning Environment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-card: rgba(15, 23, 42, 0.7);
+            --neon-blue: #00d4ff;
+            --neon-purple: #b829ff;
+            --neon-green: #00ff88;
+            --neon-orange: #ff6b35;
+            --neon-pink: #ff006e;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --grid-color: rgba(0, 212, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                linear-gradient(45deg, transparent 30%, rgba(0, 212, 255, 0.03) 50%, transparent 70%),
+                radial-gradient(circle at 20% 50%, rgba(184, 41, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%);
+            animation: bgShift 20s ease infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Grid Lines */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(184, 41, 255, 0.1));
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-blue);
+            padding: 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Section */
+        section {
+            margin-bottom: 4rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--neon-blue);
+            border-left: 4px solid var(--neon-blue);
+            padding-left: 1rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--neon-purple);
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            margin: 1rem 0 0.5rem;
+            color: var(--neon-green);
+        }
+
+        /* Block Diagram */
+        .block-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .block {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(184, 41, 255, 0.1));
+            border: 2px solid var(--neon-blue);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); }
+        }
+
+        .block.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(184, 41, 255, 0.3));
+            border-color: var(--neon-green);
+            animation: pulseActive 1s ease-in-out infinite;
+        }
+
+        @keyframes pulseActive {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .arrow {
+            color: var(--neon-blue);
+            font-size: 2rem;
+            animation: flowRight 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flowRight {
+            0%, 100% { opacity: 0.3; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+
+        /* Algorithm Box */
+        .algo-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--neon-purple);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .math-formula {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Code Block */
+        .code-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .code-header {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-toggle {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .code-toggle button {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .code-toggle button.active {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+        }
+
+        .code-toggle button:hover {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+        }
+
+        pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-line {
+            display: block;
+        }
+
+        .code-comment {
+            color: var(--neon-green);
+        }
+
+        .code-keyword {
+            color: var(--neon-purple);
+        }
+
+        .code-function {
+            color: var(--neon-blue);
+        }
+
+        /* Simulator */
+        .simulator {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(184, 41, 255, 0.05));
+            border: 2px solid var(--neon-blue);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 10px rgba(184, 41, 255, 0.5);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover:before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.5);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Visualization Area */
+        .viz-area {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+            min-height: 400px;
+        }
+
+        .circular-buffer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .bit-cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            border-radius: 5px;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .bit-cell.normal {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .bit-cell.repeated {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: var(--neon-green);
+            animation: glow-green 1.5s ease-in-out infinite;
+        }
+
+        .bit-cell.punctured {
+            background: rgba(255, 107, 53, 0.3);
+            border-color: var(--neon-orange);
+            text-decoration: line-through;
+        }
+
+        .bit-cell.shortened {
+            background: rgba(255, 0, 110, 0.3);
+            border-color: var(--neon-pink);
+            opacity: 0.5;
+        }
+
+        .bit-cell.selected {
+            background: rgba(184, 41, 255, 0.5);
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 15px rgba(184, 41, 255, 0.8);
+            transform: scale(1.1);
+        }
+
+        @keyframes glow-green {
+            0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 136, 1); }
+        }
+
+        /* Stats Display */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            color: var(--neon-blue);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animation Control */
+        .animation-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .anim-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--neon-blue);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .anim-btn:hover {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+        }
+
+        .anim-btn.active {
+            background: var(--neon-green);
+            border-color: var(--neon-green);
+            color: var(--bg-dark);
+        }
+
+        /* Process Flow */
+        .process-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .process-step {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid var(--neon-blue);
+            padding: 1.5rem;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .process-step.active {
+            background: rgba(0, 212, 255, 0.1);
+            border-left-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .process-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .process-step.active::before {
+            background: var(--neon-green);
+            animation: pulse-step 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-step {
+            0%, 100% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.2); }
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 2px solid var(--neon-blue);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-credit {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .footer-credit strong {
+            color: var(--neon-blue);
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .bit-cell {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Info Box */
+        .info-box {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid var(--neon-green);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .warning-box {
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 4px solid var(--neon-orange);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--neon-blue);
+            border-bottom-color: var(--neon-blue);
+        }
+
+        .tab:hover {
+            color: var(--neon-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Resource Grid Visualization */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(14, 1fr);
+            gap: 2px;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .resource-element {
+            aspect-ratio: 1;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .resource-element.allocated {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: var(--neon-green);
+        }
+
+        .resource-element:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+
+    <header>
+        <h1>🔬 5G NR Rate Matching</h1>
+        <p class="subtitle">Interactive Learning & Simulation Environment</p>
+    </header>
+
+    <div class="container">
+        <!-- Section 1: Concept & Purpose -->
+        <section id="concept">
+            <h2>📚 Section 1: Concept & Purpose</h2>
+            
+            <div class="card">
+                <h3>Why Rate Matching?</h3>
+                <p>In 5G NR, the channel encoder produces a fixed number of coded bits, but the physical layer resources available for transmission vary based on:</p>
+                <ul style="margin: 1rem 0 1rem 2rem; line-height: 2;">
+                    <li>📡 <strong>Bandwidth allocation</strong> - Number of PRBs (Physical Resource Blocks)</li>
+                    <li>⏱️ <strong>Time resources</strong> - Number of OFDM symbols</li>
+                    <li>📊 <strong>Modulation scheme</strong> - QPSK, 16QAM, 64QAM, 256QAM</li>
+                    <li>🔧 <strong>MIMO layers</strong> - Spatial multiplexing</li>
+                </ul>
+                
+                <div class="info-box">
+                    <strong>💡 Core Purpose:</strong> Rate matching adapts the encoder output to fit exactly into the allocated physical resources by repeating (if too few bits) or puncturing (if too many bits) the coded bits.
+                </div>
+
+                <h3>Encoder vs. Physical Resources</h3>
+                <div class="math-formula">
+                    N<sub>encoder</sub> ≠ N<sub>physical</sub>
+                    <br><br>
+                    Rate Matching: N<sub>encoder</sub> → N<sub>physical</sub>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Encoder Output</div>
+                        <div class="stat-value">Variable</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Physical Resources</div>
+                        <div class="stat-value">Fixed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Rate Matching</div>
+                        <div class="stat-value">Adaptive</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Position in PHY Chain</h3>
+                <div class="block-diagram">
+                    <div class="block">CRC Attachment</div>
+                    <div class="arrow">→</div>
+                    <div class="block">Channel Coding<br>(Polar/LDPC)</div>
+                    <div class="arrow">→</div>
+                    <div class="block active">Rate Matching</div>
+                    <div class="arrow">→</div>
+                    <div class="block">Scrambling</div>
+                    <div class="arrow">→</div>
+                    <div class="block">Modulation</div>
+                </div>
+
+                <div class="info-box">
+                    <strong>🎯 Key Insight:</strong> Rate matching sits between channel coding and modulation, ensuring the coded bit stream perfectly matches the physical resource allocation.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Resource Grid Visualization</h3>
+                <p>5G NR Resource Grid (Time-Frequency Domain):</p>
+                <div style="text-align: center; margin: 2rem 0;">
+                    <div style="display: inline-block; text-align: left;">
+                        <div style="color: var(--text-secondary); margin-bottom: 0.5rem;">↑ Frequency (Subcarriers)</div>
+                        <div class="resource-grid" id="resourceGrid"></div>
+                        <div style="color: var(--text-secondary); margin-top: 0.5rem; text-align: center;">Time (OFDM Symbols) →</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                    Each cell = 1 Resource Element (RE) | 14 symbols × 12 subcarriers = 1 PRB
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Mathematical Model -->
+        <section id="mathematical">
+            <h2>🧮 Section 2: Mathematical & Algorithmic Model</h2>
+
+            <div class="card">
+                <h3>Rate Matching Components</h3>
+                
+                <h4>1. Bit Collection</h4>
+                <div class="algo-box">
+                    Input: Coded bits from channel encoder
+                    <br>D = [d₀, d₁, d₂, ..., d<sub>N-1</sub>]
+                    <br>where N = encoder output length
+                </div>
+
+                <h4>2. Sub-block Interleaving</h4>
+                <p>Rearranges bits to improve error resilience:</p>
+                <div class="math-formula">
+                    For LDPC (Base Graph 1):<br>
+                    P = [0, 2, 4, 6, ..., 1, 3, 5, 7, ...]<br><br>
+                    v<sub>i</sub> = d<sub>P[i]</sub>
+                </div>
+
+                <div class="info-box">
+                    <strong>Why interleave?</strong> Distributes consecutive bits across the transmission, making the system more robust against burst errors.
+                </div>
+
+                <h4>3. Circular Buffer</h4>
+                <p>Core concept: Create a circular buffer of size N<sub>cb</sub> where bits can be read from any starting position:</p>
+                <div class="math-formula">
+                    Circular Buffer: CB[0], CB[1], ..., CB[N<sub>cb</sub>-1]<br><br>
+                    Read pointer: k<sub>0</sub> (starting position)<br>
+                    Wraps around: CB[(k<sub>0</sub> + i) mod N<sub>cb</sub>]
+                </div>
+
+                <div class="algo-box">
+                    <strong>Circular Buffer Construction:</strong>
+                    <br>1. Place interleaved bits into buffer
+                    <br>2. For LDPC: N<sub>cb</sub> = N (no repetition within buffer)
+                    <br>3. For Polar: May include repetition for mother code
+                </div>
+
+                <h4>4. Bit Selection Logic</h4>
+                <div class="math-formula">
+                    Given: E = target output length<br>
+                    N = encoder output length<br><br>
+                    
+                    If E > N: <span style="color: var(--neon-green);">Repetition</span> (some bits repeated)<br>
+                    If E < N: <span style="color: var(--neon-orange);">Puncturing</span> (some bits omitted)<br>
+                    If E = N: <span style="color: var(--neon-blue);">Perfect match</span>
+                </div>
+
+                <h4>5. Redundancy Version (RV)</h4>
+                <p>For HARQ retransmissions, different starting positions provide incremental redundancy:</p>
+                <div class="algo-box">
+                    RV0: k₀ = 0 (start from beginning)<br>
+                    RV1: k₀ = ⌈17×N<sub>cb</sub>/66⌉<br>
+                    RV2: k₀ = ⌈33×N<sub>cb</sub>/66⌉<br>
+                    RV3: k₀ = ⌈56×N<sub>cb</sub>/66⌉
+                </div>
+
+                <h4>6. Effective Code Rate</h4>
+                <div class="math-formula">
+                    R<sub>eff</sub> = K / E<br><br>
+                    where K = information bits<br>
+                    E = rate-matched output bits
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ Important:</strong> Lower code rate (more redundancy) = better error protection but lower spectral efficiency. Rate matching allows dynamic trade-off based on channel conditions.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Interleaving Pattern Example</h3>
+                <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin: 2rem 0;">
+                    <div style="text-align: center;">
+                        <h4>Before Interleaving</h4>
+                        <div style="display: flex; gap: 5px; justify-content: center; margin-top: 1rem;">
+                            <div class="bit-cell normal">0</div>
+                            <div class="bit-cell normal">1</div>
+                            <div class="bit-cell normal">2</div>
+                            <div class="bit-cell normal">3</div>
+                            <div class="bit-cell normal">4</div>
+                            <div class="bit-cell normal">5</div>
+                            <div class="bit-cell normal">6</div>
+                            <div class="bit-cell normal">7</div>
+                        </div>
+                    </div>
+                    <div style="align-self: center; font-size: 2rem; color: var(--neon-blue);">→</div>
+                    <div style="text-align: center;">
+                        <h4>After Interleaving</h4>
+                        <div style="display: flex; gap: 5px; justify-content: center; margin-top: 1rem;">
+                            <div class="bit-cell selected">0</div>
+                            <div class="bit-cell selected">2</div>
+                            <div class="bit-cell selected">4</div>
+                            <div class="bit-cell selected">6</div>
+                            <div class="bit-cell selected">1</div>
+                            <div class="bit-cell selected">3</div>
+                            <div class="bit-cell selected">5</div>
+                            <div class="bit-cell selected">7</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Rate Matching Workflow -->
+        <section id="workflow">
+            <h2>⚙️ Section 3: Rate Matching Workflow</h2>
+
+            <div class="card">
+                <h3>Step-by-Step Process Animation</h3>
+                
+                <div class="animation-controls">
+                    <button class="anim-btn" id="playBtn">▶ Play</button>
+                    <button class="anim-btn" id="pauseBtn">⏸ Pause</button>
+                    <button class="anim-btn" id="stepBtn">⏭ Step</button>
+                    <button class="anim-btn" id="resetBtn">↺ Reset</button>
+                </div>
+
+                <div class="process-flow" id="processFlow">
+                    <div class="process-step" data-step="1">
+                        <h4>Input Coded Bits</h4>
+                        <p>Receive coded bits from channel encoder (Polar or LDPC)</p>
+                        <div style="margin-top: 1rem; color: var(--text-secondary);">
+                            Input: N coded bits → [d₀, d₁, d₂, ..., d<sub>N-1</sub>]
+                        </div>
+                    </div>
+
+                    <div class="process-step" data-step="2">
+                        <h4>Sub-block Interleaving</h4>
+                        <p>Rearrange bits according to interleaving pattern to distribute consecutive bits</p>
+                        <div style="margin-top: 1rem; color: var(--text-secondary);">
+                            Pattern: Even indices first, then odd indices
+                        </div>
+                    </div>
+
+                    <div class="process-step" data-step="3">
+                        <h4>Circular Buffer Construction</h4>
+                        <p>Place interleaved bits into circular buffer of size N<sub>cb</sub></p>
+                        <div style="margin-top: 1rem; color: var(--text-secondary);">
+                            Buffer allows reading from any starting position with wrap-around
+                        </div>
+                    </div>
+
+                    <div class="process-step" data-step="4">
+                        <h4>Determine Starting Position (RV)</h4>
+                        <p>Based on redundancy version, calculate starting position k₀</p>
+                        <div style="margin-top: 1rem; color: var(--text-secondary);">
+                            RV0: k₀=0 | RV1: k₀≈26% | RV2: k₀≈50% | RV3: k₀≈85%
+                        </div>
+                    </div>
+
+                    <div class="process-step" data-step="5">
+                        <h4>Bit Selection</h4>
+                        <p>Read E bits from circular buffer starting at k₀</p>
+                        <div style="margin-top: 1rem; color: var(--text-secondary);">
+                            If E > N: bits will repeat (wrap around)<br>
+                            If E < N: some bits omitted (punctured)
+                        </div>
+                    </div>
+
+                    <div class="process-step" data-step="6">
+                        <h4>Output to Modulation</h4>
+                        <p>Deliver exactly E bits to modulation mapper</p>
+                        <div style="margin-top: 1rem; color: var(--text-secondary);">
+                            Output perfectly matches allocated physical resources
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>🎬 Animation Control:</strong> Use the buttons above to step through the rate matching process. Each step highlights the active operation and shows the bit flow.
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Coding Implementation -->
+        <section id="coding">
+            <h2>💻 Section 4: Coding Implementation</h2>
+
+            <div class="card">
+                <h3>Rate Matching Algorithms</h3>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="ldpc">LDPC Code</button>
+                    <button class="tab" data-tab="polar">Polar Code</button>
+                    <button class="tab" data-tab="common">Common Functions</button>
+                </div>
+
+                <!-- LDPC Implementation -->
+                <div class="tab-content active" id="ldpc">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span>LDPC Rate Matching Implementation</span>
+                        </div>
+                        <pre><code><span class="code-comment">// LDPC Rate Matching for 5G NR</span>
+
+<span class="code-keyword">struct</span> <span class="code-function">LDPCRateMatchParams</span> {
+    <span class="code-keyword">int</span> baseGraph;        <span class="code-comment">// BG1 or BG2</span>
+    <span class="code-keyword">int</span> Z;                <span class="code-comment">// Lifting size</span>
+    <span class="code-keyword">int</span> N;                <span class="code-comment">// Encoder output length</span>
+    <span class="code-keyword">int</span> E;                <span class="code-comment">// Target output length</span>
+    <span class="code-keyword">int</span> rv;               <span class="code-comment">// Redundancy version (0,1,2,3)</span>
+    <span class="code-keyword">int</span> Qm;               <span class="code-comment">// Modulation order</span>
+};
+
+<span class="code-comment">// Sub-block interleaving for LDPC</span>
+<span class="code-keyword">void</span> <span class="code-function">ldpcSubblockInterleaving</span>(<span class="code-keyword">uint8_t</span>* input, <span class="code-keyword">uint8_t</span>* output, <span class="code-keyword">int</span> N) {
+    <span class="code-comment">// Interleaving pattern: even indices first, then odd</span>
+    <span class="code-keyword">int</span> idx = 0;
+    
+    <span class="code-comment">// Write even-indexed bits</span>
+    <span class="code-keyword">for</span> (<span class="code-keyword">int</span> i = 0; i < N; i += 2) {
+        output[idx++] = input[i];
+    }
+    
+    <span class="code-comment">// Write odd-indexed bits</span>
+    <span class="code-keyword">for</span> (<span class="code-keyword">int</span> i = 1; i < N; i += 2) {
+        output[idx++] = input[i];
+    }
+}
+
+<span class="code-comment">// Calculate circular buffer size</span>
+<span class="code-keyword">int</span> <span class="code-function">calculateNcb</span>(<span class="code-keyword">int</span> N, <span class="code-keyword">int</span> baseGraph) {
+    <span class="code-keyword">if</span> (baseGraph == 1) {
+        <span class="code-keyword">return</span> N;  <span class="code-comment">// For BG1</span>
+    } <span class="code-keyword">else</span> {
+        <span class="code-keyword">return</span> N;  <span class="code-comment">// For BG2</span>
+    }
+}
+
+<span class="code-comment">// Calculate starting position based on RV</span>
+<span class="code-keyword">int</span> <span class="code-function">calculateRvStartPosition</span>(<span class="code-keyword">int</span> Ncb, <span class="code-keyword">int</span> rv, <span class="code-keyword">int</span> Qm) {
+    <span class="code-keyword">int</span> k0 = 0;
+    
+    <span class="code-keyword">switch</span> (rv) {
+        <span class="code-keyword">case</span> 0:
+            k0 = 0;
+            <span class="code-keyword">break</span>;
+        <span class="code-keyword">case</span> 1:
+            k0 = (<span class="code-keyword">int</span>)(17.0 * Ncb / 66.0);
+            <span class="code-keyword">break</span>;
+        <span class="code-keyword">case</span> 2:
+            k0 = (<span class="code-keyword">int</span>)(33.0 * Ncb / 66.0);
+            <span class="code-keyword">break</span>;
+        <span class="code-keyword">case</span> 3:
+            k0 = (<span class="code-keyword">int</span>)(56.0 * Ncb / 66.0);
+            <span class="code-keyword">break</span>;
+    }
+    
+    <span class="code-comment">// Align to modulation order</span>
+    k0 = (k0 / Qm) * Qm;
+    <span class="code-keyword">return</span> k0;
+}
+
+<span class="code-comment">// Main LDPC rate matching function</span>
+<span class="code-keyword">void</span> <span class="code-function">ldpcRateMatching</span>(
+    <span class="code-keyword">uint8_t</span>* input,           <span class="code-comment">// Coded bits from encoder</span>
+    <span class="code-keyword">uint8_t</span>* output,          <span class="code-comment">// Rate-matched output</span>
+    LDPCRateMatchParams params
+) {
+    <span class="code-comment">// 1. Sub-block interleaving</span>
+    <span class="code-keyword">uint8_t</span>* interleaved = <span class="code-keyword">new</span> <span class="code-keyword">uint8_t</span>[params.N];
+    ldpcSubblockInterleaving(input, interleaved, params.N);
+    
+    <span class="code-comment">// 2. Create circular buffer</span>
+    <span class="code-keyword">int</span> Ncb = calculateNcb(params.N, params.baseGraph);
+    
+    <span class="code-comment">// 3. Calculate starting position</span>
+    <span class="code-keyword">int</span> k0 = calculateRvStartPosition(Ncb, params.rv, params.Qm);
+    
+    <span class="code-comment">// 4. Bit selection from circular buffer</span>
+    <span class="code-keyword">for</span> (<span class="code-keyword">int</span> i = 0; i < params.E; i++) {
+        <span class="code-keyword">int</span> bufferIdx = (k0 + i) % Ncb;
+        output[i] = interleaved[bufferIdx];
+    }
+    
+    <span class="code-keyword">delete</span>[] interleaved;
+}
+
+<span class="code-comment">// Example usage</span>
+<span class="code-keyword">void</span> <span class="code-function">exampleLDPC</span>() {
+    LDPCRateMatchParams params;
+    params.baseGraph = 1;
+    params.Z = 384;
+    params.N = 17280;      <span class="code-comment">// Encoder output</span>
+    params.E = 12000;      <span class="code-comment">// Physical resources</span>
+    params.rv = 0;         <span class="code-comment">// First transmission</span>
+    params.Qm = 4;         <span class="code-comment">// 16QAM</span>
+    
+    <span class="code-keyword">uint8_t</span>* input = <span class="code-keyword">new</span> <span class="code-keyword">uint8_t</span>[params.N];
+    <span class="code-keyword">uint8_t</span>* output = <span class="code-keyword">new</span> <span class="code-keyword">uint8_t</span>[params.E];
+    
+    ldpcRateMatching(input, output, params);
+    
+    <span class="code-keyword">delete</span>[] input;
+    <span class="code-keyword">delete</span>[] output;
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Polar Implementation -->
+                <div class="tab-content" id="polar">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span>Polar Rate Matching Implementation</span>
+                        </div>
+                        <pre><code><span class="code-comment">// Polar Rate Matching for 5G NR</span>
+
+<span class="code-keyword">struct</span> <span class="code-function">PolarRateMatchParams</span> {
+    <span class="code-keyword">int</span> K;                <span class="code-comment">// Information bits</span>
+    <span class="code-keyword">int</span> E;                <span class="code-comment">// Target output length</span>
+    <span class="code-keyword">int</span> nMax;             <span class="code-comment">// Maximum code length (10)</span>
+    <span class="code-keyword">int</span> iIL;              <span class="code-comment">// Interleaving flag</span>
+    <span class="code-keyword">bool</span> isPCCA;          <span class="code-comment">// PCCA or PCCC</span>
+};
+
+<span class="code-comment">// Sub-block interleaving for Polar (optional)</span>
+<span class="code-keyword">void</span> <span class="code-function">polarSubblockInterleaving</span>(<span class="code-keyword">uint8_t</span>* input, <span class="code-keyword">uint8_t</span>* output, <span class="code-keyword">int</span> N) {
+    <span class="code-comment">// Bit-reversal permutation pattern</span>
+    <span class="code-keyword">int</span> n = 0;
+    <span class="code-keyword">while</span> ((1 << n) < N) n++;
+    
+    <span class="code-keyword">for</span> (<span class="code-keyword">int</span> i = 0; i < N; i++) {
+        <span class="code-keyword">int</span> rev = 0;
+        <span class="code-keyword">for</span> (<span class="code-keyword">int</span> j = 0; j < n; j++) {
+            <span class="code-keyword">if</span> (i & (1 << j)) {
+                rev |= (1 << (n - 1 - j));
+            }
+        }
+        <span class="code-keyword">if</span> (rev < N) {
+            output[rev] = input[i];
+        }
+    }
+}
+
+<span class="code-comment">// Calculate mother code length</span>
+<span class="code-keyword">int</span> <span class="code-function">calculateMotherCodeLength</span>(<span class="code-keyword">int</span> K, <span class="code-keyword">int</span> E, <span class="code-keyword">int</span> nMax) {
+    <span class="code-keyword">int</span> n = 0;
+    
+    <span class="code-comment">// Find minimum n such that 2^n >= E</span>
+    <span class="code-keyword">while</span> ((1 << n) < E) {
+        n++;
+    }
+    
+    <span class="code-comment">// Ensure n <= nMax</span>
+    <span class="code-keyword">if</span> (n > nMax) n = nMax;
+    
+    <span class="code-keyword">return</span> (1 << n);
+}
+
+<span class="code-comment">// Rate matching with repetition/puncturing</span>
+<span class="code-keyword">void</span> <span class="code-function">polarRateMatching</span>(
+    <span class="code-keyword">uint8_t</span>* input,           <span class="code-comment">// Polar encoded bits</span>
+    <span class="code-keyword">uint8_t</span>* output,          <span class="code-comment">// Rate-matched output</span>
+    PolarRateMatchParams params
+) {
+    <span class="code-comment">// 1. Calculate mother code length N</span>
+    <span class="code-keyword">int</span> N = calculateMotherCodeLength(params.K, params.E, params.nMax);
+    
+    <span class="code-comment">// 2. Sub-block interleaving (if enabled)</span>
+    <span class="code-keyword">uint8_t</span>* interleaved = <span class="code-keyword">new</span> <span class="code-keyword">uint8_t</span>[N];
+    <span class="code-keyword">if</span> (params.iIL == 1) {
+        polarSubblockInterleaving(input, interleaved, N);
+    } <span class="code-keyword">else</span> {
+        memcpy(interleaved, input, N);
+    }
+    
+    <span class="code-comment">// 3. Determine rate matching type</span>
+    <span class="code-keyword">if</span> (params.E >= N) {
+        <span class="code-comment">// Repetition case</span>
+        <span class="code-keyword">for</span> (<span class="code-keyword">int</span> k = 0; k < params.E; k++) {
+            output[k] = interleaved[k % N];
+        }
+    } <span class="code-keyword">else</span> {
+        <span class="code-comment">// Puncturing/shortening case</span>
+        <span class="code-keyword">if</span> (params.E <= (3 * N / 4)) {
+            <span class="code-comment">// Shortening</span>
+            <span class="code-keyword">int</span> numShorten = N - params.E;
+            <span class="code-keyword">for</span> (<span class="code-keyword">int</span> k = 0; k < params.E; k++) {
+                output[k] = interleaved[k + numShorten];
+            }
+        } <span class="code-keyword">else</span> {
+            <span class="code-comment">// Puncturing</span>
+            <span class="code-keyword">int</span> numPuncture = N - params.E;
+            <span class="code-keyword">int</span> outIdx = 0;
+            <span class="code-keyword">for</span> (<span class="code-keyword">int</span> k = 0; k < N; k++) {
+                <span class="code-keyword">if</span> (k >= numPuncture) {
+                    output[outIdx++] = interleaved[k];
+                }
+            }
+        }
+    }
+    
+    <span class="code-keyword">delete</span>[] interleaved;
+}
+
+<span class="code-comment">// Example usage</span>
+<span class="code-keyword">void</span> <span class="code-function">examplePolar</span>() {
+    PolarRateMatchParams params;
+    params.K = 128;        <span class="code-comment">// Information bits</span>
+    params.E = 256;        <span class="code-comment">// Physical resources</span>
+    params.nMax = 10;      <span class="code-comment">// Max mother code 2^10 = 1024</span>
+    params.iIL = 1;        <span class="code-comment">// Enable interleaving</span>
+    params.isPCCA = <span class="code-keyword">true</span>;  <span class="code-comment">// PCCA type</span>
+    
+    <span class="code-keyword">int</span> N = calculateMotherCodeLength(params.K, params.E, params.nMax);
+    <span class="code-keyword">uint8_t</span>* input = <span class="code-keyword">new</span> <span class="code-keyword">uint8_t</span>[N];
+    <span class="code-keyword">uint8_t</span>* output = <span class="code-keyword">new</span> <span class="code-keyword">uint8_t</span>[params.E];
+    
+    polarRateMatching(input, output, params);
+    
+    <span class="code-keyword">delete</span>[] input;
+    <span class="code-keyword">delete</span>[] output;
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Common Functions -->
+                <div class="tab-content" id="common">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span>Common Utility Functions</span>
+                        </div>
+                        <pre><code><span class="code-comment">// Common rate matching utilities</span>
+
+<span class="code-comment">// Calculate effective code rate</span>
+<span class="code-keyword">double</span> <span class="code-function">calculateCodeRate</span>(<span class="code-keyword">int</span> K, <span class="code-keyword">int</span> E) {
+    <span class="code-keyword">return</span> (<span class="code-keyword">double</span>)K / (<span class="code-keyword">double</span>)E;
+}
+
+<span class="code-comment">// Calculate spectral efficiency</span>
+<span class="code-keyword">double</span> <span class="code-function">calculateSpectralEfficiency</span>(<span class="code-keyword">int</span> K, <span class="code-keyword">int</span> E, <span class="code-keyword">int</span> Qm) {
+    <span class="code-keyword">double</span> codeRate = calculateCodeRate(K, E);
+    <span class="code-keyword">return</span> codeRate * Qm;  <span class="code-comment">// bits/symbol</span>
+}
+
+<span class="code-comment">// Determine operation type</span>
+<span class="code-keyword">enum</span> RateMatchType {
+    REPETITION,
+    PUNCTURING,
+    SHORTENING,
+    PERFECT_MATCH
+};
+
+RateMatchType <span class="code-function">determineRateMatchType</span>(<span class="code-keyword">int</span> N, <span class="code-keyword">int</span> E) {
+    <span class="code-keyword">if</span> (E > N) {
+        <span class="code-keyword">return</span> REPETITION;
+    } <span class="code-keyword">else if</span> (E < N) {
+        <span class="code-comment">// Additional logic for puncturing vs shortening</span>
+        <span class="code-keyword">if</span> (E <= (3 * N / 4)) {
+            <span class="code-keyword">return</span> SHORTENING;
+        } <span class="code-keyword">else</span> {
+            <span class="code-keyword">return</span> PUNCTURING;
+        }
+    } <span class="code-keyword">else</span> {
+        <span class="code-keyword">return</span> PERFECT_MATCH;
+    }
+}
+
+<span class="code-comment">// Print rate matching statistics</span>
+<span class="code-keyword">void</span> <span class="code-function">printRateMatchStats</span>(<span class="code-keyword">int</span> K, <span class="code-keyword">int</span> N, <span class="code-keyword">int</span> E, <span class="code-keyword">int</span> Qm) {
+    printf(<span class="code-comment">"=== Rate Matching Statistics ===\n"</span>);
+    printf(<span class="code-comment">"Information bits (K): %d\n"</span>, K);
+    printf(<span class="code-comment">"Encoder output (N): %d\n"</span>, N);
+    printf(<span class="code-comment">"Target output (E): %d\n"</span>, E);
+    printf(<span class="code-comment">"Modulation order (Qm): %d\n"</span>, Qm);
+    
+    <span class="code-keyword">double</span> codeRate = calculateCodeRate(K, E);
+    printf(<span class="code-comment">"Effective code rate: %.3f\n"</span>, codeRate);
+    
+    <span class="code-keyword">double</span> spectralEff = calculateSpectralEfficiency(K, E, Qm);
+    printf(<span class="code-comment">"Spectral efficiency: %.3f bits/symbol\n"</span>, spectralEff);
+    
+    RateMatchType type = determineRateMatchType(N, E);
+    printf(<span class="code-comment">"Operation: "</span>);
+    <span class="code-keyword">switch</span> (type) {
+        <span class="code-keyword">case</span> REPETITION:
+            printf(<span class="code-comment">"REPETITION (%d bits repeated)\n"</span>, E - N);
+            <span class="code-keyword">break</span>;
+        <span class="code-keyword">case</span> PUNCTURING:
+            printf(<span class="code-comment">"PUNCTURING (%d bits punctured)\n"</span>, N - E);
+            <span class="code-keyword">break</span>;
+        <span class="code-keyword">case</span> SHORTENING:
+            printf(<span class="code-comment">"SHORTENING (%d bits shortened)\n"</span>, N - E);
+            <span class="code-keyword">break</span>;
+        <span class="code-keyword">case</span> PERFECT_MATCH:
+            printf(<span class="code-comment">"PERFECT MATCH\n"</span>);
+            <span class="code-keyword">break</span>;
+    }
+    printf(<span class="code-comment">"==============================\n"</span>);
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Interactive Simulator -->
+        <section id="simulator">
+            <h2>🎮 Section 5: Live Interactive Rate Matching Simulator</h2>
+
+            <div class="simulator">
+                <h3 style="text-align: center; margin-bottom: 2rem;">PHY Rate Matching Laboratory</h3>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Code Type</label>
+                        <select id="codeType">
+                            <option value="ldpc">LDPC</option>
+                            <option value="polar">Polar</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Input Block Size (N)</label>
+                        <input type="number" id="inputSize" value="64" min="16" max="256" step="16">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Target Output Size (E)</label>
+                        <input type="number" id="outputSize" value="48" min="16" max="256" step="16">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Redundancy Version (RV)</label>
+                        <select id="rvSelect">
+                            <option value="0">RV0 (k₀=0%)</option>
+                            <option value="1">RV1 (k₀≈26%)</option>
+                            <option value="2">RV2 (k₀≈50%)</option>
+                            <option value="3">RV3 (k₀≈85%)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Modulation Order</label>
+                        <select id="modOrder">
+                            <option value="2">QPSK (Qm=2)</option>
+                            <option value="4">16QAM (Qm=4)</option>
+                            <option value="6">64QAM (Qm=6)</option>
+                            <option value="8">256QAM (Qm=8)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Information Bits (K)</label>
+                        <input type="number" id="infoBits" value="32" min="8" max="128" step="8">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="runSimBtn">▶ Run Simulation</button>
+                    <button id="harqBtn">🔄 HARQ Cycle</button>
+                    <button id="errorInjectBtn">⚡ Inject Errors</button>
+                    <button id="clearBtn">🗑️ Clear</button>
+                </div>
+
+                <!-- Statistics Display -->
+                <div class="stats" id="simStats">
+                    <div class="stat-card">
+                        <div class="stat-label">Input Bits (N)</div>
+                        <div class="stat-value" id="statInputBits">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Output Bits (E)</div>
+                        <div class="stat-value" id="statOutputBits">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Code Rate</div>
+                        <div class="stat-value" id="statCodeRate">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Operation Type</div>
+                        <div class="stat-value" id="statOperation">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Spectral Efficiency</div>
+                        <div class="stat-value" id="statSpectralEff">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">RV Position</div>
+                        <div class="stat-value" id="statRvPos">-</div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="viz-area">
+                    <h3 style="text-align: center; margin-bottom: 1rem;">Circular Buffer Visualization</h3>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(0, 212, 255, 0.2); border-color: var(--neon-blue);"></div>
+                            <span>Normal Bit</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(0, 255, 136, 0.3); border-color: var(--neon-green);"></div>
+                            <span>Repeated Bit</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(255, 107, 53, 0.3); border-color: var(--neon-orange);"></div>
+                            <span>Punctured Bit</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(184, 41, 255, 0.5); border-color: var(--neon-purple);"></div>
+                            <span>Selected Bit</span>
+                        </div>
+                    </div>
+
+                    <div class="circular-buffer" id="circularBuffer">
+                        <!-- Bits will be dynamically generated here -->
+                    </div>
+
+                    <div style="text-align: center; margin-top: 2rem; color: var(--text-secondary);">
+                        <p id="bufferInfo">Configure parameters and click "Run Simulation"</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-credit">
+            Designed by <strong>Jayavarshini G</strong> – ID <strong>58624</strong>
+        </div>
+        <div style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+            5G NR Rate Matching Interactive Learning Environment © 2024
+        </div>
+    </footer>
+
+    <script>
+        // Resource Grid Generation
+        function generateResourceGrid() {
+            const grid = document.getElementById('resourceGrid');
+            const numElements = 14 * 12; // 14 symbols × 12 subcarriers
+            
+            for (let i = 0; i < numElements; i++) {
+                const element = document.createElement('div');
+                element.className = 'resource-element';
+                
+                // Randomly allocate some resources
+                if (Math.random() > 0.5) {
+                    element.classList.add('allocated');
+                }
+                
+                grid.appendChild(element);
+            }
+        }
+
+        // Process Flow Animation
+        let currentStep = 0;
+        let animationInterval = null;
+        let isPlaying = false;
+
+        function updateProcessFlow(step) {
+            const steps = document.querySelectorAll('.process-step');
+            steps.forEach((s, i) => {
+                s.classList.toggle('active', i === step);
+            });
+        }
+
+        document.getElementById('playBtn').addEventListener('click', () => {
+            if (isPlaying) return;
+            isPlaying = true;
+            document.getElementById('playBtn').classList.add('active');
+            
+            animationInterval = setInterval(() => {
+                currentStep = (currentStep + 1) % 6;
+                updateProcessFlow(currentStep);
+            }, 2000);
+        });
+
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            isPlaying = false;
+            document.getElementById('playBtn').classList.remove('active');
+            clearInterval(animationInterval);
+        });
+
+        document.getElementById('stepBtn').addEventListener('click', () => {
+            isPlaying = false;
+            document.getElementById('playBtn').classList.remove('active');
+            clearInterval(animationInterval);
+            currentStep = (currentStep + 1) % 6;
+            updateProcessFlow(currentStep);
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            isPlaying = false;
+            document.getElementById('playBtn').classList.remove('active');
+            clearInterval(animationInterval);
+            currentStep = 0;
+            updateProcessFlow(currentStep);
+        });
+
+        // Tab Switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                // Update tab buttons
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+
+        // Simulator Logic
+        class RateMatchingSimulator {
+            constructor() {
+                this.inputBits = [];
+                this.outputBits = [];
+                this.circularBuffer = [];
+                this.rvPosition = 0;
+            }
+
+            calculateRvPosition(Ncb, rv, Qm) {
+                let k0 = 0;
+                switch(rv) {
+                    case 0: k0 = 0; break;
+                    case 1: k0 = Math.floor(17 * Ncb / 66); break;
+                    case 2: k0 = Math.floor(33 * Ncb / 66); break;
+                    case 3: k0 = Math.floor(56 * Ncb / 66); break;
+                }
+                // Align to modulation order
+                k0 = Math.floor(k0 / Qm) * Qm;
+                return k0;
+            }
+
+            generateRandomBits(n) {
+                return Array.from({length: n}, () => Math.random() > 0.5 ? 1 : 0);
+            }
+
+            subblockInterleaving(input) {
+                const output = [];
+                const N = input.length;
+                
+                // Even indices first
+                for (let i = 0; i < N; i += 2) {
+                    output.push(input[i]);
+                }
+                
+                // Odd indices
+                for (let i = 1; i < N; i += 2) {
+                    output.push(input[i]);
+                }
+                
+                return output;
+            }
+
+            rateMatch(N, E, rv, Qm) {
+                // Generate input bits
+                this.inputBits = this.generateRandomBits(N);
+                
+                // Sub-block interleaving
+                this.circularBuffer = this.subblockInterleaving(this.inputBits);
+                
+                // Calculate RV position
+                this.rvPosition = this.calculateRvPosition(N, rv, Qm);
+                
+                // Bit selection
+                this.outputBits = [];
+                for (let i = 0; i < E; i++) {
+                    const idx = (this.rvPosition + i) % N;
+                    this.outputBits.push(this.circularBuffer[idx]);
+                }
+                
+                return {
+                    input: this.inputBits,
+                    buffer: this.circularBuffer,
+                    output: this.outputBits,
+                    rvPos: this.rvPosition
+                };
+            }
+
+            visualize(N, E, rv) {
+                const bufferDiv = document.getElementById('circularBuffer');
+                bufferDiv.innerHTML = '';
+                
+                const result = this.rateMatch(N, E, rv, parseInt(document.getElementById('modOrder').value));
+                
+                // Determine which bits are selected/repeated/punctured
+                const selectedIndices = new Set();
+                const repeatedIndices = new Set();
+                
+                for (let i = 0; i < E; i++) {
+                    const idx = (this.rvPosition + i) % N;
+                    if (selectedIndices.has(idx)) {
+                        repeatedIndices.add(idx);
+                    }
+                    selectedIndices.add(idx);
+                }
+                
+                // Create bit cells
+                for (let i = 0; i < N; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'bit-cell';
+                    cell.textContent = this.circularBuffer[i];
+                    
+                    if (repeatedIndices.has(i)) {
+                        cell.classList.add('repeated');
+                    } else if (selectedIndices.has(i)) {
+                        cell.classList.add('selected');
+                    } else if (E < N) {
+                        cell.classList.add('punctured');
+                    } else {
+                        cell.classList.add('normal');
+                    }
+                    
+                    bufferDiv.appendChild(cell);
+                }
+                
+                return result;
+            }
+        }
+
+        const simulator = new RateMatchingSimulator();
+
+        // Run Simulation
+        document.getElementById('runSimBtn').addEventListener('click', () => {
+            const N = parseInt(document.getElementById('inputSize').value);
+            const E = parseInt(document.getElementById('outputSize').value);
+            const rv = parseInt(document.getElementById('rvSelect').value);
+            const K = parseInt(document.getElementById('infoBits').value);
+            const Qm = parseInt(document.getElementById('modOrder').value);
+            
+            const result = simulator.visualize(N, E, rv);
+            
+            // Update statistics
+            document.getElementById('statInputBits').textContent = N;
+            document.getElementById('statOutputBits').textContent = E;
+            
+            const codeRate = (K / E).toFixed(3);
+            document.getElementById('statCodeRate').textContent = codeRate;
+            
+            const spectralEff = (K / E * Qm).toFixed(2);
+            document.getElementById('statSpectralEff').textContent = spectralEff + ' b/s';
+            
+            let operation = '';
+            if (E > N) {
+                operation = 'Repetition';
+            } else if (E < N) {
+                operation = 'Puncturing';
+            } else {
+                operation = 'Match';
+            }
+            document.getElementById('statOperation').textContent = operation;
+            
+            document.getElementById('statRvPos').textContent = result.rvPos;
+            
+            // Update buffer info
+            const bufferInfo = document.getElementById('bufferInfo');
+            if (E > N) {
+                bufferInfo.innerHTML = `<strong style="color: var(--neon-green);">Repetition:</strong> ${E - N} bits repeated (${((E-N)/N*100).toFixed(1)}% increase)`;
+            } else if (E < N) {
+                bufferInfo.innerHTML = `<strong style="color: var(--neon-orange);">Puncturing:</strong> ${N - E} bits punctured (${((N-E)/N*100).toFixed(1)}% reduction)`;
+            } else {
+                bufferInfo.innerHTML = `<strong style="color: var(--neon-blue);">Perfect Match:</strong> No repetition or puncturing needed`;
+            }
+        });
+
+        // HARQ Cycling
+        let currentRv = 0;
+        document.getElementById('harqBtn').addEventListener('click', () => {
+            currentRv = (currentRv + 1) % 4;
+            document.getElementById('rvSelect').value = currentRv;
+            document.getElementById('runSimBtn').click();
+            
+            // Show notification
+            const bufferInfo = document.getElementById('bufferInfo');
+            const originalText = bufferInfo.innerHTML;
+            bufferInfo.innerHTML = `<strong style="color: var(--neon-purple);">🔄 HARQ Retransmission:</strong> Switched to RV${currentRv}`;
+            
+            setTimeout(() => {
+                bufferInfo.innerHTML = originalText;
+            }, 2000);
+        });
+
+        // Error Injection
+        document.getElementById('errorInjectBtn').addEventListener('click', () => {
+            const cells = document.querySelectorAll('.bit-cell');
+            if (cells.length === 0) {
+                alert('Please run simulation first!');
+                return;
+            }
+            
+            // Randomly flip some bits
+            const errorRate = 0.1; // 10% error rate
+            cells.forEach(cell => {
+                if (Math.random() < errorRate) {
+                    const currentBit = parseInt(cell.textContent);
+                    cell.textContent = 1 - currentBit;
+                    cell.style.background = 'rgba(255, 0, 110, 0.5)';
+                    cell.style.borderColor = 'var(--neon-pink)';
+                    
+                    // Reset after animation
+                    setTimeout(() => {
+                        cell.style.background = '';
+                        cell.style.borderColor = '';
+                    }, 1500);
+                }
+            });
+        });
+
+        // Clear
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('circularBuffer').innerHTML = '';
+            document.getElementById('bufferInfo').textContent = 'Configure parameters and click "Run Simulation"';
+            
+            // Reset stats
+            document.getElementById('statInputBits').textContent = '-';
+            document.getElementById('statOutputBits').textContent = '-';
+            document.getElementById('statCodeRate').textContent = '-';
+            document.getElementById('statOperation').textContent = '-';
+            document.getElementById('statSpectralEff').textContent = '-';
+            document.getElementById('statRvPos').textContent = '-';
+        });
+
+        // Initialize
+        generateResourceGrid();
+        updateProcessFlow(0);
+
+        // Auto-adjust output size when input changes
+        document.getElementById('inputSize').addEventListener('change', (e) => {
+            const newSize = parseInt(e.target.value);
+            const outputSize = parseInt(document.getElementById('outputSize').value);
+            
+            // Ensure output size is reasonable relative to input
+            if (outputSize > newSize * 2) {
+                document.getElementById('outputSize').value = newSize;
+            }
+        });
+    </script>
+</body>
+</html>

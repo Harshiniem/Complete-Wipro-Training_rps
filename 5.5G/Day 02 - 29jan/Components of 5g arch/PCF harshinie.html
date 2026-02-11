@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G PCF Architecture - Harshinie M</title>
+    <style>
+        :root {
+            --bg-light: #f4f7f6;
+            --sidebar-bg: #ffffff;
+            --slate: #2c3e50;
+            --ocean-blue: #34495e;
+            --teal-accent: #16a085;
+            --line-muted: #bdc3c7;
+            --highlight: #2980b9;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* 25% LEFT EXPLANATION PANEL */
+        .explanation-panel {
+            width: 25%;
+            background: var(--sidebar-bg);
+            border-right: 2px solid #e0e0e0;
+            padding: 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .explanation-panel h2 {
+            color: var(--teal-accent);
+            border-bottom: 2px solid var(--teal-accent);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .explanation-panel p {
+            line-height: 1.6;
+            color: var(--ocean-blue);
+            font-size: 14px;
+        }
+
+        .interface-card {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-left: 4px solid var(--highlight);
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .interface-card strong {
+            display: block;
+            color: var(--highlight);
+            margin-bottom: 4px;
+        }
+
+        /* 75% RIGHT ARCHITECTURE PANEL */
+        .architecture-panel {
+            width: 75%;
+            position: relative;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        .header-info h1 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--slate);
+        }
+
+        .credits {
+            font-weight: bold;
+            color: var(--teal-accent);
+            font-size: 14px;
+        }
+
+        /* SVG & INTERACTIVITY */
+        svg {
+            width: 100%;
+            height: 80%;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+        }
+
+        .node {
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .node:hover { transform: scale(1.05); }
+
+        .node rect {
+            fill: #fff;
+            stroke: var(--line-muted);
+            stroke-width: 2;
+            rx: 8;
+        }
+
+        .node text {
+            fill: var(--slate);
+            font-size: 12px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        /* PCF Primary Node Styling */
+        .pcf-main rect {
+            stroke: var(--teal-accent);
+            stroke-width: 3;
+            fill: #e8f6f3;
+        }
+
+        .link {
+            stroke: var(--line-muted);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 4;
+            transition: 0.4s ease;
+            opacity: 0.3;
+        }
+
+        .label {
+            font-size: 10px;
+            fill: var(--ocean-blue);
+            font-weight: bold;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        /* Highlight States */
+        .highlight-pcf .link.pcf-conn {
+            stroke: var(--teal-accent);
+            stroke-width: 3;
+            stroke-dasharray: 0;
+            opacity: 1;
+        }
+
+        .highlight-pcf .label.pcf-lab {
+            opacity: 1;
+        }
+
+        .highlight-pcf .node:not(.pcf-partner) {
+            opacity: 0.4;
+        }
+
+        .hint-text {
+            text-align: center;
+            color: var(--line-muted);
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- LEFT SIDE: 25% EXPLANATION -->
+    <aside class="explanation-panel">
+        <h2>PCF Deep-Dive</h2>
+        
+        <div id="default-msg">
+            <p>The <strong>Policy Control Function (PCF)</strong> is the central policy decision point in the 5G Core. It governs how the network treats specific users and applications.</p>
+            <p style="background: #eef; padding: 10px; border-radius: 5px;"><em>Touch the PCF node in the diagram to reveal its 3GPP interface mapping.</em></p>
+        </div>
+
+        <div id="pcf-details" class="hidden">
+            <div class="interface-card">
+                <strong>N7 (SMF Interaction)</strong>
+                <p>Crucial for Session Management. PCF provides QoS rules, charging information, and traffic steering policies for individual PDU sessions.</p>
+            </div>
+            <div class="interface-card">
+                <strong>N15 (AMF Interaction)</strong>
+                <p>Governs Access and Mobility. Defines which tracking areas a user can enter and manages RFSP (RAT/Frequency Selection Priority).</p>
+            </div>
+            <div class="interface-card">
+                <strong>N5 (Application Function)</strong>
+                <p>Allows external applications (like Netflix or IMS) to request specific network requirements for a better user experience.</p>
+            </div>
+            <div class="interface-card">
+                <strong>N36 (UDR Storage)</strong>
+                <p>The PCF is stateless; it retrieves and stores policy-related subscriber data from the Unified Data Repository (UDR).</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- RIGHT SIDE: 75% ARCHITECTURE -->
+    <main class="architecture-panel">
+        <div class="header-info">
+            <h1>5G Policy Control Function Architecture</h1>
+            <div class="credits">Made by Harshinie M</div>
+        </div>
+
+        <svg viewBox="0 0 800 500" id="arch-svg">
+            <!-- SBA BUS -->
+            <line x1="100" y1="50" x2="700" y2="50" stroke="#34495e" stroke-width="6" stroke-linecap="round" />
+            <text x="400" y="40" fill="#7f8c8d" font-size="10" text-anchor="middle">SERVICE-BASED INTERFACE (SBI) BUS</text>
+
+            <!-- PCF CONNECTIONS -->
+            <!-- N7 to SMF -->
+            <path class="link pcf-conn" d="M400 150 L600 250" />
+            <!-- N15 to AMF -->
+            <path class="link pcf-conn" d="M400 150 L200 250" />
+            <!-- N5 to AF -->
+            <path class="link pcf-conn" d="M400 150 L700 50" />
+            <!-- N36 to UDR -->
+            <path class="link pcf-conn" d="M400 150 L400 350" />
+            <!-- Npcf (Bus Connect) -->
+            <path class="link pcf-conn" d="M400 150 L400 50" />
+
+            <!-- Labels -->
+            <text x="520" y="210" class="label pcf-lab">N7</text>
+            <text x="280" y="210" class="label pcf-lab">N15</text>
+            <text x="550" y="100" class="label pcf-lab">N5</text>
+            <text x="410" y="300" class="label pcf-lab">N36</text>
+
+            <!-- NODES -->
+            <!-- PCF (The Focus) -->
+            <g class="node pcf-main pcf-partner" onclick="togglePCF()">
+                <rect x="340" y="120" width="120" height="70" />
+                <text x="400" y="160">PCF</text>
+            </g>
+
+            <!-- Partner Nodes -->
+            <g class="node pcf-partner"><rect x="150" y="250" width="100" height="50"/><text x="200" y="280">AMF</text></g>
+            <g class="node pcf-partner"><rect x="550" y="250" width="100" height="50"/><text x="600" y="280">SMF</text></g>
+            <g class="node pcf-partner"><rect x="350" y="350" width="100" height="50"/><text x="400" y="380">UDR</text></g>
+            <g class="node pcf-partner"><rect x="650" y="35" width="70" height="30"/><text x="685" y="55" style="font-size: 9px;">AF</text></g>
+            
+            <!-- Other SBA Functions (Static) -->
+            <g class="node"><rect x="100" y="35" width="70" height="30"/><text x="135" y="55" style="font-size: 9px;">UDM</text></g>
+            <g class="node"><rect x="250" y="35" width="70" height="30"/><text x="285" y="55" style="font-size: 9px;">NRF</text></g>
+            <g class="node"><rect x="500" y="35" width="70" height="30"/><text x="535" y="55" style="font-size: 9px;">NEF</text></g>
+
+            <!-- User Plane (Context) -->
+            <g class="node"><rect x="50" y="420" width="60" height="30"/><text x="80" y="440" style="font-size: 9px;">gNB</text></g>
+            <g class="node"><rect x="550" y="420" width="100" height="40"/><text x="600" y="445" style="font-size: 9px;">UPF</text></g>
+            <line x1="110" y1="440" x2="550" y2="440" stroke="#ccc" stroke-width="1" stroke-dasharray="2" />
+        </svg>
+
+        <div class="hint-text">Interactive 3GPP Service-Based Architecture | 75% Scale View</div>
+    </main>
+</div>
+
+<script>
+    let active = false;
+    function togglePCF() {
+        active = !active;
+        const svg = document.getElementById('arch-svg');
+        const defaultMsg = document.getElementById('default-msg');
+        const details = document.getElementById('pcf-details');
+
+        if(active) {
+            svg.classList.add('highlight-pcf');
+            defaultMsg.classList.add('hidden');
+            details.classList.remove('hidden');
+        } else {
+            svg.classList.remove('highlight-pcf');
+            defaultMsg.classList.remove('hidden');
+            details.classList.add('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>

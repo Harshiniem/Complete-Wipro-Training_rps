@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>5G NR PBCH – Frame & Resource Mapping</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0b1220;
+      color: #e5e7eb;
+    }
+
+    header {
+      text-align: center;
+      padding: 30px 20px;
+      background: linear-gradient(135deg, #064e3b, #022c22);
+      border-bottom: 3px solid #10b981;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #10b981;
+    }
+
+    header p {
+      margin-top: 8px;
+      color: #9ca3af;
+      font-size: 0.95rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px 20px;
+    }
+
+    .card {
+      background: #111827;
+      border: 1px solid #1f2933;
+      border-radius: 14px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: #10b981;
+      margin-bottom: 15px;
+    }
+
+    h3 {
+      margin-top: 25px;
+      color: #34d399;
+    }
+
+    p {
+      color: #cbd5e1;
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .highlight {
+      background: rgba(16,185,129,0.1);
+      border-left: 4px solid #10b981;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+
+    /* Frame visualization */
+    .frame {
+      display: flex;
+      gap: 6px;
+      margin-top: 15px;
+    }
+
+    .subframe {
+      flex: 1;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 0.75rem;
+      position: relative;
+    }
+
+    .subframe.pbch {
+      background: rgba(16,185,129,0.25);
+      border-color: #10b981;
+      font-weight: bold;
+    }
+
+    /* Slot view */
+    .slot-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .slot {
+      flex: 1;
+      background: #1e3a8a;
+      border: 1px solid #60a5fa;
+      border-radius: 6px;
+      text-align: center;
+      padding: 12px 0;
+      font-size: 0.8rem;
+    }
+
+    .slot.pbch {
+      background: #065f46;
+      border-color: #10b981;
+      color: #ecfeff;
+      font-weight: bold;
+    }
+
+    /* Resource grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(14, 1fr);
+      gap: 3px;
+      margin-top: 15px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      font-size: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pss { background: #f59e0b; }
+    .sss { background: #ef4444; }
+    .pbch-re { background: #10b981; }
+    .dmrs { background: #38bdf8; }
+    .empty { background: #1f2937; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid #374151;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #064e3b;
+      color: #ecfeff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      border-top: 1px solid #1f2937;
+      color: #9ca3af;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>PBCH in 5G NR</h1>
+  <p>Frame Structure, Slot Location & Resource Mapping</p>
+</header>
+
+<div class="container">
+
+  <!-- Overview -->
+  <div class="card">
+    <h2>PBCH Overview</h2>
+    <p>
+      The <b>Physical Broadcast Channel (PBCH)</b> carries the
+      <b>Master Information Block (MIB)</b>, which provides essential system
+      information required by the UE during initial cell access.
+    </p>
+
+    <h3>Key Characteristics</h3>
+    <ul>
+      <li>Payload: 24-bit MIB</li>
+      <li>Repetition period: 80 ms (8 radio frames)</li>
+      <li>Modulation: QPSK</li>
+      <li>Channel coding: Polar coding</li>
+    </ul>
+
+    <div class="highlight">
+      PBCH is the <b>first physical channel decoded by the UE</b> after cell search.
+      Without PBCH, the UE cannot proceed with system information decoding.
+    </div>
+  </div>
+
+  <!-- Frame structure -->
+  <div class="card">
+    <h2>PBCH Location in Frame Structure</h2>
+    <p>
+      A radio frame in 5G NR has a duration of <b>10 ms</b> and consists of
+      <b>10 subframes</b>. PBCH is always transmitted in <b>Subframe 0</b>.
+    </p>
+
+    <div class="frame">
+      <div class="subframe pbch">SF0<br/>PBCH</div>
+      <div class="subframe">SF1</div>
+      <div class="subframe">SF2</div>
+      <div class="subframe">SF3</div>
+      <div class="subframe">SF4</div>
+      <div class="subframe">SF5</div>
+      <div class="subframe">SF6</div>
+      <div class="subframe">SF7</div>
+      <div class="subframe">SF8</div>
+      <div class="subframe">SF9</div>
+    </div>
+
+    <h3>Slot-Level View (μ = 0, SCS = 15 kHz)</h3>
+    <div class="slot-row">
+      <div class="slot pbch">Slot 0<br/>PBCH</div>
+      <div class="slot">Slot 1</div>
+    </div>
+  </div>
+
+  <!-- Resource mapping -->
+  <div class="card">
+    <h2>SS/PBCH Block – Resource Mapping</h2>
+    <p>
+      PBCH is mapped within the <b>SS/PBCH block</b> and spans
+      <b>3 OFDM symbols</b> over <b>20 Resource Blocks (240 subcarriers)</b>,
+      centered around DC.
+    </p>
+
+    <div class="grid" id="grid"></div>
+
+    <h3>Symbol-wise Content</h3>
+    <table>
+      <tr>
+        <th>OFDM Symbol</th>
+        <th>Content</th>
+        <th>Bandwidth</th>
+      </tr>
+      <tr>
+        <td>0</td>
+        <td>PSS</td>
+        <td>127 subcarriers</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>PBCH + DMRS</td>
+        <td>240 subcarriers (20 RBs)</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>SSS + PBCH + DMRS</td>
+        <td>240 subcarriers (20 RBs)</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>PBCH + DMRS</td>
+        <td>240 subcarriers (20 RBs)</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Processing chain -->
+  <div class="card">
+    <h2>PBCH Processing Chain</h2>
+
+    <ul>
+      <li>24-bit MIB + CRC attachment</li>
+      <li>Polar encoding and rate matching</li>
+      <li>Cell-ID based scrambling</li>
+      <li>QPSK modulation (432 symbols)</li>
+      <li>Mapping to 3 OFDM symbols with DMRS</li>
+    </ul>
+
+    <div class="highlight">
+      Polar coding is used in 5G NR PBCH due to its superior performance
+      at short block lengths compared to LTE convolutional codes.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  5G NR Physical Broadcast Channel • Frame Structure • Resource Mapping
+</footer>
+
+<script>
+  const grid = document.getElementById("grid");
+
+  for (let rb = 0; rb < 20; rb++) {
+    for (let sym = 0; sym < 14; sym++) {
+      const c = document.createElement("div");
+      c.classList.add("cell");
+
+      if (sym === 0 && rb >= 6 && rb < 17) {
+        c.classList.add("pss");
+        c.title = "PSS";
+      } else if (sym === 2 && rb >= 6 && rb < 17) {
+        c.classList.add("sss");
+        c.title = "SSS";
+      } else if ((sym === 1 || sym === 2 || sym === 3)) {
+        if ((rb + sym) % 4 === 0) {
+          c.classList.add("dmrs");
+          c.title = "PBCH DMRS";
+        } else {
+          c.classList.add("pbch-re");
+          c.title = "PBCH";
+        }
+      } else {
+        c.classList.add("empty");
+      }
+
+      grid.appendChild(c);
+    }
+  }
+</script>
+
+</body>
+</html>

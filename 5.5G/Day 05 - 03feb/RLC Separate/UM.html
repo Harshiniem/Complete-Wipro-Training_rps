@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR RLC UM Advanced Simulator</title>
+    <style>
+        :root {
+            --bg-dark: #050510;
+            --panel-bg: rgba(20, 30, 50, 0.6);
+            --glass-border: 1px solid rgba(255, 0, 128, 0.2);
+            --neon-pink: #ff0080;   /* UM Theme: Pink/Magenta */
+            --neon-blue: #00f3ff;
+            --neon-yellow: #ffea00;
+            --neon-red: #ff3c3c;
+            --text-main: #e0e6ed;
+            --text-dim: #8fa0b5;
+            --font-tech: 'Courier New', Courier, monospace;
+            --font-ui: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--neon-pink) var(--bg-dark); }
+        
+        body {
+            margin: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            height: 100vh;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(255, 0, 128, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 128, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 0, 128, 0.3);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        .mode-badge {
+            font-size: 0.6em;
+            background: var(--neon-pink);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 2px;
+            margin-left: 10px;
+        }
+
+        /* --- Controls --- */
+        .controls-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        button {
+            background: rgba(255, 0, 128, 0.1);
+            border: 1px solid var(--neon-pink);
+            color: var(--neon-pink);
+            padding: 8px 16px;
+            font-family: var(--font-tech);
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        button:hover {
+            background: var(--neon-pink);
+            color: #fff;
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        input[type="range"] {
+            accent-color: var(--neon-yellow);
+            width: 100px;
+        }
+
+        /* --- Main Layout --- */
+        .workspace {
+            display: flex;
+            height: calc(100vh - 60px);
+            position: relative;
+        }
+
+        /* --- Left: Architecture Canvas --- */
+        .canvas {
+            flex: 3;
+            position: relative;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            perspective: 1200px;
+            overflow: hidden;
+        }
+
+        .stack-container {
+            width: 300px; /* Narrower than AM because no retx buffer */
+            display: flex;
+            flex-direction: column;
+            gap: 25px; /* More spacing */
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateY(5deg);
+        }
+        
+        .stack-title {
+            text-align: center;
+            color: var(--neon-blue);
+            font-family: var(--font-tech);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        /* --- Holographic Blocks --- */
+        .rlc-block {
+            background: rgba(10, 20, 40, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70px;
+        }
+
+        .rlc-block::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-pink), transparent);
+            opacity: 0.5;
+        }
+
+        .rlc-block:hover {
+            transform: translateZ(20px) scale(1.02);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.2);
+            background: rgba(255, 0, 128, 0.05);
+        }
+
+        .rlc-block.active {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+        
+        .rlc-block.error {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 15px var(--neon-red);
+            animation: shake 0.4s;
+        }
+
+        .block-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .block-sub {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+
+        /* --- Air Interface / Channels --- */
+        .air-interface {
+            width: 150px;
+            height: 80%;
+            border-left: 1px dashed rgba(255,255,255,0.1);
+            border-right: 1px dashed rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .channel-list {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+        }
+
+        .channel-tag {
+            display: block;
+            font-size: 0.6rem;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 2px 5px;
+            margin: 4px 0;
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        /* --- Right: Console & Info --- */
+        .info-panel {
+            flex: 1;
+            background: rgba(0,0,0,0.6);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .console-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: var(--neon-pink);
+            font-family: var(--font-tech);
+            font-weight: bold;
+        }
+
+        .log-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            font-family: var(--font-tech);
+            font-size: 0.75rem;
+        }
+
+        .log-entry { margin-bottom: 5px; padding-left: 10px; border-left: 2px solid transparent; }
+        .log-tx { border-color: var(--neon-blue); color: #d0faff; }
+        .log-rx { border-color: var(--neon-yellow); color: #fffdda; }
+        .log-err { border-color: var(--neon-red); color: #ffd0d0; }
+        .log-sys { border-color: #666; color: #888; }
+
+        .details-box {
+            height: 30%;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            overflow-y: auto;
+        }
+        
+        .details-title { color: var(--neon-blue); font-weight: bold; margin-bottom: 5px; }
+        .details-text { font-size: 0.8rem; line-height: 1.4; color: #ccc; }
+
+        /* --- Animations & Packets --- */
+        .packet {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+            border-radius: 4px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #fff;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .packet.lost {
+            background: var(--neon-red);
+            box-shadow: 0 0 15px var(--neon-red);
+            transition: opacity 0.5s;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid var(--neon-pink);
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #fff;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2000;
+            max-width: 200px;
+        }
+
+        /* Branding */
+        .watermark {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            font-family: var(--font-tech);
+            pointer-events: none;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        #reassembly-display {
+            font-family: var(--font-tech);
+            color: var(--neon-yellow);
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed var(--neon-yellow);
+            min-height: 35px;
+            font-size: 1rem;
+            text-align: center;
+            background: rgba(255, 234, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">5G NR RLC <span class="mode-badge">UM</span></div>
+    <div class="controls-bar">
+        <div class="input-group">
+            <input type="text" id="sduInput" placeholder="Enter Data (e.g., VoIP)" style="background:transparent; border:1px solid #444; color:#fff; padding:5px; font-family:var(--font-tech);" value="STREAMING">
+        </div>
+        <button onclick="startSimulation()">▶ Send Stream</button>
+        <button onclick="resetSim()">🔁 Reset</button>
+        
+        <div class="input-group" style="margin-left: 20px;">
+            <label>Loss Prob</label>
+            <input type="range" id="lossSlider" min="0" max="100" value="30">
+            <span id="lossValue">30%</span>
+        </div>
+        <div class="input-group">
+            <label>Speed</label>
+            <input type="range" id="speedSlider" min="100" max="2000" value="800" style="direction: rtl">
+        </div>
+    </div>
+</header>
+
+<div class="workspace">
+    <!-- Architecture Diagram -->
+    <div class="canvas" id="canvas">
+        
+        <!-- TX Stack -->
+        <div class="stack-container" id="tx-stack">
+            <div class="stack-title">Transmitter (gNB/UE)</div>
+            
+            <div class="rlc-block" id="tx-buffer" data-info="Buffers SDUs. In UM, packets are processed linearly without waiting for ACKs.">
+                <div class="block-label">Transmission Buffer</div>
+                <div class="block-sub">Queue</div>
+            </div>
+
+            <div class="rlc-block" id="tx-seg" data-info="Segments large SDUs to fit the MAC Transport Block size.">
+                <div class="block-label">Segmentation</div>
+                <div class="block-sub">Split Payload</div>
+            </div>
+
+            <div class="rlc-block" id="tx-header" data-info="Adds UM Header (Sequence Number 6/12 bits + SI + SO). No Polling bit.">
+                <div class="block-label">Add UM Header</div>
+                <div class="block-sub">Append SN</div>
+            </div>
+
+            <div class="rlc-block" id="tx-route" data-info="Routes logical channels (DTCH) to MAC. No Control channels in UM.">
+                <div class="block-label">Logical Ch Routing</div>
+                <div class="block-sub">To MAC</div>
+            </div>
+        </div>
+
+        <!-- Air Interface -->
+        <div class="air-interface" id="channel">
+            <div class="channel-list">
+                <span class="channel-tag">DL-DTCH</span>
+                <span class="channel-tag">UL-DTCH</span>
+            </div>
+            <div style="color:var(--text-dim); font-size:0.7rem; margin-top: auto; margin-bottom: auto; background:#050510; z-index:2; padding:5px;">AIR INTERFACE</div>
+        </div>
+
+        <!-- RX Stack -->
+        <div class="stack-container" id="rx-stack">
+            <div class="stack-title">Receiver (UE/gNB)</div>
+            
+            <div class="rlc-block" id="rx-buffer" data-info="Reorders packets based on SN. Detects gaps but CANNOT request retransmission.">
+                <div class="block-label">Reception Buffer</div>
+                <div class="block-sub">Reordering</div>
+            </div>
+
+            <div class="rlc-block" id="rx-remove" data-info="Removes RLC header. Checks SN against receive window to detect loss.">
+                <div class="block-label">Remove Header</div>
+                <div class="block-sub">Check SN Gap</div>
+            </div>
+
+            <div class="rlc-block" id="rx-reassembly" data-info="Reassembles SDU. If segments are missing, the SDU is discarded or partial data is passed.">
+                <div class="block-label">SDU Reassembly</div>
+                <div class="block-sub">Deliver Upper Layer</div>
+            </div>
+            
+            <div id="reassembly-display">Waiting for Stream...</div>
+        </div>
+
+    </div>
+
+    <!-- Right Console -->
+    <div class="info-panel">
+        <div class="console-header">UM PROTOCOL TRACE</div>
+        <div class="log-container" id="logger">
+            <div class="log-entry log-sys">System Initialized.</div>
+            <div class="log-entry log-sys">RLC Mode: Unacknowledged (UM).</div>
+            <div class="log-entry log-sys">Configuration: No ARQ, No Retransmission.</div>
+        </div>
+        
+        <div class="details-box">
+            <div class="details-title" id="detail-title">RLC UM Overview</div>
+            <div class="details-text" id="detail-text">
+                Unacknowledged Mode (UM) allows data loss but provides lower latency than AM.
+                <br><br>
+                <strong>Used for:</strong> VoIP, Video Streaming, Real-time sensing.
+                <br><br>
+                <strong>Key Difference:</strong> If a packet is lost in the air interface, RLC does NOT retransmit it. The receiver detects the gap and moves on.
+            </div>
+        </div>
+    </div>
+    
+    <div class="watermark">RLC UM Simulator • Designed by Jayavarshini G | ID 58624</div>
+</div>
+
+<!-- Dynamic Tooltip -->
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+    // --- Configuration & State ---
+    const CONFIG = {
+        speedBase: 800
+    };
+
+    let state = {
+        running: false,
+        segments: [],
+        receivedSegments: [],
+        lossProbability: 30,
+        packetsLostCount: 0
+    };
+
+    // --- DOM Cache ---
+    const dom = {
+        canvas: document.getElementById('canvas'),
+        logger: document.getElementById('logger'),
+        detailTitle: document.getElementById('detail-title'),
+        detailText: document.getElementById('detail-text'),
+        tooltip: document.getElementById('tooltip'),
+        reassembly: document.getElementById('reassembly-display'),
+        lossSlider: document.getElementById('lossSlider'),
+        lossVal: document.getElementById('lossValue'),
+        speedSlider: document.getElementById('speedSlider'),
+        // Blocks
+        txBuff: document.getElementById('tx-buffer'),
+        txSeg: document.getElementById('tx-seg'),
+        txHead: document.getElementById('tx-header'),
+        txRoute: document.getElementById('tx-route'),
+        channel: document.getElementById('channel'),
+        rxBuff: document.getElementById('rx-buffer'),
+        rxRemove: document.getElementById('rx-remove'),
+        rxReas: document.getElementById('rx-reassembly')
+    };
+
+    // --- Interaction Logic ---
+    dom.lossSlider.addEventListener('input', (e) => {
+        state.lossProbability = parseInt(e.target.value);
+        dom.lossVal.innerText = state.lossProbability + "%";
+    });
+
+    dom.speedSlider.addEventListener('input', (e) => {
+        CONFIG.speedBase = parseInt(e.target.value);
+    });
+
+    // Tooltip & Detail Logic
+    document.querySelectorAll('.rlc-block').forEach(block => {
+        block.addEventListener('mouseenter', (e) => {
+            dom.tooltip.innerText = e.currentTarget.dataset.info;
+            dom.tooltip.style.opacity = 1;
+        });
+        
+        block.addEventListener('mousemove', (e) => {
+            dom.tooltip.style.left = (e.pageX + 15) + 'px';
+            dom.tooltip.style.top = (e.pageY + 15) + 'px';
+        });
+
+        block.addEventListener('mouseleave', () => {
+            dom.tooltip.style.opacity = 0;
+        });
+
+        block.addEventListener('click', (e) => {
+            dom.detailTitle.innerText = e.currentTarget.querySelector('.block-label').innerText;
+            dom.detailText.innerText = e.currentTarget.dataset.info + 
+            "\n\nUM Operation: " +
+            "Entities in UM are unidirectional (Transmitting UM entity or Receiving UM entity). " +
+            "It is ideal for delay-sensitive traffic where retransmission latency is unacceptable.";
+        });
+    });
+
+    function log(msg, type = 'sys') {
+        const div = document.createElement('div');
+        div.className = `log-entry log-${type}`;
+        div.innerText = `> ${msg}`;
+        dom.logger.appendChild(div);
+        dom.logger.scrollTop = dom.logger.scrollHeight;
+    }
+
+    // --- Animation Engine ---
+    function getCenter(element) {
+        const rect = element.getBoundingClientRect();
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    }
+
+    async function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function flashBlock(block, colorClass = 'active') {
+        block.classList.add(colorClass);
+        await sleep(CONFIG.speedBase / 2);
+        block.classList.remove(colorClass);
+    }
+
+    async function animatePacket(from, to, text, isLost = false) {
+        const start = getCenter(from);
+        const end = getCenter(to);
+
+        const pkt = document.createElement('div');
+        pkt.className = 'packet';
+        if (isLost) pkt.classList.add('lost');
+        pkt.innerText = text;
+        document.body.appendChild(pkt);
+
+        pkt.style.left = `${start.x}px`;
+        pkt.style.top = `${start.y}px`;
+        pkt.style.transform = 'translate(-50%, -50%)'; 
+        pkt.style.opacity = 1;
+
+        // Calculate destination (if lost, fade out halfway)
+        const finalX = isLost ? (start.x + end.x) / 2 : end.x;
+        const finalY = isLost ? (start.y + end.y) / 2 : end.y;
+
+        const anim = pkt.animate([
+            { left: `${start.x}px`, top: `${start.y}px`, opacity: 1 },
+            { left: `${finalX}px`, top: `${finalY}px`, opacity: isLost ? 0 : 1 }
+        ], {
+            duration: CONFIG.speedBase,
+            easing: 'linear',
+            fill: 'forwards'
+        });
+
+        await anim.finished;
+        pkt.remove();
+    }
+
+    // --- Core Simulation Logic ---
+
+    function resetSim() {
+        state.running = false;
+        state.segments = [];
+        state.receivedSegments = [];
+        state.packetsLostCount = 0;
+        dom.logger.innerHTML = '<div class="log-entry log-sys">System Reset.</div>';
+        dom.reassembly.innerText = "Waiting for Stream...";
+    }
+
+    async function startSimulation() {
+        if (state.running) return;
+        state.running = true;
+        
+        const input = document.getElementById('sduInput').value || "VIDEO";
+        log(`SDU Queued: "${input}"`, 'tx');
+        dom.reassembly.innerText = "";
+
+        // Fill TX Buffer
+        await flashBlock(dom.txBuff);
+        
+        // Segmentation
+        await flashBlock(dom.txSeg);
+        state.segments = input.split('');
+        state.receivedSegments = new Array(state.segments.length).fill("_"); // Placeholders
+        log(`Segmentation: Created ${state.segments.length} PDUs`, 'tx');
+
+        // Pipeline Process (One by One)
+        for (let i = 0; i < state.segments.length; i++) {
+            if (!state.running) break;
+            await processUM_PDU(i, state.segments[i]);
+        }
+
+        if(state.running) {
+            const resultStr = state.receivedSegments.join("");
+            const integrity = state.packetsLostCount === 0 ? "Perfect" : "Corrupted";
+            const color = state.packetsLostCount === 0 ? "success" : "err";
+            
+            log(`Stream Finished. Integrity: ${integrity}`, color);
+            dom.reassembly.innerText = resultStr;
+            
+            if(state.packetsLostCount > 0) {
+                 dom.reassembly.style.borderColor = "var(--neon-red)";
+                 dom.reassembly.innerHTML += `<br><small style='color:var(--neon-red)'>(Packet Loss: ${state.packetsLostCount})</small>`;
+            } else {
+                 dom.reassembly.style.borderColor = "var(--neon-blue)";
+            }
+            state.running = false;
+        }
+    }
+
+    async function processUM_PDU(sn, data) {
+        const pduLabel = `SN${sn}`;
+
+        // 1. TX Flow
+        await animatePacket(dom.txSeg, dom.txHead, data); // Data to Header
+        await flashBlock(dom.txHead);
+        
+        await animatePacket(dom.txHead, dom.txRoute, pduLabel); // Header to Route
+        await flashBlock(dom.txRoute);
+
+        // 2. Air Interface Check
+        const isLost = (Math.random() * 100) < state.lossProbability;
+        
+        log(`Transmitting ${pduLabel}...`, 'tx');
+
+        if (isLost) {
+            // Visualize Loss
+            await animatePacket(dom.txRoute, dom.channel, pduLabel, true);
+            log(`[!] PDU ${pduLabel} Lost in Air Interface`, 'err');
+            state.packetsLostCount++;
+            
+            // RX Side Action: Gap Detection (Mental model visualization)
+            // We simulate the time it would have taken to reach RX
+            await sleep(CONFIG.speedBase / 2);
+            await flashBlock(dom.rxRemove, 'error');
+            log(`RX: Sequence Gap Detected at SN=${sn}. Moving window.`, 'rx');
+            
+            // In UM, no NACK is sent. The data is simply missing.
+            state.receivedSegments[sn] = "<span style='color:red; font-weight:bold'>?</span>";
+            dom.reassembly.innerHTML = state.receivedSegments.join("");
+            
+        } else {
+            // Successful Delivery
+            await animatePacket(dom.txRoute, dom.rxBuff, pduLabel, false);
+            await flashBlock(dom.rxBuff);
+
+            // Reordering / Header Removal
+            await animatePacket(dom.rxBuff, dom.rxRemove, pduLabel);
+            await flashBlock(dom.rxRemove);
+            log(`RX: Received ${pduLabel}. SN valid.`, 'rx');
+
+            // Reassembly
+            state.receivedSegments[sn] = data;
+            
+            // Visual update
+            dom.reassembly.innerHTML = state.receivedSegments.join("");
+            await animatePacket(dom.rxRemove, dom.rxReas, data);
+            await flashBlock(dom.rxReas, 'active');
+        }
+    }
+
+</script>
+
+</body>
+</html>

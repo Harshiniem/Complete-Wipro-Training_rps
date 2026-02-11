@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G Full Architecture - gNodeB Focus</title>
+    <style>
+        :root {
+            --deep-bg: #0a0e14;
+            --card-bg: #161b22;
+            --gnb-glow: #00ffcc;
+            --sig-color: #00d4ff;
+            --data-color: #ffcc00;
+            --text-main: #e6edf3;
+            --text-dim: #8b949e;
+            --border: #30363d;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: var(--deep-bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* ARCHITECTURE VIEWPORT (Fixed 80% height, no scroll) */
+        #viz-header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(180deg, #0d1117 0%, transparent 100%);
+        }
+
+        #viz-header h1 { margin: 0; font-size: 24px; color: var(--gnb-glow); }
+        #viz-header p { margin: 5px 0 0; font-size: 14px; color: var(--text-dim); }
+
+        #viz-container {
+            width: 100%;
+            height: 75vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 10px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            max-width: 1100px; /* Limits width to keep diagram compact */
+        }
+
+        /* NODE STYLING */
+        .node { cursor: pointer; transition: 0.3s; }
+        .node rect { fill: #21262d; stroke: var(--border); stroke-width: 1.5; rx: 6; }
+        .node text { fill: #fff; font-size: 11px; font-weight: 600; text-anchor: middle; pointer-events: none; }
+        
+        .gnb-node rect { stroke: var(--gnb-glow); stroke-width: 3; fill: #0d2a24; }
+        .gnb-node text { fill: var(--gnb-glow); font-size: 13px; }
+
+        .link { 
+            stroke: var(--border); 
+            stroke-width: 1.5; 
+            fill: none; 
+            opacity: 0.3; 
+            transition: 0.5s; 
+            stroke-dasharray: 4;
+        }
+
+        .label { font-size: 9px; fill: var(--text-dim); opacity: 0; transition: 0.3s; pointer-events: none; font-family: monospace; }
+
+        /* HIGHLIGHTS */
+        .highlight-active .link.gnb-interface { opacity: 1; stroke: var(--gnb-glow); stroke-width: 3; stroke-dasharray: 0; }
+        .highlight-active .label.gnb-lab { opacity: 1; font-weight: bold; }
+
+        .sig-flow .link.sig-path { stroke: var(--sig-color); stroke-width: 3; stroke-dasharray: 8; animation: dash 1s linear infinite; opacity: 1; }
+        .data-flow .link.data-path { stroke: var(--data-color); stroke-width: 3; stroke-dasharray: 8; animation: dash 0.8s linear infinite; opacity: 1; }
+
+        @keyframes dash { to { stroke-dashoffset: -16; } }
+
+        /* CONTROLS */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            background: #21262d;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.3s;
+        }
+        .btn:hover { border-color: var(--gnb-glow); }
+        .btn.active-sig { background: var(--sig-color); color: #000; font-weight: bold; }
+        .btn.active-data { background: var(--data-color); color: #000; font-weight: bold; }
+
+        /* EXPLANATION SECTION (Scroll Down) */
+        #explanation-section {
+            background-color: #0d1117;
+            padding: 60px 10%;
+            border-top: 2px solid var(--border);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .card h3 { color: var(--gnb-glow); margin-top: 0; font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .card p { font-size: 14px; line-height: 1.6; color: var(--text-dim); }
+
+        .credits {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--gnb-glow);
+            letter-spacing: 1px;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 5px;
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div id="viz-header">
+    <h1>5G Full Stack Architecture: gNodeB Focus</h1>
+    <p>Topic: End-to-End RAN & Core Integration</p>
+</div>
+
+<div id="viz-container">
+    <svg viewBox="0 0 1000 650" id="main-svg">
+        <!-- SBA BUS -->
+        <line x1="100" y1="60" x2="900" y2="60" stroke="#30363d" stroke-width="8" stroke-linecap="round" />
+        <text x="500" y="45" fill="#484f58" font-size="10" text-anchor="middle">SERVICE-BASED INTERFACE (SBI) BUS</text>
+
+        <!-- INTERFACES -->
+        <path class="link gnb-interface sig-path" d="M220 350 L450 200" /> <!-- N2 -->
+        <path class="link sig-path" d="M80 350 L220 350 L450 200" /> <!-- N1 Logic -->
+        <path class="link gnb-interface data-path" d="M220 350 L550 480" /> <!-- N3 -->
+        <path class="link sig-path" d="M450 200 L650 200" /> <!-- N11 -->
+        <path class="link data-path" d="M550 480 L850 480" /> <!-- N6 -->
+        <path class="link gnb-interface" d="M220 350 L220 500" /> <!-- Xn Interface -->
+
+        <!-- LABELS -->
+        <text x="320" y="260" class="label gnb-lab">N2 (Control)</text>
+        <text x="320" y="430" class="label gnb-lab">N3 (User Plane)</text>
+        <text x="140" y="340" class="label gnb-lab">Uu (Radio)</text>
+        <text x="240" y="440" class="label gnb-lab">Xn (Handover)</text>
+
+        <!-- TOP LEVEL SBA -->
+        <g class="node"><rect x="150" y="60" width="80" height="40"/><text x="190" y="85">NSSF</text></g>
+        <g class="node"><rect x="300" y="60" width="80" height="40"/><text x="340" y="85">NRF</text></g>
+        <g class="node"><rect x="450" y="60" width="80" height="40"/><text x="490" y="85">PCF</text></g>
+        <g class="node"><rect x="600" y="60" width="80" height="40"/><text x="640" y="85">UDM</text></g>
+        <g class="node"><rect x="750" y="60" width="80" height="40"/><text x="790" y="85">CHF</text></g>
+
+        <!-- CONTROL PLANE -->
+        <g class="node"><rect x="450" y="180" width="100" height="60"/><text x="500" y="215">AMF</text></g>
+        <g class="node"><rect x="650" y="180" width="100" height="60"/><text x="700" y="215">SMF</text></g>
+
+        <!-- gNodeB (THE STAR) -->
+        <g class="node gnb-node" onclick="toggleGNB()">
+            <rect x="170" y="320" width="100" height="80" />
+            <text x="220" y="365">gNodeB</text>
+        </g>
+        
+        <!-- NEIGHBOR gNB -->
+        <g class="node"><rect x="170" y="500" width="100" height="40" style="opacity:0.5"/><text x="220" y="525" style="opacity:0.5">Neighbour gNB</text></g>
+
+        <!-- ACCESS & USER PLANE -->
+        <g class="node"><rect x="30" y="335" width="50" height="40"/><text x="55" y="360">UE</text></g>
+        <g class="node"><rect x="550" y="460" width="120" height="70"/><text x="610" y="500">UPF</text></g>
+        <g class="node"><rect x="850" y="470" width="100" height="50"/><text x="900" y="500">Data Net</text></g>
+
+    </svg>
+
+    <div class="controls">
+        <button class="btn" id="sig-btn" onclick="toggleFlow('sig')">Signaling Flow (N1/N2)</button>
+        <button class="btn" id="data-btn" onclick="toggleFlow('data')">Data Flow (N3/N6)</button>
+    </div>
+
+    <div class="scroll-hint">Scroll down for details ↓</div>
+</div>
+
+<section id="explanation-section">
+    <div class="grid">
+        <div class="card">
+            <h3>gNodeB Role & Architecture</h3>
+            <p>The gNodeB (gNB) is the 5G Base Station. It splits the protocol stack between the <strong>Centralized Unit (CU)</strong> and <strong>Distributed Unit (DU)</strong>, allowing for massive MIMO and beamforming capabilities.</p>
+        </div>
+
+        <div class="card">
+            <h3>Key Standard Interfaces</h3>
+            <p><strong>N2 (NG-C):</strong> Control plane interface to the AMF. Uses NGAP protocol for mobility and session signaling.<br>
+               <strong>N3 (NG-U):</strong> User plane interface to the UPF. Encapsulates user traffic in GTP-U tunnels.<br>
+               <strong>Xn:</strong> Direct interface between gNBs to facilitate fast handovers.</p>
+        </div>
+
+        <div class="card">
+            <h3>Message Flow Patterns</h3>
+            <p>• <strong>Signaling:</strong> Follows the path from UE to AMF. Used for registration, authentication, and session setup.<br>
+               • <strong>Data Plane:</strong> Follows the path from UE to gNB and then directly to the UPF. Optimized for low latency and high throughput.</p>
+        </div>
+
+        <div class="card">
+            <h3>Technical Highlight: N1 NAS</h3>
+            <p>The <strong>N1 interface</strong> is a logical connection between the UE and AMF. The gNB acts as a transparent relay, simply forwarding these critical control messages through the N2 tunnel.</p>
+        </div>
+    </div>
+    
+    <div class="credits">Made by Harshinie M</div>
+</section>
+
+<script>
+    const svg = document.getElementById('main-svg');
+    const sigBtn = document.getElementById('sig-btn');
+    const dataBtn = document.getElementById('data-btn');
+
+    function toggleGNB() {
+        svg.classList.toggle('highlight-active');
+    }
+
+    function toggleFlow(type) {
+        if(type === 'sig') {
+            svg.classList.toggle('sig-flow');
+            sigBtn.classList.toggle('active-sig');
+            // Remove data flow if sig is toggled
+            svg.classList.remove('data-flow');
+            dataBtn.classList.remove('active-data');
+        } else {
+            svg.classList.toggle('data-flow');
+            dataBtn.classList.toggle('active-data');
+            // Remove sig flow if data is toggled
+            svg.classList.remove('sig-flow');
+            sigBtn.classList.remove('active-sig');
+        }
+    }
+</script>
+
+</body>
+</html>

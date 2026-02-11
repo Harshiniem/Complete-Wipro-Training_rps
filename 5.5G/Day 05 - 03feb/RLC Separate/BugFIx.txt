@@ -1,0 +1,55 @@
+A 25-byte SDU is segmented into three PDUs (10, 10, 5 bytes). The receiver must reassemble and deliver exactly one SDU of 25 bytes.
+
+Original bugs:
+1. FI start/end handled incorrectly
+2. Off-by-one error while copying payload bytes
+3. SDU delivered at wrong time
+Corrected Code
+
+#include <vector>
+#include <cstdint>
+#include <functional>
+
+struct UmHeader {
+    uint16_t sn;
+    bool fi_start; // true if segment starts an SDU
+    bool fi_end;   // true if segment ends an SDU
+};
+
+struct UmPdu {
+    UmHeader h;
+    std::vector<uint8_t> payload;
+};
+
+class RlcUmRx {
+public:
+    using DeliverFn = std::function<void(const std::vector<uint8_t>&)>;
+
+    explicit RlcUmRx(DeliverFn deliver)
+        : deliver_(deliver) {}
+
+    void onPdu(const UmPdu& pdu) {
+
+        // If this PDU starts a new SDU, reset buffer
+        if (pdu.h.fi_start) {
+            reassembly_.clear();
+        }
+
+        // Correct byte copy: copy ALL bytes
+        for (uint8_t byte : pdu.payload) {
+            reassembly_.push_back(byte);
+        }
+
+        // Deliver ONLY when SDU ends
+        if (pdu.h.fi_end) {
+            deliver_(reassembly_);
+            reassembly_.clear();
+        }
+    }
+
+private:
+    DeliverFn deliver_;
+    std::vector<uint8_t> reassembly_;
+};
+
+

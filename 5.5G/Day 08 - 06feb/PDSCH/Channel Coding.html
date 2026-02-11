@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR Channel Coding: LDPC & Polar | Advanced Architecture</title>
+    <style>
+        /* --- THEME ENGINE --- */
+        :root {
+            --bg-deep: #02040a;
+            --bg-panel: rgba(13, 17, 23, 0.7);
+            --bg-code: #0d1117;
+            
+            /* LDPC Theme (Cyan/Blue) */
+            --ldpc-primary: #00f2ff;
+            --ldpc-dim: rgba(0, 242, 255, 0.1);
+            
+            /* Polar Theme (Purple/Pink) */
+            --polar-primary: #d946ef;
+            --polar-dim: rgba(217, 70, 239, 0.1);
+            
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --border: 1px solid rgba(255,255,255,0.1);
+            
+            --font-tech: 'Segoe UI', system-ui, sans-serif;
+            --font-code: 'Consolas', 'Monaco', monospace;
+            --font-math: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        /* --- RESET & BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-tech);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(0, 242, 255, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 90%, rgba(217, 70, 239, 0.05) 0%, transparent 20%);
+        }
+
+        /* --- LAYOUT UTILS --- */
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section-gap { margin-bottom: 60px; }
+        
+        /* --- COMPONENTS --- */
+        h1, h2, h3 { font-weight: 600; letter-spacing: -0.5px; }
+        h1 { font-size: 2.5rem; text-align: center; margin-bottom: 10px; }
+        h2 { border-left: 4px solid #fff; padding-left: 15px; margin-bottom: 20px; font-size: 1.5rem; }
+        
+        .badge {
+            font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; border: 1px solid;
+            font-family: var(--font-code); display: inline-block; margin-bottom: 5px;
+        }
+        .badge-ldpc { color: var(--ldpc-primary); border-color: var(--ldpc-primary); background: var(--ldpc-dim); }
+        .badge-polar { color: var(--polar-primary); border-color: var(--polar-primary); background: var(--polar-dim); }
+
+        /* Glass Panel */
+        .panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        /* --- THEORY SECTIONS --- */
+        .theory-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .tab-btn {
+            background: transparent; border: none; color: var(--text-muted); padding: 10px 20px;
+            cursor: pointer; font-size: 1rem; border-bottom: 2px solid transparent; transition: 0.3s;
+        }
+        .tab-btn:hover { color: #fff; }
+        .tab-btn.active-ldpc { color: var(--ldpc-primary); border-bottom-color: var(--ldpc-primary); }
+        .tab-btn.active-polar { color: var(--polar-primary); border-bottom-color: var(--polar-primary); }
+
+        .theory-content { display: none; animation: fadeUp 0.5s ease; }
+        .theory-content.active { display: block; }
+
+        .math-box {
+            background: rgba(0,0,0,0.3);
+            border-left: 3px solid var(--text-muted);
+            padding: 15px;
+            margin: 15px 0;
+            font-family: var(--font-math);
+            font-size: 1.1rem;
+            color: #d1d5db;
+        }
+        .matrix { display: inline-table; vertical-align: middle; border-left: 1px solid #fff; border-right: 1px solid #fff; padding: 0 5px; }
+        
+        /* --- CODE EDITOR --- */
+        .code-window {
+            background: var(--bg-code); border-radius: 8px; border: var(--border); overflow: hidden;
+            font-family: var(--font-code); font-size: 0.85rem; display: flex; flex-direction: column;
+            height: 500px;
+        }
+        .code-header {
+            background: #161b22; padding: 8px 15px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: var(--border);
+        }
+        .code-body { flex-grow: 1; padding: 15px; overflow-y: auto; color: #e6edf3; white-space: pre; }
+        
+        /* Syntax Highlighting */
+        .kwd { color: #ff7b72; } /* Keyword */
+        .typ { color: #79c0ff; } /* Type */
+        .fun { color: #d2a8ff; } /* Function */
+        .str { color: #a5d6ff; } /* String */
+        .com { color: #8b949e; font-style: italic; } /* Comment */
+        .num { color: #f2cc60; }
+
+        /* --- SIMULATOR --- */
+        .sim-controls {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
+            margin-bottom: 20px;
+        }
+        .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+        .input-group select, .input-group input {
+            width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+            padding: 8px; border-radius: 4px;
+        }
+        .canvas-container {
+            width: 100%; height: 400px; background: #050505; border-radius: 8px; border: var(--border);
+            position: relative; overflow: hidden;
+        }
+        .sim-stats {
+            display: flex; justify-content: space-around; margin-top: 15px;
+            background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;
+        }
+        .stat-item span { display: block; font-size: 0.8rem; color: var(--text-muted); }
+        .stat-item strong { font-size: 1.2rem; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive */
+        @media(max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header class="section-gap">
+        <div style="text-align:center; color: var(--text-muted); font-family: var(--font-code);">3GPP TS 38.212 - V17.0.0</div>
+        <h1>5G NR Channel Coding</h1>
+        <p style="text-align:center; max-width:600px; margin:0 auto; color:var(--text-muted);">
+            Explore the mechanisms of <strong>LDPC</strong> (Low Density Parity Check) for data reliability and <strong>Polar Codes</strong> for control information robustness.
+        </p>
+    </header>
+
+    <!-- MODULE 1: THEORY -->
+    <section class="section-gap">
+        <h2>1. Theoretical Architecture</h2>
+        <div class="panel">
+            <div class="theory-tabs">
+                <button class="tab-btn active-ldpc" onclick="switchTheory('ldpc')">LDPC (Data Channels)</button>
+                <button class="tab-btn" onclick="switchTheory('polar')">Polar Codes (Control Channels)</button>
+            </div>
+
+            <!-- LDPC CONTENT -->
+            <div id="theory-ldpc" class="theory-content active">
+                <span class="badge badge-ldpc">PDSCH</span> <span class="badge badge-ldpc">PUSCH</span>
+                
+                <div class="grid-2">
+                    <div>
+                        <h3>Quasi-Cyclic LDPC</h3>
+                        <p style="margin-bottom:10px;">
+                            5G uses QC-LDPC, defined by a Base Graph (BG) and a Lifting Size ($Z$). The Parity Check Matrix $H$ is constructed by replacing entries in the BG with $Z \times Z$ shifted identity matrices or zero matrices.
+                        </p>
+                        <div class="math-box">
+                            $H = \begin{bmatrix} A & B \\ C & D \end{bmatrix}$
+                        </div>
+                        <ul style="padding-left:20px; color:var(--text-muted);">
+                            <li><strong>Region A:</strong> Information bits part. High density.</li>
+                            <li><strong>Region B:</strong> Parity bits (dual diagonal). Ensures easy encoding.</li>
+                            <li><strong>BG1:</strong> For large blocks ($K > 3824$) or high rates ($R > 2/3$). Size $46 \times 68$.</li>
+                            <li><strong>BG2:</strong> For small blocks or low rates. Size $42 \times 52$.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Decoding: Belief Propagation</h3>
+                        <p>
+                            LDPC uses iterative "Soft" decoding. Messages (Log-Likelihood Ratios - LLRs) are passed between Variable Nodes (Bits) and Check Nodes (Constraints).
+                        </p>
+                        <div class="math-box">
+                            $L(q_{ij}) = L(c_i) + \sum_{k \neq j} L(r_{ki})$ <br>
+                            <small>(Sum-Product / Min-Sum Algorithm)</small>
+                        </div>
+                        <p style="font-size:0.9rem; color:var(--text-muted);">
+                            The decoder iterates until all parity checks are satisfied ($H \cdot c^T = 0$) or max iterations reached.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POLAR CONTENT -->
+            <div id="theory-polar" class="theory-content">
+                <span class="badge badge-polar">PDCCH</span> <span class="badge badge-polar">PUCCH</span> <span class="badge badge-polar">PBCH</span>
+                
+                <div class="grid-2">
+                    <div>
+                        <h3>Channel Polarization</h3>
+                        <p>
+                            Polar codes transform $N$ independent physical channels into $N$ virtual channels: some extremely reliable (Good) and some extremely noisy (Bad).
+                        </p>
+                        <div class="math-box">
+                            $G_N = G_2^{\otimes n} \cdot B_N$ <br>
+                            <small>Where $G_2 = \begin{bmatrix} 1 & 0 \\ 1 & 1 \end{bmatrix}$ (Kronecker Power)</small>
+                        </div>
+                        <p>
+                            <strong>Strategy:</strong> Place information bits on the "Good" channels and fix the "Bad" channels to 0 (Frozen Bits).
+                        </p>
+                    </div>
+                    <div>
+                        <h3>SCL Decoding + CRC</h3>
+                        <p>
+                            5G uses Successive Cancellation List (SCL) decoding aided by CRC. SC is a greedy algorithm. SCL keeps $L$ candidate paths (lists) to improve performance.
+                        </p>
+                        <div class="math-box">
+                            Selection Metric:<br>
+                            Path with valid CRC and highest Likelihood.
+                        </div>
+                        <ul style="padding-left:20px; color:var(--text-muted);">
+                            <li><strong>Distributed CRC:</strong> CRC bits are interleaved to help early pruning of wrong paths.</li>
+                            <li><strong>Rate Matching:</strong> Unlike LTE, 5G Polar supports arbitrary output lengths via puncturing or shortening.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE 2: C++ IMPLEMENTATION -->
+    <section class="section-gap">
+        <h2>2. Implementation Details</h2>
+        <div class="grid-2">
+            <!-- Code Editor -->
+            <div class="code-window">
+                <div class="code-header">
+                    <span id="filename">LDPC_Decoder.cpp</span>
+                    <div>
+                        <button onclick="copyCode()" style="background:none; border:1px solid #30363d; color:white; padding:2px 8px; cursor:pointer;">Copy</button>
+                    </div>
+                </div>
+                <div class="code-body" id="code-content">
+<!-- Code injected via JS -->
+                </div>
+            </div>
+            
+            <!-- Explanation Panel -->
+            <div class="panel">
+                <h3 id="code-title">LDPC Logic Explanation</h3>
+                <div style="margin-top:15px; color: var(--text-muted);" id="code-desc">
+                    <p>The code demonstrates the <strong>Min-Sum Algorithm</strong>, a simplified hardware-friendly version of Belief Propagation.</p>
+                    <br>
+                    <ol>
+                        <li><strong>Initialization:</strong> LLRs from channel.</li>
+                        <li><strong>Check Node Update:</strong> Find min magnitude of connected Variable Nodes. Sign is parity of connected signs.</li>
+                        <li><strong>Variable Node Update:</strong> Sum LLRs from connected Check Nodes + intrinsic LLR.</li>
+                        <li><strong>Hard Decision:</strong> If sum > 0, bit is 0, else 1.</li>
+                        <li><strong>Syndrome Check:</strong> Stop if $H \cdot x = 0$.</li>
+                    </ol>
+                </div>
+                <div style="margin-top:20px;">
+                    <button class="tab-btn active-ldpc" onclick="loadCode('ldpc')">Show LDPC C++</button>
+                    <button class="tab-btn" onclick="loadCode('polar')">Show Polar C++</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE 3: LIVE SIMULATOR -->
+    <section class="section-gap">
+        <h2>3. Live Simulation & Visualization</h2>
+        <div class="panel">
+            <div class="sim-controls">
+                <div class="input-group">
+                    <label>Coding Scheme</label>
+                    <select id="sim-scheme" onchange="resetSim()">
+                        <option value="ldpc">LDPC (Data - Graph Based)</option>
+                        <option value="polar">Polar (Control - Recursive)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Signal-to-Noise (SNR dB)</label>
+                    <input type="range" id="sim-snr" min="-2" max="10" step="0.5" value="2" oninput="document.getElementById('snr-disp').innerText = this.value">
+                    <span style="font-size:0.8rem; float:right;">Current: <span id="snr-disp">2</span>dB</span>
+                </div>
+                <div class="input-group">
+                    <label>Decoding Iterations / List Size</label>
+                    <select id="sim-iter">
+                        <option value="5">Low (Fast)</option>
+                        <option value="10" selected>Standard</option>
+                        <option value="20">High (Robust)</option>
+                    </select>
+                </div>
+                <button onclick="startSimulation()" style="background:var(--ldpc-primary); border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Run Visual Decoder</button>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="simCanvas"></canvas>
+            </div>
+
+            <div class="sim-stats">
+                <div class="stat-item"><span>Transmitted Bits</span><strong id="stat-tx">0</strong></div>
+                <div class="stat-item"><span>Errors Corrected</span><strong id="stat-corrected" style="color:var(--ldpc-primary)">0</strong></div>
+                <div class="stat-item"><span>Residual Errors</span><strong id="stat-errors" style="color:#ff5555">0</strong></div>
+                <div class="stat-item"><span>Status</span><strong id="stat-status">IDLE</strong></div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    /* =========================================
+       DATA & CONSTANTS
+       ========================================= */
+    const LDPC_CODE = `// LDPC Min-Sum Decoder Implementation (Simplified)
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+// Represents the Tanner Graph
+struct Edge { int to_node; double msg; };
+
+void decode_ldpc(vector<double>& channel_llrs, 
+                 const vector<vector<int>>& H_matrix, 
+                 int max_iter) {
+    
+    int n = channel_llrs.size(); // Block length
+    int m = H_matrix.size();     // Check equations
+    
+    // Initialize Variable Nodes
+    vector<double> v_nodes = channel_llrs;
+    vector<vector<double>> c_to_v_msgs(m, vector<double>(n, 0.0));
+
+    for (int iter = 0; iter < max_iter; iter++) {
+        
+        // --- 1. Check Node Processing (Min-Sum) ---
+        for (int i = 0; i < m; ++i) {
+            // Find connected variable nodes
+            // Calculate minimum magnitude and product of signs
+            double min_val = 1e9;
+            int sign_prod = 1;
+            
+            // ... (Loop over connections to find min) ...
+            
+            // Update messages to V-nodes
+        }
+
+        // --- 2. Variable Node Processing ---
+        vector<int> hard_decision(n);
+        for (int j = 0; j < n; ++j) {
+            double sum_llrs = channel_llrs[j];
+            // Add messages from all connected check nodes
+            // ... 
+            
+            // --- 3. Hard Decision ---
+            hard_decision[j] = (sum_llrs < 0) ? 1 : 0;
+        }
+
+        // --- 4. Early Exit (Syndrome Check) ---
+        if (check_syndrome(hard_decision, H_matrix)) {
+            cout << "Converged at iter " << iter << endl;
+            return;
+        }
+    }
+}`;
+
+    const POLAR_CODE = `// Polar SCL (Successive Cancellation List) Skeleton
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+// Recursive butterfly structure
+void polar_transform(vector<double>& llr, int N) {
+    if (N == 1) return;
+    
+    int half = N / 2;
+    // Split into upper and lower branches
+    vector<double> upper(half), lower(half);
+    
+    // f function (Sign approximation)
+    // g function (Sum)
+    for(int i=0; i<half; i++) {
+        upper[i] = f_op(llr[i], llr[i+half]);
+        lower[i] = g_op(llr[i], llr[i+half], u_hat[i]);
+    }
+    
+    polar_transform(upper, half);
+    polar_transform(lower, half);
+}
+
+// SCL Decoder Main
+vector<int> decode_polar_scl(vector<double>& rx_llr, int K, int ListSize) {
+    int N = rx_llr.size();
+    
+    // Maintain 'L' candidate paths
+    vector<Path> paths(ListSize);
+    
+    // Traverse the Polar Tree
+    for (int i = 0; i < N; i++) {
+        if (is_frozen(i)) {
+            // Append 0 to all paths
+        } else {
+            // Fork paths: append 0 and 1
+            // Calculate Path Metrics (PM)
+            // Prune to keep best 'L' paths
+        }
+    }
+    
+    // Final Selection based on CRC
+    return select_best_path(paths);
+}`;
+
+    /* =========================================
+       UI LOGIC
+       ========================================= */
+    function switchTheory(type) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-ldpc', 'active-polar'));
+        document.querySelectorAll('.theory-content').forEach(c => c.classList.remove('active'));
+        
+        document.getElementById(`theory-${type}`).classList.add('active');
+        // Add active class to button (need to find the specific button clicked or by index)
+        event.target.classList.add(type === 'ldpc' ? 'active-ldpc' : 'active-polar');
+    }
+
+    function loadCode(type) {
+        const content = document.getElementById('code-content');
+        const title = document.getElementById('filename');
+        const desc = document.getElementById('code-desc');
+        const titleText = document.getElementById('code-title');
+
+        if (type === 'ldpc') {
+            title.innerText = "LDPC_Decoder.cpp";
+            titleText.innerText = "LDPC Logic Explanation";
+            desc.innerHTML = `<p>The code demonstrates the <strong>Min-Sum Algorithm</strong>...</p><ol><li>Initialization...</li><li>Check Node Update...</li></ol>`;
+            content.innerHTML = highlight(LDPC_CODE);
+        } else {
+            title.innerText = "Polar_SCL.cpp";
+            titleText.innerText = "Polar SCL Logic Explanation";
+            desc.innerHTML = `<p>Recursive implementation of the polarization effect.</p><br><ul><li><strong>N = 2^n:</strong> Recursive butterfly structure.</li><li><strong>Frozen Bits:</strong> Channels with low capacity are frozen to 0.</li><li><strong>List Decoding:</strong> Keeps multiple hypotheses to prevent error propagation.</li></ul>`;
+            content.innerHTML = highlight(POLAR_CODE);
+        }
+    }
+
+    function highlight(code) {
+        return code
+            .replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\b(int|void|double|float|bool|struct|class|const|auto)\b/g, '<span class="typ">$1</span>')
+            .replace(/\b(if|else|for|while|return|using|namespace|include)\b/g, '<span class="kwd">$1</span>')
+            .replace(/\b(decode_ldpc|size|push_back|polar_transform|f_op|g_op)\b/g, '<span class="fun">$1</span>')
+            .replace(/(\/\/.*)/g, '<span class="com">$1</span>');
+    }
+
+    // Init Code View
+    loadCode('ldpc');
+    function copyCode() { alert("Simulated copy to clipboard"); }
+
+
+    /* =========================================
+       SIMULATION ENGINE (VISUALIZATION)
+       ========================================= */
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    let simTimer;
+    let particles = [];
+    let nodes = [];
+    
+    function resetSim() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('stat-status').innerText = "IDLE";
+        document.getElementById('stat-status').style.color = "#fff";
+    }
+
+    function startSimulation() {
+        const scheme = document.getElementById('sim-scheme').value;
+        const snr = parseFloat(document.getElementById('sim-snr').value);
+        
+        resizeCanvas();
+        particles = [];
+        nodes = [];
+        
+        document.getElementById('stat-status').innerText = "DECODING...";
+        document.getElementById('stat-status').style.color = "#ffff00";
+
+        if(scheme === 'ldpc') setupLDPC(snr);
+        else setupPolar(snr);
+        
+        if (simTimer) cancelAnimationFrame(simTimer);
+        animate(scheme);
+    }
+
+    function resizeCanvas() {
+        const container = document.querySelector('.canvas-container');
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // --- LDPC SPECIFIC ---
+    function setupLDPC(snr) {
+        // Create Tanner Graph Visualization
+        // Top row: Check Nodes (Squares)
+        // Bottom row: Variable Nodes (Circles)
+        const cols = 12; // Code length
+        const rows = 6;  // Check equations
+        
+        const padX = canvas.width / (cols + 1);
+        const padY = canvas.height / 4;
+
+        // Create Variable Nodes (Bottom)
+        for(let i=0; i<cols; i++) {
+            // Error injection based on SNR
+            const isError = Math.random() > (0.5 + (snr/20)); // simplistic error model
+            nodes.push({
+                x: padX * (i+1), y: canvas.height - 50,
+                type: 'var', id: i,
+                val: isError ? 1 : 0, // 0 is correct, 1 is error
+                orig: 0
+            });
+        }
+
+        // Create Check Nodes (Top)
+        for(let i=0; i<rows; i++) {
+            nodes.push({
+                x: padX * (i * (cols/rows) + 1.5), y: 50,
+                type: 'chk', id: i + cols,
+                val: 0
+            });
+        }
+        
+        // Create Connections (Edges) - Quasi Random
+        nodes.forEach(n => {
+            if(n.type === 'var') {
+                // Connect to 3 random check nodes
+                for(let k=0; k<3; k++) {
+                    let targetId = cols + Math.floor(Math.random()*rows);
+                    let target = nodes.find(x => x.id === targetId);
+                    
+                    // Create Message Particle
+                    particles.push({
+                        from: n, to: target,
+                        progress: Math.random(),
+                        speed: 0.01 + Math.random()*0.01,
+                        val: n.val // Carry the bit value
+                    });
+                }
+            }
+        });
+        
+        document.getElementById('stat-tx').innerText = cols;
+        document.getElementById('stat-corrected').innerText = "0";
+        document.getElementById('stat-errors').innerText = nodes.filter(n=>n.type==='var' && n.val!==n.orig).length;
+    }
+
+    // --- POLAR SPECIFIC ---
+    function setupPolar(snr) {
+        // Draw 3 stages of Butterfly
+        const N = 8;
+        const stageWidth = canvas.width / 4;
+        const rowHeight = canvas.height / (N+1);
+        
+        // Create layers of nodes
+        for(let s=0; s<=3; s++) { // Stages 0 to 3
+            for(let i=0; i<N; i++) {
+                nodes.push({
+                    x: 50 + s * stageWidth,
+                    y: 50 + i * rowHeight,
+                    type: 'stage',
+                    stage: s,
+                    id: i,
+                    frozen: s===0 && (i < N/2) // First stage half frozen (simplified)
+                });
+            }
+        }
+        
+        // Connections (Butterfly)
+        // Simplified visual connections
+        nodes.forEach(n => {
+            if (n.stage < 3) {
+                // Connect straight
+                let straight = nodes.find(t => t.stage === n.stage+1 && t.id === n.id);
+                particles.push({ from: n, to: straight, progress: 0, speed: 0.02, color: '#444' });
+                
+                // Connect cross (X)
+                // Logic: stride depends on stage (4, 2, 1)
+                let stride = 4 / Math.pow(2, n.stage);
+                let crossId = (n.id % (stride*2) < stride) ? n.id + stride : n.id - stride;
+                if(crossId < 8 && crossId >= 0) {
+                     let cross = nodes.find(t => t.stage === n.stage+1 && t.id === Math.floor(crossId));
+                     if(cross) particles.push({ from: n, to: cross, progress: 0, speed: 0.02, color: '#444' });
+                }
+            }
+        });
+
+        // Simulate "Active Paths" (SCL)
+        // Only light up a few particles to represent list paths
+        for(let i=0; i<10; i++) {
+            let p = particles[Math.floor(Math.random() * particles.length)];
+            p.active = true;
+        }
+
+        document.getElementById('stat-tx').innerText = N;
+        document.getElementById('stat-corrected').innerText = "-";
+        document.getElementById('stat-errors').innerText = "-";
+    }
+
+
+    function animate(scheme) {
+        // Redraw Background
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        
+        // Draw Nodes
+        nodes.forEach(n => {
+            ctx.beginPath();
+            if (scheme === 'ldpc') {
+                ctx.fillStyle = n.type === 'var' ? (n.val ? '#ff5555' : '#00f2ff') : '#fff';
+                if(n.type === 'chk') ctx.rect(n.x-10, n.y-10, 20, 20);
+                else ctx.arc(n.x, n.y, 8, 0, Math.PI*2);
+            } else {
+                ctx.fillStyle = n.frozen ? '#555' : '#d946ef';
+                ctx.arc(n.x, n.y, 4, 0, Math.PI*2);
+            }
+            ctx.fill();
+        });
+
+        // Update & Draw Particles/Lines
+        let correctedCount = 0;
+        let activeErrors = 0;
+
+        particles.forEach(p => {
+            // Draw Line (Faint)
+            ctx.strokeStyle = '#222';
+            ctx.beginPath();
+            ctx.moveTo(p.from.x, p.from.y);
+            ctx.lineTo(p.to.x, p.to.y);
+            ctx.stroke();
+
+            // Animate Particle
+            if(scheme === 'ldpc' || p.active) {
+                p.progress += p.speed;
+                if(p.progress >= 1) {
+                    p.progress = 0;
+                    // Logic: LDPC Convergence Animation
+                    // If moving to var node, try to "fix" it
+                    if(scheme === 'ldpc' && p.to.type === 'var' && p.to.val === 1) {
+                         if(Math.random() > 0.8) {
+                             p.to.val = 0; // Corrected!
+                             // Flash effect
+                             ctx.beginPath();
+                             ctx.arc(p.to.x, p.to.y, 15, 0, Math.PI*2);
+                             ctx.fillStyle = 'rgba(0, 242, 255, 0.5)';
+                             ctx.fill();
+                         }
+                    }
+                }
+                
+                // Draw Token
+                let currX = p.from.x + (p.to.x - p.from.x) * p.progress;
+                let currY = p.from.y + (p.to.y - p.from.y) * p.progress;
+                
+                ctx.fillStyle = scheme === 'ldpc' ? 'rgba(0, 242, 255, 0.8)' : '#d946ef';
+                ctx.beginPath();
+                ctx.arc(currX, currY, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+        });
+
+        if (scheme === 'ldpc') {
+             // Calculate stats live
+             activeErrors = nodes.filter(n => n.type==='var' && n.val === 1).length;
+             correctedCount = 12 - activeErrors;
+             document.getElementById('stat-corrected').innerText = correctedCount;
+             document.getElementById('stat-errors').innerText = activeErrors;
+             
+             if(activeErrors === 0) {
+                 document.getElementById('stat-status').innerText = "SUCCESS";
+                 document.getElementById('stat-status').style.color = "#00ff00";
+             }
+        } else {
+            document.getElementById('stat-status').innerText = "LIST DECODING...";
+        }
+
+        simTimer = requestAnimationFrame(() => animate(scheme));
+    }
+</script>
+
+</body>
+</html>

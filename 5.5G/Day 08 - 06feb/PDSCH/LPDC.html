@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR LDPC: Technical Deep Dive & Processing Lab</title>
+    <style>
+        :root {
+            --eng-blue: #004a99;
+            --eng-light: #f0f4f8;
+            --eng-navy: #002b5c;
+            --blueprint-grid: rgba(0, 74, 153, 0.05);
+            --bg1-color: #2196f3;
+            --bg2-color: #ff5722;
+            --terminal-bg: #121212;
+            --text-main: #2c3e50;
+            --border-color: #cbd5e0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--eng-light);
+            background-image: 
+                linear-gradient(var(--blueprint-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--blueprint-grid) 1px, transparent 1px);
+            background-size: 25px 25px;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Layout */
+        .wrapper { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+
+        /* Sidebar */
+        aside {
+            background: white;
+            border-right: 2px solid var(--eng-blue);
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-title { font-weight: 800; color: var(--eng-blue); text-transform: uppercase; font-size: 0.9rem; margin-bottom: 30px; letter-spacing: 1px; }
+        
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+        nav a {
+            text-decoration: none;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 10px;
+            display: block;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        nav a:hover { background: var(--eng-light); color: var(--eng-blue); }
+        nav a.active { background: var(--eng-blue); color: white; }
+
+        /* Content Area */
+        main { padding: 40px; max-width: 1000px; }
+
+        header {
+            background: white;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .spec-tag { background: var(--eng-blue); color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; font-family: monospace; }
+
+        section { margin-bottom: 60px; }
+        h2 { font-size: 1.8rem; color: var(--eng-navy); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        h2::before { content: ''; width: 4px; height: 30px; background: var(--eng-blue); display: inline-block; }
+
+        .card { background: white; padding: 25px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+
+        /* System Flow Diagram */
+        .flow-container { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; overflow-x: auto; }
+        .flow-step { background: white; border: 1px solid var(--eng-blue); padding: 10px 15px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-align: center; min-width: 120px; }
+        .flow-step.active { background: var(--eng-blue); color: white; transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,74,153,0.3); }
+        .flow-arrow { color: var(--eng-blue); font-weight: bold; }
+
+        /* Comparison Table */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
+        th, td { padding: 12px; border: 1px solid var(--border-color); text-align: left; font-size: 0.9rem; }
+        th { background: #f8fafc; color: var(--eng-blue); }
+
+        /* SIMULATOR STYLES */
+        .lab-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+        .control-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; color: #475569; }
+        input[type="number"], select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: monospace; }
+
+        .btn-run {
+            width: 100%; padding: 15px; background: var(--eng-blue); color: white; border: none; border-radius: 6px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: 0.3s;
+        }
+        .btn-run:hover { background: var(--eng-navy); box-shadow: 0 0 20px rgba(0,74,153,0.3); }
+
+        .terminal {
+            background: var(--terminal-bg); color: #00ff00; padding: 15px; font-family: 'Courier New', monospace;
+            font-size: 0.8rem; height: 250px; overflow-y: auto; border-radius: 4px; line-height: 1.4;
+        }
+        .term-blue { color: #00d4ff; }
+        .term-warn { color: #ffcc00; }
+
+        .matrix-view {
+            background: #000; border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 200px; margin-bottom: 15px;
+        }
+
+        .stat-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .stat-box { background: var(--eng-light); padding: 10px; border-radius: 4px; text-align: center; border: 1px solid var(--border-color); }
+        .stat-box small { font-size: 0.6rem; text-transform: uppercase; display: block; color: #64748b; }
+        .stat-box b { font-size: 1.1rem; color: var(--eng-blue); }
+
+        /* Code highlight */
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; font-size: 0.85rem; overflow-x: auto; border: 1px solid #333; }
+        .keyword { color: #569cd6; }
+        .comment { color: #6a9955; }
+
+        @media (max-width: 900px) {
+            .wrapper { grid-template-columns: 1fr; }
+            aside { display: none; }
+            .lab-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    <aside>
+        <div class="sidebar-title">LDPC Control Panel</div>
+        <nav>
+            <ul>
+                <li><a href="#intro" class="active">01. Overview</a></li>
+                <li><a href="#chain">02. PHY Chain Context</a></li>
+                <li><a href="#logic">03. Selection Rules</a></li>
+                <li><a href="#simulator">04. Interactive Lab</a></li>
+                <li><a href="#implementation">05. Source Code</a></li>
+            </ul>
+        </nav>
+        <div style="margin-top: auto; font-size: 0.7rem; color: #94a3b8;">
+            v2.4.0 | TS 38.212 Compliant<br>
+            © 2024 5G Engineering Lab
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        
+        <header id="intro">
+            <span class="spec-tag">3GPP REL-15/16/17</span>
+            <h1 style="margin-top: 10px; color: var(--eng-navy);">LDPC Base Graph Selection</h1>
+            <p>Master the logic used by the 5G gNodeB and User Equipment to select the optimal Low-Density Parity-Check (LDPC) architecture for data transmission.</p>
+        </header>
+
+        <!-- Section 1: Theory -->
+        <section>
+            <h2>Understanding the Purpose</h2>
+            <div class="card">
+                <p>LDPC codes provide the backbone for 5G eMBB (Enhanced Mobile Broadband) data. Unlike the Turbo codes used in 4G, LDPC uses a <b>Parity Check Matrix (H)</b> that is extremely sparse, allowing for massive parallelization in hardware decoding.</p>
+                <div style="display: flex; gap: 20px; margin-top: 20px;">
+                    <div style="flex: 1; border-left: 3px solid var(--bg1-color); padding-left: 15px;">
+                        <strong>Base Graph 1 (BG1)</strong>
+                        <p style="font-size: 0.85rem; color: #64748b;">Optimized for high throughput and large Transport Blocks (up to 8448 bits per code block).</p>
+                    </div>
+                    <div style="flex: 1; border-left: 3px solid var(--bg2-color); padding-left: 15px;">
+                        <strong>Base Graph 2 (BG2)</strong>
+                        <p style="font-size: 0.85rem; color: #64748b;">Optimized for robustness and smaller payloads, supporting very low coding rates (down to 1/5).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Chain -->
+        <section id="chain">
+            <h2>System Processing Chain</h2>
+            <div class="card">
+                <p style="font-size: 0.9rem; margin-bottom: 20px;">Selection occurs after the Transport Block CRC is added but <strong>before</strong> Code Block Segmentation.</p>
+                <div class="flow-container">
+                    <div class="flow-step">Transport Block</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">CRC Attachment</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step active">Base Graph Selection</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">Segmentation</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">LDPC Encoding</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Logic -->
+        <section id="logic">
+            <h2>Selection Logic (TS 38.212)</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Decision</th>
+                            <th>Technical Context</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>$A \le 292$ bits</td>
+                            <td style="color: var(--bg2-color); font-weight: bold;">Base Graph 2</td>
+                            <td>Small payloads (e.g., IoT/VoLTE)</td>
+                        </tr>
+                        <tr>
+                            <td>$A \le 3824$ bits AND $R \le 0.67$</td>
+                            <td style="color: var(--bg2-color); font-weight: bold;">Base Graph 2</td>
+                            <td>Medium payloads with robust coding</td>
+                        </tr>
+                        <tr>
+                            <td>$R \le 0.25$</td>
+                            <td style="color: var(--bg2-color); font-weight: bold;">Base Graph 2</td>
+                            <td>Extreme coverage / low SNR scenarios</td>
+                        </tr>
+                        <tr>
+                            <td>Otherwise</td>
+                            <td style="color: var(--bg1-color); font-weight: bold;">Base Graph 1</td>
+                            <td>Standard high-speed data flow</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 4: Simulator (The Working Simulation) -->
+        <section id="simulator">
+            <h2>Interactive Simulation Lab</h2>
+            <div class="lab-grid">
+                <!-- Inputs -->
+                <div class="card">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 15px; color: var(--eng-blue);">Input Parameters</h3>
+                    
+                    <div class="control-group">
+                        <label>Transport Block Size (A) [bits]</label>
+                        <input type="number" id="sim-tbs" value="4000">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Target Coding Rate (R)</label>
+                        <select id="sim-rate">
+                            <option value="0.15">0.15 (Very Robust)</option>
+                            <option value="0.33">0.33 (Mid Rate)</option>
+                            <option value="0.50" selected>0.50 (Standard)</option>
+                            <option value="0.75">0.75 (High Efficiency)</option>
+                            <option value="0.92">0.92 (Max Throughput)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-run" onclick="runLdpcSimulation()">Execute Selection Logic</button>
+                    
+                    <div style="margin-top: 20px;">
+                        <div class="stat-bar">
+                            <div class="stat-box">
+                                <small>Lifting (Zc)</small>
+                                <b id="stat-zc">-</b>
+                            </div>
+                            <div class="stat-box">
+                                <small>Segments (C)</small>
+                                <b id="stat-c">-</b>
+                            </div>
+                            <div class="stat-box">
+                                <small>Decision</small>
+                                <b id="stat-bg">-</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outputs -->
+                <div class="card" style="background: #1a1a1a;">
+                    <div class="matrix-view">
+                        <canvas id="matrix-canvas" width="300" height="150"></canvas>
+                    </div>
+                    <div class="terminal" id="term">
+                        <div class="term-blue">PHY Entity Init...</div>
+                        <div>Ready for input...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Implementation -->
+        <section id="implementation">
+            <h2>Hardware Implementation (C++)</h2>
+            <div class="card">
+                <pre>
+<span class="comment">// 5G NR LDPC Base Graph Selection</span>
+<span class="keyword">int</span> getBaseGraph(<span class="keyword">uint32_t</span> A, <span class="keyword">double</span> R) {
+    <span class="comment">// Rule 1: Very small blocks</span>
+    <span class="keyword">if</span> (A <= 292) <span class="keyword">return</span> 2;
+
+    <span class="comment">// Rule 2: Medium blocks with low/mid rate</span>
+    <span class="keyword">if</span> (A <= 3824 && R <= 0.67) <span class="keyword">return</span> 2;
+
+    <span class="comment">// Rule 3: Very low coding rate</span>
+    <span class="keyword">if</span> (R <= 0.25) <span class="keyword">return</span> 2;
+
+    <span class="comment">// Rule 4: Default to BG1 for high speed</span>
+    <span class="keyword">return</span> 1;
+}</pre>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    const Z_TABLE = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18,20,22,24,26,28,30,32,36,40,44,48,52,56,60,64,72,80,88,96,104,112,120,128,144,160,176,192,208,224,240,256,288,320,352,384];
+
+    function logTerm(msg, style = '') {
+        const term = document.getElementById('term');
+        const div = document.createElement('div');
+        div.className = style;
+        div.innerHTML = `> ${msg}`;
+        term.appendChild(div);
+        term.scrollTop = term.scrollHeight;
+    }
+
+    function drawMatrixVisual(bg) {
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+        
+        const rows = bg === 1 ? 25 : 15;
+        const cols = bg === 1 ? 40 : 25;
+        const color = bg === 1 ? '#2196f3' : '#ff5722';
+        
+        ctx.fillStyle = color;
+        for(let i=0; i<80; i++) {
+            let x = Math.random() * canvas.width;
+            let y = Math.random() * canvas.height;
+            ctx.fillRect(x, y, 3, 3);
+        }
+        ctx.strokeStyle = color;
+        ctx.strokeRect(5, 5, canvas.width-10, canvas.height-10);
+        ctx.fillStyle = 'white';
+        ctx.fillText(`Sparse H-Matrix: BG${bg}`, 10, 20);
+    }
+
+    function runLdpcSimulation() {
+        const A = parseInt(document.getElementById('sim-tbs').value);
+        const R = parseFloat(document.getElementById('sim-rate').value);
+        
+        logTerm(`Processing TB: ${A} bits, Rate: ${R}`, 'term-blue');
+
+        // Logic
+        let bg = 1;
+        let reason = "";
+        if (A <= 292) { bg = 2; reason = "A <= 292"; }
+        else if (A <= 3824 && R <= 0.67) { bg = 2; reason = "A <= 3824 & R <= 0.67"; }
+        else if (R <= 0.25) { bg = 2; reason = "R <= 0.25"; }
+        else { bg = 1; reason = "High Throughput Case"; }
+
+        logTerm(`Decision: Base Graph ${bg} selected.`, 'term-warn');
+        logTerm(`Reason: ${reason}`);
+
+        // Segmentation
+        const Kcb = bg === 1 ? 8448 : 3840;
+        let C = 1;
+        if (A > Kcb) {
+            C = Math.ceil(A / (Kcb - 24));
+            logTerm(`Segmentation required: ${C} Code Blocks`);
+        } else {
+            logTerm(`No segmentation. Single Code Block.`);
+        }
+
+        // Lifting Zc
+        const Kb = bg === 1 ? 22 : 10;
+        const Z_req = (A / C) / Kb;
+        const Zc = Z_TABLE.find(z => z >= Z_req) || 384;
+        logTerm(`Lifting Size Zc selected: ${Zc}`);
+
+        // Update UI
+        document.getElementById('stat-zc').innerText = Zc;
+        document.getElementById('stat-c').innerText = C;
+        document.getElementById('stat-bg').innerText = `BG${bg}`;
+        document.getElementById('stat-bg').style.color = bg === 1 ? 'var(--bg1-color)' : 'var(--bg2-color)';
+
+        drawMatrixVisual(bg);
+        logTerm("Simulation Complete.", "term-blue");
+    }
+
+    // Initialize
+    window.onload = () => {
+        drawMatrixVisual(1);
+        
+        // Simple scroll spy for active links
+        window.addEventListener('scroll', () => {
+            let fromTop = window.scrollY + 100;
+            document.querySelectorAll('nav a').forEach(link => {
+                let section = document.querySelector(link.hash);
+                if (section.offsetTop <= fromTop && section.offsetTop + section.offsetHeight > fromTop) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR PDCCH Resource Mapping | Interactive Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --accent-cyan: #06b6d4;   /* Logical CCEs */
+            --accent-purple: #8b5cf6; /* Processing */
+            --accent-green: #10b981;  /* Physical REGs */
+            --accent-orange: #f97316; /* Interleaving */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.95)),
+                repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(16, 185, 129, 0.05) 20px),
+                repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(6, 182, 212, 0.05) 20px);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
+
+        /* --- Layout --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s;
+        }
+        .glass-card:hover { border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(6, 182, 212, 0.1); }
+
+        /* --- Header --- */
+        header { text-align: center; padding: 4rem 0; border-bottom: 1px solid #1e293b; margin-bottom: 3rem; }
+        header h1 {
+            font-size: 3rem;
+            background: linear-gradient(to right, var(--accent-cyan), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        header p { color: var(--text-muted); font-size: 1.2rem; }
+
+        /* --- Pipeline --- */
+        .pipeline-container {
+            display: flex; justify-content: center; align-items: center; 
+            padding: 2rem 0; gap: 1rem; flex-wrap: wrap;
+        }
+        .pl-block {
+            background: #1e293b; border: 1px solid #334155; padding: 1rem; border-radius: 8px;
+            text-align: center; min-width: 120px; transition: 0.3s;
+        }
+        .pl-active { 
+            border-color: var(--accent-green); 
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); 
+            transform: scale(1.1); 
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .pl-arrow { color: #475569; font-size: 1.2rem; }
+
+        /* --- Simulation Grid --- */
+        .mapping-grid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .grid-section { width: 100%; }
+        
+        .grid-title { font-family: 'Orbitron'; font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted); }
+
+        .reg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            min-height: 100px;
+        }
+
+        .reg-box {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono';
+            font-size: 0.8rem;
+            background: #1e293b;
+            color: #64748b;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .reg-cce { background: rgba(6, 182, 212, 0.2); border: 1px solid var(--accent-cyan); color: white; }
+        .reg-mapped { background: rgba(16, 185, 129, 0.2); border: 1px solid var(--accent-green); color: white; }
+        
+        /* Interleaving Animation */
+        .shuffling { animation: shuffleEffect 0.5s ease-in-out; }
+        @keyframes shuffleEffect {
+            0% { transform: translateY(0); opacity: 1; }
+            50% { transform: translateY(-10px); opacity: 0.5; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- Controls --- */
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        
+        select, input {
+            width: 100%; padding: 1rem; background: #0f172a; border: 1px solid #334155; color: white;
+            border-radius: 8px; font-family: 'JetBrains Mono'; font-size: 1rem; margin-top: 5px;
+        }
+        label { color: var(--accent-cyan); font-family: 'Orbitron'; font-size: 0.9rem; }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            color: #000; font-weight: bold; border: none; padding: 1rem 2rem; border-radius: 8px; 
+            font-family: 'Orbitron'; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 10px;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+
+        /* --- Code Window --- */
+        .code-window { background: #0d1117; border-radius: 8px; border: 1px solid #30363d; overflow: hidden; margin-top: 2rem; }
+        .code-header { background: #161b22; padding: 10px 20px; border-bottom: 1px solid #30363d; color: #8b949e; font-size: 0.85rem; }
+        .terminal { background: #0d1117; color: #e6edf3; font-family: 'JetBrains Mono'; padding: 1.5rem; overflow-x: auto; min-height: 150px; font-size: 0.9rem; }
+
+        /* Syntax Highlighting */
+        .c-kw { color: #ff7b72; } .c-ty { color: #79c0ff; } .c-fn { color: #d2a8ff; } 
+        .c-cm { color: #8b949e; font-style: italic; } .c-num { color: #a5d6ff; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .controls { grid-template-columns: 1fr; }
+            .reg-grid { grid-template-columns: repeat(6, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1>PDCCH Resource Mapping</h1>
+            <p>From Logical CCEs to Physical REGs (CCE-to-REG Mapping)</p>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- SECTION 1: THEORY -->
+        <section id="theory">
+            <h2 style="color: var(--accent-cyan); margin-bottom: 1.5rem;">01 / The Hierarchy</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                
+                <div class="glass-card">
+                    <h3 style="color: var(--accent-cyan)">CCE (Logical)</h3>
+                    <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
+                        <strong>Control Channel Element.</strong> This is the unit used to calculate the Aggregation Level (AL).
+                        <br><br>
+                        1 CCE = 6 REGs
+                    </p>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--accent-green)">REG (Physical)</h3>
+                    <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
+                        <strong>Resource Element Group.</strong> The smallest physical block for control mapping.
+                        <br><br>
+                        1 REG = 12 Subcarriers × 1 Symbol
+                    </p>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--accent-orange)">Mapping Modes</h3>
+                    <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
+                        <strong>Interleaved:</strong> REGs are shuffled to provide frequency diversity.<br>
+                        <strong>Non-Interleaved:</strong> REGs are placed sequentially.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: PROCESS FLOW -->
+        <section id="workflow">
+            <h2 style="color: var(--accent-purple); margin-bottom: 1.5rem;">02 / PHY Pipeline</h2>
+            <div class="glass-card">
+                <div class="pipeline-container">
+                    <div class="pl-block">DCI Scrambling</div>
+                    <div class="pl-arrow">➜</div>
+                    <div class="pl-block">QPSK Mod</div>
+                    <div class="pl-arrow">➜</div>
+                    <div class="pl-block pl-active"><strong>REG Mapping</strong><br><small>(CCE $\to$ REG)</small></div>
+                    <div class="pl-arrow">➜</div>
+                    <div class="pl-block">RE Mapping<br><small>(Grid Grid)</small></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: VISUAL LOGIC -->
+        <section id="logic">
+            <h2 style="color: var(--accent-orange); margin-bottom: 1.5rem;">03 / Mapping Logic</h2>
+            <div class="glass-card" style="text-align: center;">
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                    How Aggregation Levels (AL) translate to physical resources.
+                </p>
+                
+                <div style="display: inline-flex; flex-direction: column; gap: 10px; align-items: center;">
+                    <!-- CCE Block -->
+                    <div style="border: 2px solid var(--accent-cyan); padding: 10px; border-radius: 8px; width: 300px;">
+                        <span style="color: var(--accent-cyan); font-weight: bold;">1 CCE</span>
+                    </div>
+                    
+                    <div style="font-size: 1.5rem; color: #64748b;">⬇ Breaks into ⬇</div>
+
+                    <!-- REG Blocks -->
+                    <div style="display: flex; gap: 5px;">
+                        <div class="reg-box reg-cce" style="width: 45px;">REG0</div>
+                        <div class="reg-box reg-cce" style="width: 45px;">REG1</div>
+                        <div class="reg-box reg-cce" style="width: 45px;">REG2</div>
+                        <div class="reg-box reg-cce" style="width: 45px;">REG3</div>
+                        <div class="reg-box reg-cce" style="width: 45px;">REG4</div>
+                        <div class="reg-box reg-cce" style="width: 45px;">REG5</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: LIVE SIMULATOR -->
+        <section id="simulation">
+            <h2 style="color: var(--accent-green); margin-bottom: 1.5rem;">04 / Live Simulator</h2>
+            <div class="glass-card">
+                
+                <!-- Inputs -->
+                <div class="controls">
+                    <div>
+                        <label>Aggregation Level (AL)</label>
+                        <select id="simAL">
+                            <option value="1">AL 1 (1 CCE = 6 REGs)</option>
+                            <option value="2">AL 2 (2 CCEs = 12 REGs)</option>
+                            <option value="4" selected>AL 4 (4 CCEs = 24 REGs)</option>
+                            <option value="8">AL 8 (8 CCEs = 48 REGs)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Mapping Type</label>
+                        <select id="simType">
+                            <option value="non-interleaved">Non-Interleaved (Sequential)</option>
+                            <option value="interleaved">Interleaved (Distributed)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Interleaver Bundle Size (L)</label>
+                        <select id="simBundle">
+                            <option value="2">L = 2 REGs</option>
+                            <option value="6">L = 6 REGs</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="runMapping()">⚡ Map Resources</button>
+
+                <!-- Visualization -->
+                <div style="margin-top: 2rem; border-top: 1px solid #334155; padding-top: 2rem;">
+                    
+                    <div class="mapping-grid-container">
+                        
+                        <!-- Logical View -->
+                        <div class="grid-section">
+                            <div class="grid-title">LOGICAL DOMAIN (Input CCEs)</div>
+                            <div id="logicalGrid" class="reg-grid">
+                                <!-- JS Injected -->
+                                <div style="color: #64748b; font-size: 0.8rem;">Select parameters and click Map...</div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 2rem; color: var(--accent-purple);">⬇ MAPPING ⬇</div>
+
+                        <!-- Physical View -->
+                        <div class="grid-section">
+                            <div class="grid-title">PHYSICAL DOMAIN (Frequency Grid)</div>
+                            <div id="physicalGrid" class="reg-grid">
+                                <!-- JS Injected -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 5: C++ CODE -->
+        <section id="code">
+            <h2 style="color: var(--accent-cyan); margin-bottom: 1.5rem;">05 / C++ Implementation</h2>
+            <div class="code-window">
+                <div class="code-header">reg_mapper.cpp</div>
+                <div class="terminal">
+<pre>
+<span class="c-cm">/* 
+ * 5G NR PDCCH CCE-to-REG Mapping Function
+ * Simplified Interleaver logic
+ */</span>
+<span class="c-kw">#include</span> &lt;vector&gt;
+<span class="c-kw">#include</span> &lt;iostream&gt;
+
+<span class="c-kw">struct</span> MappingResult {
+    <span class="c-ty">int</span> logical_reg_idx;
+    <span class="c-ty">int</span> physical_reg_idx;
+};
+
+<span class="c-ty">std::vector&lt;MappingResult&gt;</span> <span class="c-fn">map_cce_to_reg</span>(<span class="c-ty">int</span> agg_level, <span class="c-ty">bool</span> interleaved, <span class="c-ty">int</span> L) {
+    <span class="c-ty">std::vector&lt;MappingResult&gt;</span> mapping;
+    <span class="c-ty">int</span> total_regs = agg_level * 6; <span class="c-cm">// 1 CCE = 6 REGs</span>
+
+    <span class="c-kw">for</span> (<span class="c-ty">int</span> i = 0; i &lt; total_regs; i++) {
+        <span class="c-ty">int</span> p_idx = i; <span class="c-cm">// Default: Non-Interleaved (Sequential)</span>
+
+        <span class="c-kw">if</span> (interleaved) {
+            <span class="c-cm">// Simplified Block Interleaver Logic</span>
+            <span class="c-cm">// P = j * L + (i % L) ... (Conceptual)</span>
+            <span class="c-ty">int</span> num_bundles = total_regs / L;
+            <span class="c-ty">int</span> row = i / L;
+            <span class="c-ty">int</span> col = i % L;
+            
+            <span class="c-cm">// Scramble position based on bundle index</span>
+            p_idx = (col * num_bundles) + row; 
+        }
+
+        mapping.push_back({i, p_idx});
+    }
+    <span class="c-kw">return</span> mapping;
+}
+</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: EXECUTION OUTPUT -->
+        <section id="output">
+            <h2 style="color: var(--accent-green); margin-bottom: 1.5rem;">06 / Execution Output</h2>
+            <div class="code-window">
+                <div class="code-header">Console Output</div>
+                <div class="terminal" id="consoleOutput">
+                    <span class="c-cm">// Ready...</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer style="margin-top: 4rem; padding: 2rem; border-top: 1px solid #1e293b; text-align: center; color: var(--text-muted);">
+        <p>5G NR Physical Layer Educational Lab</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Helper function for color generation
+        function varColor(i, max) {
+            const hue = Math.floor((i / max) * 180) + 160; // Blue-ish range
+            return `hsl(${hue}, 70%, 50%)`;
+        }
+
+        function runMapping() {
+            // 1. Get Inputs
+            const al = parseInt(document.getElementById('simAL').value);
+            const type = document.getElementById('simType').value;
+            const L = parseInt(document.getElementById('simBundle').value);
+            
+            const totalCCEs = al;
+            const totalREGs = al * 6;
+            
+            // 2. Clear Visuals
+            const logGrid = document.getElementById('logicalGrid');
+            const phyGrid = document.getElementById('physicalGrid');
+            const consoleOut = document.getElementById('consoleOutput');
+            
+            logGrid.innerHTML = '';
+            phyGrid.innerHTML = '';
+            
+            // 3. Prepare Console Log
+            let logText = `> Mapping Started.\n> Aggregation Level: ${al} (${totalREGs} REGs)\n> Mode: ${type.toUpperCase()}\n`;
+            if(type === 'interleaved') logText += `> Bundle Size (L): ${L}\n`;
+            logText += `----------------------------------------\n`;
+
+            // 4. Generate Logical REGs (Input)
+            // Visual Setup: Create empty slots in Physical Grid first
+            let physicalSlots = [];
+            for(let i=0; i<totalREGs; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'reg-box';
+                slot.style.border = '1px dashed #334155';
+                slot.id = `phy-slot-${i}`;
+                slot.innerText = `P${i}`;
+                phyGrid.appendChild(slot);
+                physicalSlots.push(slot);
+            }
+
+            // 5. Perform Mapping Logic
+            let mappingPairs = [];
+
+            for(let i=0; i<totalREGs; i++) {
+                // Logical Display
+                const lBox = document.createElement('div');
+                lBox.className = 'reg-box reg-cce';
+                lBox.innerText = `L${i}`;
+                lBox.title = `Logical REG Index ${i}`;
+                lBox.style.borderColor = varColor(i, totalREGs); // Color code logical too
+                logGrid.appendChild(lBox);
+
+                // Calculate Physical Index
+                let p_idx = i;
+                
+                if(type === 'interleaved') {
+                    // Simple educational Block Interleaver simulation
+                    // Divide REGs into bundles of size L
+                    // Use a prime stride to scatter them visually
+                    const stride = 7; 
+                    p_idx = (i * stride) % totalREGs;
+                    
+                    // Collision resolution for simple stride
+                    while(mappingPairs.find(m => m.p === p_idx)) {
+                         p_idx = (p_idx + 1) % totalREGs;
+                    }
+                }
+
+                mappingPairs.push({ l: i, p: p_idx });
+            }
+
+            // 6. Animate Mapping
+            mappingPairs.forEach((pair, index) => {
+                setTimeout(() => {
+                    const targetSlot = document.getElementById(`phy-slot-${pair.p}`);
+                    
+                    // Apply visual change
+                    targetSlot.className = 'reg-box reg-mapped shuffling';
+                    targetSlot.innerText = `L${pair.l}`;
+                    targetSlot.style.borderColor = varColor(pair.l, totalREGs);
+                    targetSlot.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                    
+                    // Add Log
+                    logText += `> Map Logical REG[${pair.l}] -> Physical REG[${pair.p}]\n`;
+                    consoleOut.innerHTML = `<pre>${logText}</pre>`;
+                    consoleOut.scrollTop = consoleOut.scrollHeight;
+
+                }, index * 100); // Delay for animation
+            });
+
+            // Final Log update
+            setTimeout(() => {
+                logText += `> MAPPING COMPLETE.`;
+                consoleOut.innerHTML = `<pre>${logText}</pre>`;
+                consoleOut.scrollTop = consoleOut.scrollHeight;
+            }, totalREGs * 100 + 200);
+        }
+    </script>
+</body>
+</html>

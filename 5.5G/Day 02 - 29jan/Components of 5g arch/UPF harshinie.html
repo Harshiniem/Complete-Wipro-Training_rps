@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G UPF Architecture - Harshinie M</title>
+    <style>
+        :root {
+            --bg-cream: #FDFBF7;
+            --panel-white: #FFFFFF;
+            --upf-focus: #E67E22; /* Warm Orange for the Data Plane */
+            --node-light: #F4F7F6;
+            --text-dark: #2C3E50;
+            --accent-blue: #3498DB;
+            --border-gray: #D5DBDB;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-cream);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* FIXED TITLE BAR */
+        #title-bar {
+            width: 100%;
+            padding: 25px;
+            background-color: var(--panel-white);
+            border-bottom: 4px solid var(--upf-focus);
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        #title-bar h1 { margin: 0; font-size: 26px; color: var(--text-dark); letter-spacing: 1px; }
+        #title-bar p { margin: 5px 0 0; font-size: 14px; color: #7F8C8D; font-weight: 600; }
+
+        /* ARCHITECTURE VIEWPORT (75vh) */
+        #viz-container {
+            width: 100%;
+            height: 75vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-image: radial-gradient(#BDC3C7 0.5px, transparent 0.5px);
+            background-size: 30px 30px;
+        }
+
+        svg {
+            width: 95%;
+            height: 90%;
+            max-width: 1100px;
+        }
+
+        /* SVG COMPONENT STYLING */
+        .node { cursor: pointer; transition: transform 0.3s; }
+        .node:hover { transform: scale(1.02); }
+        .node rect { fill: var(--node-light); stroke: var(--border-gray); stroke-width: 2; rx: 10; }
+        .node text { fill: var(--text-dark); font-size: 13px; font-weight: bold; text-anchor: middle; pointer-events: none; }
+        
+        /* UPF Focus Node */
+        .node.upf-main rect { fill: var(--upf-focus); stroke: #D35400; stroke-width: 3; }
+        .node.upf-main text { fill: white; font-size: 15px; }
+
+        .link { 
+            stroke: var(--border-gray); 
+            stroke-width: 2; 
+            fill: none; 
+            opacity: 0.3; 
+            transition: 0.4s; 
+            stroke-dasharray: 6;
+        }
+
+        .label { font-size: 11px; fill: #95A5A6; opacity: 0.2; transition: 0.4s; font-weight: bold; }
+
+        /* INTERACTIVE HIGHLIGHTING */
+        .highlight-upf .link.upf-path { 
+            stroke: var(--upf-focus); 
+            stroke-width: 4; 
+            stroke-dasharray: 0; 
+            opacity: 1;
+            filter: drop-shadow(0 2px 4px rgba(230, 126, 34, 0.3));
+        }
+        .highlight-upf .label.upf-lab { opacity: 1; color: var(--upf-focus); }
+        .highlight-upf .node:not(.upf-highlight) { opacity: 0.4; filter: grayscale(80%); }
+
+        /* SCROLLABLE DETAILS SECTION */
+        #details-section {
+            background-color: var(--panel-white);
+            padding: 60px 10%;
+            border-top: 2px solid var(--border-gray);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--bg-cream);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--border-gray);
+            transition: 0.3s;
+        }
+
+        .card:hover { border-color: var(--upf-focus); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .card h3 { color: var(--upf-focus); margin-top: 0; border-bottom: 2px solid #FAD7A0; padding-bottom: 10px; }
+        .card p { line-height: 1.6; font-size: 15px; }
+
+        .credits {
+            text-align: center;
+            padding: 50px;
+            font-size: 20px;
+            color: var(--upf-focus);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            background: var(--upf-focus);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div id="title-bar">
+    <h1>5G User Plane Function (UPF)</h1>
+    <p>3GPP Release 16 Interaction: Data Routing & Forwarding</p>
+</div>
+
+<div id="viz-container">
+    <svg viewBox="0 0 1000 600" id="main-svg">
+        <!-- SBA Bus (Control Plane only) -->
+        <line x1="100" y1="60" x2="900" y2="60" stroke="#BDC3C7" stroke-width="6" stroke-linecap="round" />
+        <text x="500" y="45" fill="#95A5A6" font-size="11" text-anchor="middle">CONTROL PLANE SERVICE BUS</text>
+
+        <!-- UPF SPECIFIC INTERFACES -->
+        <path class="link upf-path" d="M500 450 L200 450" /> <!-- N3 to RAN -->
+        <path class="link upf-path" d="M500 450 L500 280" /> <!-- N4 to SMF -->
+        <path class="link upf-path" d="M500 450 L850 450" /> <!-- N6 to DN -->
+        <path class="link upf-path" d="M550 480 Q 600 550, 650 480" /> <!-- N9 to Inter-UPF -->
+
+        <!-- Passive Control Plane Links -->
+        <path class="link" d="M200 280 L200 400" /> <!-- AMF to RAN N2 -->
+        <path class="link" d="M250 250 L450 250" /> <!-- AMF to SMF N11 -->
+
+        <!-- INTERFACE LABELS -->
+        <text x="350" y="440" class="label upf-lab">N3 (GTP-U Tunnel)</text>
+        <text x="515" y="380" class="label upf-lab">N4 (PFCP Control)</text>
+        <text x="700" y="440" class="label upf-lab">N6 (Internet/SGi)</text>
+        <text x="600" y="550" class="label upf-lab">N9 (Inter-UPF)</text>
+
+        <!-- TOP NODES (SBA) -->
+        <g class="node"><rect x="150" y="45" width="100" height="35"/><text x="200" y="68">PCF</text></g>
+        <g class="node"><rect x="450" y="45" width="100" height="35"/><text x="500" y="68">UDM</text></g>
+        <g class="node"><rect x="750" y="45" width="100" height="35"/><text x="800" y="68">NEF</text></g>
+
+        <!-- CONTROL PLANE NODES -->
+        <g class="node upf-highlight"><rect x="150" y="225" width="100" height="50"/><text x="200" y="255">AMF</text></g>
+        <g class="node upf-highlight"><rect x="450" y="225" width="100" height="55"/><text x="500" y="258">SMF</text></g>
+
+        <!-- USER PLANE (THE FOCUS) -->
+        <g class="node upf-main upf-highlight" onclick="toggleUPF()">
+            <rect x="440" y="420" width="120" height="80" />
+            <text x="500" y="465">UPF</text>
+        </g>
+
+        <!-- ACCESS AND EXTERNAL -->
+        <g class="node"><rect x="40" y="430" width="60" height="40"/><text x="70" y="455">UE</text></g>
+        <g class="node upf-highlight"><rect x="150" y="430" width="100" height="60"/><text x="200" y="465">gNB (RAN)</text></g>
+        <g class="node upf-highlight"><rect x="850" y="430" width="100" height="60"/><text x="900" y="465">DN (External)</text></g>
+
+    </svg>
+    <div class="hint">Click UPF to see Data Flow Interfaces</div>
+</div>
+
+<div id="details-section">
+    <div class="grid">
+        <div class="card">
+            <h3>User Plane Function</h3>
+            <p>Under <strong>3GPP TS 23.501</strong>, the UPF is the workhorse of the 5G Core. It is responsible for packet routing, forwarding, and acting as an anchor point for Intra/Inter-RAT mobility.</p>
+        </div>
+        <div class="card">
+            <h3>Standard Interfaces</h3>
+            <p>• <strong>N3:</strong> Interface between RAN and UPF for user data transport.<br>
+               • <strong>N4:</strong> Interaction with SMF using <strong>PFCP</strong> (Packet Forwarding Control Protocol).<br>
+               • <strong>N6:</strong> Connecting to the Data Network (DN).</p>
+        </div>
+        <div class="card">
+            <h3>The N4 Separation</h3>
+            <p>One of the biggest 5G innovations is <strong>CUPS</strong> (Control and User Plane Separation). The SMF controls the "brain," but the UPF does the heavy lifting of moving TBs of data over the N4 link.</p>
+        </div>
+        <div class="card">
+            <h3>Functional Roles</h3>
+            <p>• Anchor point for mobility (GTP-U).<br>
+               • Deep Packet Inspection (DPI) and Traffic Steering.<br>
+               • QoS enforcement (Gating, Rate limiting).<br>
+               • Usage reporting for charging.</p>
+        </div>
+    </div>
+    <div class="credits">Made by Harshinie M</div>
+</div>
+
+<script>
+    let active = false;
+    function toggleUPF() {
+        active = !active;
+        const svg = document.getElementById('main-svg');
+        if(active) svg.classList.add('highlight-upf');
+        else svg.classList.remove('highlight-upf');
+    }
+</script>
+
+</body>
+</html>

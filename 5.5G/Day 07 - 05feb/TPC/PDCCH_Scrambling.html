@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR PDCCH Scrambling | Interactive Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --accent-cyan: #06b6d4;   /* Data */
+            --accent-purple: #8b5cf6; /* Logic */
+            --accent-green: #10b981;  /* Success/Output */
+            --accent-yellow: #f59e0b; /* PRBS/Gold */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 25%);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
+
+        /* --- Layout & Cards --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s;
+        }
+        .glass-card:hover { border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(6, 182, 212, 0.1); }
+
+        /* --- Header --- */
+        header { text-align: center; padding: 4rem 0; border-bottom: 1px solid #1e293b; margin-bottom: 3rem; }
+        header h1 {
+            font-size: 3rem;
+            background: linear-gradient(to right, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        header p { color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
+
+        /* --- Section 2: Pipeline Animation --- */
+        .pipeline-container {
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 2rem 0; position: relative; flex-wrap: wrap; gap: 1rem;
+        }
+        .pl-block {
+            background: #1e293b; border: 1px solid #334155; padding: 1rem; border-radius: 8px;
+            text-align: center; min-width: 100px; z-index: 2; transition: 0.3s; position: relative;
+        }
+        .pl-block h4 { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+        
+        .pl-active { 
+            border-color: var(--accent-purple); 
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); 
+            transform: scale(1.1); 
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .pl-arrow { color: #475569; font-size: 1.2rem; }
+        
+        /* Particle animation */
+        .pipeline-track {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: #334155; z-index: 0; transform: translateY(-50%);
+        }
+        .particle {
+            position: absolute; width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%;
+            top: 50%; left: 0; transform: translateY(-50%); box-shadow: 0 0 10px var(--accent-cyan);
+            animation: flowData 4s linear infinite; z-index: 1;
+        }
+        @keyframes flowData { 0% { left: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+
+        /* --- Bit Visualization --- */
+        .bit-container { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 2rem; overflow-x: auto; }
+        .bit-row { display: flex; gap: 8px; align-items: center; min-width: max-content; }
+        .row-label { width: 100px; font-family: 'JetBrains Mono'; font-size: 0.9rem; text-align: right; margin-right: 15px; }
+        
+        .bit-box {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono'; font-weight: bold; border-radius: 6px; border: 1px solid #334155;
+            transition: all 0.3s; font-size: 1.1rem;
+        }
+        .bit-input { color: var(--accent-cyan); border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.1); }
+        .bit-prbs { color: var(--accent-yellow); border-color: var(--accent-yellow); background: rgba(245, 158, 11, 0.1); }
+        .bit-output { color: var(--accent-green); border-color: var(--accent-green); background: rgba(16, 185, 129, 0.1); font-weight: 900; }
+
+        /* --- Simulator Controls --- */
+        .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .input-group label { display: block; color: var(--accent-cyan); font-family: 'Orbitron'; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        
+        input {
+            width: 100%; padding: 1rem; background: #0f172a; border: 1px solid #334155; color: white;
+            border-radius: 8px; font-family: 'JetBrains Mono'; font-size: 1rem;
+        }
+        input:focus { outline: none; border-color: var(--accent-cyan); }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-family: 'Orbitron';
+            cursor: pointer; font-size: 1rem; transition: 0.2s; width: 100%; margin-top: 1.5rem; letter-spacing: 1px;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 0 20px rgba(6, 182, 212, 0.3); }
+
+        /* --- Code & Console --- */
+        .code-window { background: #0d1117; border-radius: 8px; border: 1px solid #30363d; overflow: hidden; }
+        .code-header { background: #161b22; padding: 10px 20px; border-bottom: 1px solid #30363d; font-family: 'Inter'; font-size: 0.85rem; color: #8b949e; }
+        
+        .terminal {
+            background: #0d1117; color: #e6edf3; font-family: 'JetBrains Mono'; padding: 1.5rem; 
+            overflow-x: auto; min-height: 150px; font-size: 0.9rem; line-height: 1.5;
+        }
+        
+        /* Syntax Highlighting */
+        pre { margin: 0; }
+        .c-kw { color: #ff7b72; } /* keyword */
+        .c-ty { color: #79c0ff; } /* type */
+        .c-fn { color: #d2a8ff; } /* function */
+        .c-cm { color: #8b949e; font-style: italic; } /* comment */
+        .c-var { color: #e6edf3; } /* variable */
+        .c-num { color: #a5d6ff; } /* number */
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .sim-grid { grid-template-columns: 1fr; }
+            .pipeline-container { justify-content: center; }
+            .pl-block { width: 45%; margin-bottom: 10px; }
+            .pl-arrow { display: none; }
+            header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1>PDCCH Scrambling</h1>
+            <p>Master the 5G NR Physical Layer: Bit-Level Interactive Lab</p>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- SECTION 1: THEORY -->
+        <section id="theory">
+            <h2 style="color: var(--accent-cyan); margin-bottom: 1.5rem;">01 / The Theory</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                
+                <div class="glass-card">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🛡️</div>
+                    <h3>Why Scramble?</h3>
+                    <p style="margin-top: 1rem; color: var(--text-muted); line-height: 1.6;">
+                        1. <strong>Interference Randomization:</strong> Makes interference from neighboring cells look like white noise.<br>
+                        2. <strong>PAPR Reduction:</strong> Prevents long sequences of 0s or 1s which cause power spikes.<br>
+                        3. <strong>Identity:</strong> The scrambling sequence is specific to the Cell ID or UE ID (RNTI).
+                    </p>
+                </div>
+
+                <div class="glass-card">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🎲</div>
+                    <h3>Gold Sequence</h3>
+                    <p style="margin-top: 1rem; color: var(--text-muted); line-height: 1.6;">
+                        5G uses a length-31 <strong>Gold Sequence</strong> (Pseudo-Random Binary Sequence - PRBS). It is generated using two polynomials ($x^{31}+x^3+1$...). The output bit $c(n)$ is XORed with the input data.
+                    </p>
+                </div>
+
+                <div class="glass-card">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🔑</div>
+                    <h3>Initialization (c_init)</h3>
+                    <p style="margin-top: 1rem; color: var(--text-muted); line-height: 1.6;">
+                        The sequence generator is reset for every subframe. The seed ($c_{init}$) is calculated as:<br>
+                        <code style="color: var(--accent-yellow); display:block; margin-top:5px; background:rgba(0,0,0,0.3); padding:5px;">c_init = (RNTI * 2^16 + N_ID) mod 2^31</code>
+                        This ensures only the specific UE can decode the control message.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: WORKFLOW -->
+        <section id="workflow">
+            <h2 style="color: var(--accent-purple); margin-bottom: 1.5rem;">02 / The Pipeline</h2>
+            <div class="glass-card">
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Flow of DCI (Downlink Control Information) bits in 5G NR</p>
+                
+                <div class="pipeline-container">
+                    <div class="pipeline-track"></div>
+                    <div class="particle"></div>
+                    
+                    <div class="pl-block">
+                        <h4>DCI Bits</h4>
+                        <div style="font-size: 0.8rem; color:#64748b">Input</div>
+                    </div>
+                    <div class="pl-arrow">➜</div>
+                    
+                    <div class="pl-block">
+                        <h4>CRC Attach</h4>
+                        <div style="font-size: 0.8rem; color:#64748b">+24 bits</div>
+                    </div>
+                    <div class="pl-arrow">➜</div>
+
+                    <div class="pl-block">
+                        <h4>Polar Code</h4>
+                        <div style="font-size: 0.8rem; color:#64748b">Error Corr</div>
+                    </div>
+                    <div class="pl-arrow">➜</div>
+
+                    <div class="pl-block">
+                        <h4>Rate Match</h4>
+                        <div style="font-size: 0.8rem; color:#64748b">Fit Grid</div>
+                    </div>
+                    <div class="pl-arrow">➜</div>
+
+                    <div class="pl-block pl-active">
+                        <h4 style="color: var(--accent-purple); font-weight: bold;">Scrambling</h4>
+                        <div style="font-size: 0.8rem; color:white">XOR PRBS</div>
+                    </div>
+                    <div class="pl-arrow">➜</div>
+
+                    <div class="pl-block">
+                        <h4>QPSK Mod</h4>
+                        <div style="font-size: 0.8rem; color:#64748b">Symbols</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: ANIMATION -->
+        <section id="principle">
+            <h2 style="color: var(--accent-yellow); margin-bottom: 1.5rem;">03 / Working Principle</h2>
+            <div class="glass-card" style="text-align: center;">
+                <h3 style="margin-bottom: 10px;">The XOR Operation</h3>
+                <p style="color: var(--text-muted);">Bits are processed one by one. Same = 0, Different = 1.</p>
+                
+                <div style="display: flex; justify-content: center; gap: 4rem; margin-top: 2rem; flex-wrap: wrap;">
+                    
+                    <!-- Logic Table -->
+                    <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 8px;">
+                        <h4 style="color: var(--accent-purple); margin-bottom: 10px;">Truth Table</h4>
+                        <div style="font-family: 'JetBrains Mono'; color: var(--text-muted);">
+                            0 ⊕ 0 = <span style="color: white">0</span><br>
+                            0 ⊕ 1 = <span style="color: white">1</span><br>
+                            1 ⊕ 0 = <span style="color: white">1</span><br>
+                            1 ⊕ 1 = <span style="color: white">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Visual Demo -->
+                    <div style="text-align: left;">
+                         <div class="bit-container" style="margin-top: 0; align-items: center;">
+                            <div class="bit-row">
+                                <span class="row-label" style="color:var(--accent-cyan)">Input $b(i)$</span>
+                                <div class="bit-box bit-input">1</div>
+                                <div class="bit-box bit-input">0</div>
+                                <div class="bit-box bit-input">1</div>
+                            </div>
+                            <div class="bit-row" style="margin-top: 5px;">
+                                <span class="row-label" style="color:var(--accent-yellow)">PRBS $c(i)$</span>
+                                <div class="bit-box bit-prbs">1</div>
+                                <div class="bit-box bit-prbs">1</div>
+                                <div class="bit-box bit-prbs">0</div>
+                            </div>
+                            <div style="width: 100%; height: 2px; background: #334155; margin: 10px 0;"></div>
+                            <div class="bit-row">
+                                <span class="row-label" style="color:var(--accent-green)">Result $\tilde{b}(i)$</span>
+                                <div class="bit-box bit-output">0</div>
+                                <div class="bit-box bit-output">1</div>
+                                <div class="bit-box bit-output">1</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: LIVE SIMULATOR -->
+        <section id="simulation">
+            <h2 style="color: var(--accent-green); margin-bottom: 1.5rem;">04 / Live Simulation</h2>
+            <div class="glass-card">
+                <div class="sim-grid">
+                    <div>
+                        <div class="input-group">
+                            <label>DCI / Coded Bits (Binary)</label>
+                            <input type="text" id="simInput" value="101101011100" placeholder="e.g. 101010" maxlength="32">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="input-group">
+                            <label>Seed ($c_{init}$) / RNTI</label>
+                            <input type="number" id="simSeed" value="58624" placeholder="Integer">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="runSimulation()">⚡ Run Scrambling</button>
+
+                <div id="simResults" style="display: none; margin-top: 2rem; border-top: 1px solid #334155; padding-top: 2rem;">
+                    <h3 style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1rem;">Visualization</h3>
+                    <div id="dynamicBits" class="bit-container">
+                        <!-- JS injected bits -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: C++ CODE -->
+        <section id="code">
+            <h2 style="color: var(--accent-cyan); margin-bottom: 1.5rem;">05 / C++ Implementation</h2>
+            <div class="code-window">
+                <div class="code-header">cpp_implementation.cpp</div>
+                <div class="terminal">
+<pre>
+<span class="c-cm">/* 
+ * 5G NR PDCCH Scrambling (Simplified)
+ * Implements TS 38.211 Sec 7.3.1.1
+ */</span>
+<span class="c-kw">#include</span> &lt;vector&gt;
+<span class="c-kw">#include</span> &lt;iostream&gt;
+
+<span class="c-kw">using namespace</span> std;
+
+<span class="c-ty">vector&lt;int&gt;</span> <span class="c-fn">pdcch_scramble</span>(<span class="c-ty">vector&lt;int&gt;</span> input_bits, <span class="c-ty">int</span> c_init) {
+    <span class="c-ty">vector&lt;int&gt;</span> output_bits;
+    
+    <span class="c-cm">// Initialize Gold Sequence Gen with seed (Pseudo-impl for demo)</span>
+    <span class="c-fn">srand</span>(c_init); 
+
+    <span class="c-kw">for</span> (<span class="c-ty">int</span> val : input_bits) {
+        
+        <span class="c-cm">// 1. Generate random bit c(i) based on seed</span>
+        <span class="c-ty">int</span> c_i = <span class="c-fn">rand</span>() % 2; 
+
+        <span class="c-cm">// 2. Perform XOR: b_scrambled = (b_in + c_i) % 2</span>
+        <span class="c-ty">int</span> scrambled = (val + c_i) % 2;
+        
+        output_bits.<span class="c-fn">push_back</span>(scrambled);
+    }
+    
+    <span class="c-kw">return</span> output_bits;
+}
+</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: EXECUTION OUTPUT -->
+        <section id="execution">
+            <h2 style="color: var(--accent-purple); margin-bottom: 1.5rem;">06 / Code Execution Output</h2>
+            <div class="code-window">
+                <div class="code-header">Terminal / Console</div>
+                <div class="terminal" id="consoleOutput">
+                    <span class="c-cm">// Waiting for simulation run...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer style="margin-top: 4rem; padding: 2rem; border-top: 1px solid #1e293b; text-align: center; color: var(--text-muted);">
+            <p>5G NR Physical Layer Educational Lab</p>
+        </footer>
+
+    </main>
+
+    <script>
+        function runSimulation() {
+            // 1. Get Values
+            const inputStr = document.getElementById('simInput').value.trim();
+            const seedStr = document.getElementById('simSeed').value;
+            const consoleOut = document.getElementById('consoleOutput');
+            const visualContainer = document.getElementById('dynamicBits');
+            const resultsArea = document.getElementById('simResults');
+
+            // 2. Validate
+            if (!/^[01]+$/.test(inputStr)) {
+                alert("Please enter a valid binary string (0s and 1s only).");
+                return;
+            }
+            if (inputStr === "" || seedStr === "") {
+                alert("Please fill all fields.");
+                return;
+            }
+
+            const inputBits = inputStr.split('').map(Number);
+            const seed = parseInt(seedStr);
+
+            // 3. Clear Previous
+            visualContainer.innerHTML = '';
+            resultsArea.style.display = 'block';
+            consoleOut.innerHTML = `<span class="c-cm">// Compiling and Running...</span><br><br>`;
+
+            // 4. Setup Visual Rows
+            const rowIn = document.createElement('div'); rowIn.className = 'bit-row';
+            const rowPrbs = document.createElement('div'); rowPrbs.className = 'bit-row'; rowPrbs.style.marginTop = "5px";
+            const rowOut = document.createElement('div'); rowOut.className = 'bit-row'; rowOut.style.marginTop = "15px";
+
+            // Labels
+            rowIn.innerHTML = `<span class="row-label" style="color:var(--accent-cyan)">Input</span>`;
+            rowPrbs.innerHTML = `<span class="row-label" style="color:var(--accent-yellow)">PRBS c(i)</span>`;
+            rowOut.innerHTML = `<span class="row-label" style="color:var(--accent-green)">Scrambled</span>`;
+
+            visualContainer.appendChild(rowIn);
+            visualContainer.appendChild(rowPrbs);
+            visualContainer.appendChild(document.createElement('hr')).style.cssText = "border:0; border-top:1px solid #334155; width:100%; margin:10px 0;";
+            visualContainer.appendChild(rowOut);
+
+            // 5. Logic Loop (With Delay)
+            let scrambledStr = "";
+            let prbsStr = "";
+            
+            // Deterministic PRNG for demo (so same seed = same pattern)
+            let localSeed = seed;
+            const pseudoRandom = () => {
+                localSeed = (localSeed * 9301 + 49297) % 233280;
+                return Math.floor(localSeed / 233280 * 2); 
+            };
+
+            inputBits.forEach((bit, index) => {
+                setTimeout(() => {
+                    // Logic
+                    const c_i = pseudoRandom(); // Generate PRBS
+                    const out = bit ^ c_i;      // XOR
+
+                    scrambledStr += out;
+                    prbsStr += c_i;
+
+                    // Append Visuals
+                    rowIn.appendChild(createBox(bit, 'bit-input'));
+                    rowPrbs.appendChild(createBox(c_i, 'bit-prbs'));
+                    rowOut.appendChild(createBox(out, 'bit-output'));
+
+                    // Update Console Live
+                    if(index === inputBits.length - 1) {
+                        finalizeConsole(inputStr, seed, prbsStr, scrambledStr);
+                    }
+
+                }, index * 200); // 200ms delay per bit
+            });
+        }
+
+        function createBox(val, type) {
+            const div = document.createElement('div');
+            div.className = `bit-box ${type}`;
+            div.innerText = val;
+            // Pop animation
+            div.animate([
+                { transform: 'scale(0)' },
+                { transform: 'scale(1)' }
+            ], { duration: 200, fill: 'forwards' });
+            return div;
+        }
+
+        function finalizeConsole(inp, seed, prbs, out) {
+            const c = document.getElementById('consoleOutput');
+            const html = `
+<span class="c-ty">int</span> c_init = <span class="c-num">${seed}</span>;
+<span class="c-ty">vector&lt;int&gt;</span> input = { ${inp} };
+<span class="c-fn">pdcch_scramble</span>(input, c_init);
+
+<span class="c-cm">// ---------------- OUTPUT ----------------</span>
+> <span class="c-var">Generating Gold Sequence...</span>
+> PRBS Seq: ${prbs}
+> 
+> <span class="c-var">Performing XOR Operation...</span>
+> 
+> <strong>Final Scrambled Output: ${out}</strong>
+            `;
+            c.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

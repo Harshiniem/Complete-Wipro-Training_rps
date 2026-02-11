@@ -1,0 +1,1253 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR PDCCH Polar Rate Matching - Interactive Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00f5ff;
+            --secondary: #ff00ff;
+            --accent: #00ff88;
+            --bg-dark: #0a0a0f;
+            --bg-card: rgba(20, 20, 30, 0.7);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --glow-primary: 0 0 20px rgba(0, 245, 255, 0.5);
+            --glow-secondary: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .gradient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary);
+            top: 50%;
+            right: -150px;
+            animation-delay: 5s;
+        }
+
+        .blob-3 {
+            width: 450px;
+            height: 450px;
+            background: var(--accent);
+            bottom: -150px;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(100px, -100px) scale(1.1);
+            }
+            66% {
+                transform: translate(-100px, 100px) scale(0.9);
+            }
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: particleFloat 15s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        header {
+            padding: 60px 20px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0, 245, 255, 0.05) 0%, transparent 100%);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: var(--glow-primary);
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.3);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 245, 255, 0.3);
+            box-shadow: 0 12px 48px rgba(0, 245, 255, 0.2);
+        }
+
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: var(--glow-primary);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.8);
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+        }
+
+        .step-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 30px;
+            background: rgba(0, 245, 255, 0.1);
+            border-radius: 50px;
+            border: 1px solid var(--primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+            box-shadow: var(--glow-primary);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider {
+            width: 200px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: var(--glow-primary);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: var(--glow-primary);
+        }
+
+        .config-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .config-card {
+            background: rgba(0, 245, 255, 0.05);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .config-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .config-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        select {
+            background: rgba(0, 245, 255, 0.1);
+            color: white;
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            min-width: 150px;
+        }
+
+        select option {
+            background: #1a1a2e;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 255, 0.1));
+            border: 2px solid rgba(0, 245, 255, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .formula {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .step-content {
+            display: none;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .step-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .bits-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            min-height: 200px;
+        }
+
+        .bit {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: bitPop 0.4s ease backwards;
+        }
+
+        .bit:hover {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        @keyframes bitPop {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .bit-input {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .bit-output {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .bit-repeated {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .bit-discarded {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            color: #1a1a2e;
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+            opacity: 0.5;
+        }
+
+        .circular-buffer {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 50px auto;
+        }
+
+        .buffer-circle {
+            width: 100%;
+            height: 100%;
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: var(--glow-primary);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .buffer-bit {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: var(--glow-primary);
+        }
+
+        .code-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 30px 0;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .code-header {
+            background: rgba(0, 245, 255, 0.1);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .code-title {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .copy-btn {
+            background: rgba(0, 245, 255, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: #1a1a2e;
+        }
+
+        .code-content {
+            padding: 25px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        .code-content::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .code-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .code-content::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .keyword {
+            color: #ff79c6;
+        }
+
+        .function {
+            color: #50fa7b;
+        }
+
+        .string {
+            color: #f1fa8c;
+        }
+
+        .comment {
+            color: #6272a4;
+            font-style: italic;
+        }
+
+        .number {
+            color: #bd93f9;
+        }
+
+        .output-section {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .output-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .badge-info {
+            background: rgba(0, 245, 255, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .badge-success {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .badge-warning {
+            background: rgba(255, 0, 255, 0.2);
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: var(--glow-primary);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+            }
+            
+            .circular-buffer {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .bit {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="gradient-blob blob-1"></div>
+        <div class="gradient-blob blob-2"></div>
+        <div class="gradient-blob blob-3"></div>
+    </div>
+
+    <header>
+        <h1>⚡ 5G NR PDCCH Polar Rate Matching</h1>
+        <p class="subtitle">Interactive Step-by-Step Guide for Beginners</p>
+    </header>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="glass-card">
+            <div class="control-panel">
+                <div class="step-indicator">
+                    <span>📍 Step <span id="currentStep">1</span> / 6</span>
+                </div>
+                <button class="btn btn-primary" id="playBtn" onclick="playAnimation()">▶️ Play</button>
+                <button class="btn btn-secondary" onclick="pauseAnimation()">⏸️ Pause</button>
+                <button class="btn btn-secondary" onclick="nextStep()">⏭️ Next Step</button>
+                <button class="btn btn-secondary" onclick="resetSimulation()">🔄 Reset</button>
+                <div class="slider-container">
+                    <span>Speed:</span>
+                    <input type="range" class="slider" id="speedSlider" min="1" max="5" value="1" oninput="updateSpeed(this.value)">
+                    <span id="speedValue">1x</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Configuration -->
+        <div class="glass-card">
+            <div class="config-section">
+                <div class="config-card">
+                    <div class="config-label">Aggregation Level</div>
+                    <select id="aggregationLevel" onchange="updateConfig()">
+                        <option value="1">AL = 1</option>
+                        <option value="2">AL = 2</option>
+                        <option value="4" selected>AL = 4</option>
+                        <option value="8">AL = 8</option>
+                        <option value="16">AL = 16</option>
+                    </select>
+                </div>
+                <div class="config-card">
+                    <div class="config-label">Input Bits (N)</div>
+                    <div class="config-value" id="nValue">512</div>
+                </div>
+                <div class="config-card">
+                    <div class="config-label">Output Bits (E)</div>
+                    <div class="config-value" id="eValue">432</div>
+                </div>
+                <div class="config-card">
+                    <div class="config-label">Code Rate</div>
+                    <div class="config-value" id="codeRate">0.93</div>
+                </div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula">E = AL × 108</div>
+                <div class="formula">Code Rate = K / E</div>
+                <div class="formula">N = 512 (Polar Coded)</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Polar Encoder Output -->
+        <div class="glass-card step-content active" id="step1">
+            <h2 class="step-title">Step 1: Polar Encoder Output</h2>
+            <p class="step-description">
+                The Polar encoder produces N = 512 coded bits from the input information bits. 
+                These bits contain error correction capability and are ready for rate matching.
+            </p>
+            <div class="output-section">
+                <div class="output-label">📊 Polar Encoded Bits (N = 512)</div>
+                <div class="bits-container" id="polarBits"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <span class="badge badge-info">Total: 512 bits</span>
+                    <span class="badge badge-success">Polar Coded</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Circular Buffer -->
+        <div class="glass-card step-content" id="step2">
+            <h2 class="step-title">Step 2: Circular Buffer Concept</h2>
+            <p class="step-description">
+                All 512 bits are stored in a circular buffer. This allows efficient bit selection 
+                for both shortening/puncturing (E &lt; N) and repetition (E &gt; N) cases.
+            </p>
+            <div class="circular-buffer" id="circularBuffer">
+                <div class="buffer-circle"></div>
+            </div>
+            <div style="text-align: center;">
+                <span class="badge badge-info">Circular Buffer: 512 positions</span>
+                <span class="badge badge-success">Seamless wrap-around</span>
+            </div>
+        </div>
+
+        <!-- Step 3: Selecting Output E bits -->
+        <div class="glass-card step-content" id="step3">
+            <h2 class="step-title">Step 3: Selecting Output E bits</h2>
+            <p class="step-description">
+                Based on Aggregation Level (AL), we calculate E = AL × 108. 
+                For AL = <span id="alDisplay">4</span>, we need E = <span id="eDisplay">432</span> bits for transmission.
+            </p>
+            <div class="formula-box">
+                <div class="formula">E = <span id="alFormula">4</span> × 108 = <span id="eFormula">432</span> bits</div>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <span class="badge badge-info">Required Output: <span id="eBadge">432</span> bits</span>
+                <span class="badge badge-warning" id="operationBadge">Repetition Mode</span>
+            </div>
+        </div>
+
+        <!-- Step 4: Shortening/Puncturing -->
+        <div class="glass-card step-content" id="step4">
+            <h2 class="step-title">Step 4: Shortening / Puncturing</h2>
+            <p class="step-description">
+                When E &lt; N, we need to discard (N - E) bits. This is called puncturing.
+                Bits are selected from the circular buffer, and some bits are not transmitted.
+            </p>
+            <div class="output-section" id="puncturingSection">
+                <div class="output-label">❌ Discarded Bits (shown when E &lt; N)</div>
+                <div class="bits-container" id="discardedBits"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <span class="badge badge-warning" id="discardedCount">0 bits discarded</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Repetition -->
+        <div class="glass-card step-content" id="step5">
+            <h2 class="step-title">Step 5: Repetition</h2>
+            <p class="step-description">
+                When E &gt; N, we need to repeat (E - N) bits. Bits are read from the circular 
+                buffer multiple times, wrapping around as needed.
+            </p>
+            <div class="output-section" id="repetitionSection">
+                <div class="output-label">🔄 Repeated Bits (shown when E &gt; N)</div>
+                <div class="bits-container" id="repeatedBits"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <span class="badge badge-info" id="repeatedCount">0 bits repeated</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Final Output -->
+        <div class="glass-card step-content" id="step6">
+            <h2 class="step-title">Step 6: Final Output</h2>
+            <p class="step-description">
+                The final rate-matched output contains exactly E bits, ready for PDCCH transmission.
+                These bits are modulated and mapped to physical resources.
+            </p>
+            <div class="output-section">
+                <div class="output-label">✅ Rate Matched Output (E bits)</div>
+                <div class="bits-container" id="finalOutput"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <span class="badge badge-success">Output: <span id="finalCount">432</span> bits</span>
+                    <span class="badge badge-info">Ready for Transmission</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- C++ Implementation -->
+        <div class="glass-card">
+            <h2 class="step-title">💻 C++ Implementation (Rate Matching)</h2>
+            <p class="step-description">
+                Complete C++ implementation of the rate matching algorithm using circular buffer logic.
+            </p>
+            
+            <div class="code-section">
+                <div class="code-header">
+                    <span class="code-title">rate_matching.cpp</span>
+                    <button class="copy-btn" onclick="copyCppCode()">📋 Copy Code</button>
+                </div>
+                <div class="code-content" id="cppCode">
+<pre><span class="comment">// 5G NR PDCCH Polar Rate Matching Implementation</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;vector&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="comment">// Rate Matching Function</span>
+<span class="keyword">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="function">rateMatching</span>(<span class="keyword">const vector</span>&lt;<span class="keyword">int</span>&gt;&amp; input, <span class="keyword">int</span> N, <span class="keyword">int</span> E) {
+    <span class="keyword">vector</span>&lt;<span class="keyword">int</span>&gt; output(E);
+    
+    <span class="comment">// Circular buffer index</span>
+    <span class="keyword">int</span> k = <span class="number">0</span>;
+    
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; E; i++) {
+        <span class="comment">// Read from circular buffer with wrap-around</span>
+        output[i] = input[k % N];
+        k++;
+    }
+    
+    <span class="keyword">return</span> output;
+}
+
+<span class="comment">// Main function</span>
+<span class="keyword">int</span> <span class="function">main</span>() {
+    <span class="comment">// Parameters</span>
+    <span class="keyword">int</span> N = <span class="number">512</span>;  <span class="comment">// Polar coded bits</span>
+    <span class="keyword">int</span> AL = <span class="number">4</span>;   <span class="comment">// Aggregation Level</span>
+    <span class="keyword">int</span> E = AL * <span class="number">108</span>;  <span class="comment">// Output bits = 432</span>
+    
+    <span class="comment">// Generate random input bits (Polar encoder output)</span>
+    <span class="keyword">vector</span>&lt;<span class="keyword">int</span>&gt; polarBits(N);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) {
+        polarBits[i] = rand() % <span class="number">2</span>;
+    }
+    
+    <span class="comment">// Perform Rate Matching</span>
+    <span class="keyword">vector</span>&lt;<span class="keyword">int</span>&gt; rateMatchedBits = rateMatching(polarBits, N, E);
+    
+    <span class="comment">// Display results</span>
+    cout &lt;&lt; <span class="string">"Input Bits (N): "</span> &lt;&lt; N &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">"Output Bits (E): "</span> &lt;&lt; E &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">"Aggregation Level: "</span> &lt;&lt; AL &lt;&lt; endl;
+    
+    <span class="keyword">if</span> (E &gt; N) {
+        cout &lt;&lt; <span class="string">"Mode: REPETITION ("</span> &lt;&lt; (E - N) &lt;&lt; <span class="string">" bits repeated)"</span> &lt;&lt; endl;
+    } <span class="keyword">else if</span> (E &lt; N) {
+        cout &lt;&lt; <span class="string">"Mode: PUNCTURING ("</span> &lt;&lt; (N - E) &lt;&lt; <span class="string">" bits discarded)"</span> &lt;&lt; endl;
+    } <span class="keyword">else</span> {
+        cout &lt;&lt; <span class="string">"Mode: NO RATE MATCHING"</span> &lt;&lt; endl;
+    }
+    
+    <span class="comment">// Print first 20 output bits</span>
+    cout &lt;&lt; <span class="string">"Output (first 20 bits): "</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; min(<span class="number">20</span>, E); i++) {
+        cout &lt;&lt; rateMatchedBits[i] &lt;&lt; <span class="string">" "</span>;
+    }
+    cout &lt;&lt; <span class="string">"..."</span> &lt;&lt; endl;
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <button class="btn btn-primary" onclick="runJavaScriptSimulation()" style="width: 100%;">
+                    🚀 Run JavaScript Simulation
+                </button>
+            </div>
+
+            <div class="output-section" id="jsOutput" style="display: none;">
+                <div class="output-label">📊 JavaScript Execution Output</div>
+                <div id="jsOutputContent" style="font-family: 'Courier New', monospace; color: var(--accent); line-height: 1.8;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let totalSteps = 6;
+        let isPlaying = false;
+        let playInterval = null;
+        let animationSpeed = 1;
+        let polarBitsArray = [];
+        let N = 512;
+        let E = 432;
+        let AL = 4;
+
+        // Initialize
+        window.onload = function() {
+            generatePolarBits();
+            updateConfig();
+            createParticles();
+            displayStep(1);
+        };
+
+        function createParticles() {
+            const background = document.querySelector('.background-animation');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                background.appendChild(particle);
+            }
+        }
+
+        function generatePolarBits() {
+            polarBitsArray = [];
+            for (let i = 0; i < N; i++) {
+                polarBitsArray.push(Math.round(Math.random()));
+            }
+        }
+
+        function updateConfig() {
+            AL = parseInt(document.getElementById('aggregationLevel').value);
+            E = AL * 108;
+            
+            document.getElementById('nValue').textContent = N;
+            document.getElementById('eValue').textContent = E;
+            document.getElementById('codeRate').textContent = (N / E).toFixed(2);
+            
+            document.getElementById('alDisplay').textContent = AL;
+            document.getElementById('eDisplay').textContent = E;
+            document.getElementById('alFormula').textContent = AL;
+            document.getElementById('eFormula').textContent = E;
+            document.getElementById('eBadge').textContent = E;
+            document.getElementById('finalCount').textContent = E;
+            
+            if (E > N) {
+                document.getElementById('operationBadge').textContent = 'Repetition Mode';
+                document.getElementById('operationBadge').className = 'badge badge-info';
+            } else if (E < N) {
+                document.getElementById('operationBadge').textContent = 'Puncturing Mode';
+                document.getElementById('operationBadge').className = 'badge badge-warning';
+            } else {
+                document.getElementById('operationBadge').textContent = 'No Rate Matching';
+                document.getElementById('operationBadge').className = 'badge badge-success';
+            }
+            
+            generatePolarBits();
+            if (currentStep === 1) displayStep(1);
+        }
+
+        function updateSpeed(value) {
+            animationSpeed = parseInt(value);
+            document.getElementById('speedValue').textContent = value + 'x';
+        }
+
+        function displayStep(step) {
+            currentStep = step;
+            document.getElementById('currentStep').textContent = step;
+            
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show current step
+            document.getElementById('step' + step).classList.add('active');
+            
+            // Update progress
+            const progress = (step / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Execute step-specific logic
+            switch(step) {
+                case 1:
+                    displayPolarBits();
+                    break;
+                case 2:
+                    displayCircularBuffer();
+                    break;
+                case 3:
+                    // Config already updated
+                    break;
+                case 4:
+                    displayPuncturing();
+                    break;
+                case 5:
+                    displayRepetition();
+                    break;
+                case 6:
+                    displayFinalOutput();
+                    break;
+            }
+        }
+
+        function displayPolarBits() {
+            const container = document.getElementById('polarBits');
+            container.innerHTML = '';
+            
+            const displayCount = Math.min(80, N);
+            for (let i = 0; i < displayCount; i++) {
+                setTimeout(() => {
+                    const bit = document.createElement('div');
+                    bit.className = 'bit bit-input';
+                    bit.textContent = polarBitsArray[i];
+                    bit.style.animationDelay = (i * 0.01) + 's';
+                    container.appendChild(bit);
+                }, i * 20 / animationSpeed);
+            }
+            
+            if (N > displayCount) {
+                setTimeout(() => {
+                    const more = document.createElement('div');
+                    more.style.width = '100%';
+                    more.style.textAlign = 'center';
+                    more.style.color = 'var(--text-secondary)';
+                    more.textContent = `... and ${N - displayCount} more bits`;
+                    container.appendChild(more);
+                }, displayCount * 20 / animationSpeed);
+            }
+        }
+
+        function displayCircularBuffer() {
+            const bufferCircle = document.querySelector('.buffer-circle');
+            bufferCircle.innerHTML = '';
+            
+            const radius = 170;
+            const displayCount = 32;
+            
+            for (let i = 0; i < displayCount; i++) {
+                setTimeout(() => {
+                    const angle = (i / displayCount) * 2 * Math.PI;
+                    const x = radius + radius * Math.cos(angle);
+                    const y = radius + radius * Math.sin(angle);
+                    
+                    const bit = document.createElement('div');
+                    bit.className = 'buffer-bit';
+                    bit.textContent = polarBitsArray[i];
+                    bit.style.left = x + 'px';
+                    bit.style.top = y + 'px';
+                    bit.style.animationDelay = (i * 0.02) + 's';
+                    bufferCircle.appendChild(bit);
+                }, i * 50 / animationSpeed);
+            }
+        }
+
+        function displayPuncturing() {
+            const container = document.getElementById('discardedBits');
+            const section = document.getElementById('puncturingSection');
+            
+            if (E >= N) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            container.innerHTML = '';
+            
+            const discardedCount = N - E;
+            document.getElementById('discardedCount').textContent = discardedCount + ' bits discarded';
+            
+            const displayCount = Math.min(40, discardedCount);
+            for (let i = 0; i < displayCount; i++) {
+                setTimeout(() => {
+                    const bit = document.createElement('div');
+                    bit.className = 'bit bit-discarded';
+                    bit.textContent = polarBitsArray[E + i];
+                    bit.style.animationDelay = (i * 0.01) + 's';
+                    container.appendChild(bit);
+                }, i * 30 / animationSpeed);
+            }
+        }
+
+        function displayRepetition() {
+            const container = document.getElementById('repeatedBits');
+            const section = document.getElementById('repetitionSection');
+            
+            if (E <= N) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            container.innerHTML = '';
+            
+            const repeatedCount = E - N;
+            document.getElementById('repeatedCount').textContent = repeatedCount + ' bits repeated';
+            
+            const displayCount = Math.min(60, repeatedCount);
+            for (let i = 0; i < displayCount; i++) {
+                setTimeout(() => {
+                    const bit = document.createElement('div');
+                    bit.className = 'bit bit-repeated';
+                    bit.textContent = polarBitsArray[i % N];
+                    bit.style.animationDelay = (i * 0.01) + 's';
+                    container.appendChild(bit);
+                }, i * 25 / animationSpeed);
+            }
+        }
+
+        function displayFinalOutput() {
+            const container = document.getElementById('finalOutput');
+            container.innerHTML = '';
+            
+            const displayCount = Math.min(80, E);
+            for (let i = 0; i < displayCount; i++) {
+                setTimeout(() => {
+                    const bit = document.createElement('div');
+                    bit.className = 'bit bit-output';
+                    bit.textContent = polarBitsArray[i % N];
+                    bit.style.animationDelay = (i * 0.01) + 's';
+                    container.appendChild(bit);
+                }, i * 20 / animationSpeed);
+            }
+            
+            if (E > displayCount) {
+                setTimeout(() => {
+                    const more = document.createElement('div');
+                    more.style.width = '100%';
+                    more.style.textAlign = 'center';
+                    more.style.color = 'var(--text-secondary)';
+                    more.textContent = `... and ${E - displayCount} more bits`;
+                    container.appendChild(more);
+                }, displayCount * 20 / animationSpeed);
+            }
+        }
+
+        function playAnimation() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            document.getElementById('playBtn').textContent = '⏸️ Playing...';
+            
+            playInterval = setInterval(() => {
+                if (currentStep < totalSteps) {
+                    nextStep();
+                } else {
+                    pauseAnimation();
+                }
+            }, 3000 / animationSpeed);
+        }
+
+        function pauseAnimation() {
+            isPlaying = false;
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+            document.getElementById('playBtn').textContent = '▶️ Play';
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                displayStep(currentStep + 1);
+            } else {
+                displayStep(1);
+            }
+        }
+
+        function resetSimulation() {
+            pauseAnimation();
+            generatePolarBits();
+            displayStep(1);
+        }
+
+        function copyCppCode() {
+            const code = document.getElementById('cppCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ C++ code copied to clipboard!');
+            });
+        }
+
+        function runJavaScriptSimulation() {
+            const outputDiv = document.getElementById('jsOutput');
+            const contentDiv = document.getElementById('jsOutputContent');
+            
+            outputDiv.style.display = 'block';
+            
+            let output = '';
+            output += `<strong>5G NR PDCCH Rate Matching - JavaScript Simulation</strong>\n`;
+            output += `${'='.repeat(60)}\n\n`;
+            output += `Input Parameters:\n`;
+            output += `  • Input Bits (N): ${N}\n`;
+            output += `  • Output Bits (E): ${E}\n`;
+            output += `  • Aggregation Level (AL): ${AL}\n`;
+            output += `  • Code Rate: ${(N/E).toFixed(3)}\n\n`;
+            
+            if (E > N) {
+                const repeated = E - N;
+                output += `Operation: <span style="color: var(--primary);">REPETITION</span>\n`;
+                output += `  • ${repeated} bits will be repeated\n`;
+                output += `  • Circular buffer wraps around ${Math.ceil(E/N)} times\n\n`;
+            } else if (E < N) {
+                const discarded = N - E;
+                output += `Operation: <span style="color: var(--secondary);">PUNCTURING</span>\n`;
+                output += `  • ${discarded} bits will be discarded\n`;
+                output += `  • Only first ${E} bits transmitted\n\n`;
+            } else {
+                output += `Operation: <span style="color: var(--accent);">NO RATE MATCHING</span>\n`;
+                output += `  • N = E, all bits transmitted\n\n`;
+            }
+            
+            // Generate rate matched output
+            const rateMatchedBits = [];
+            for (let i = 0; i < E; i++) {
+                rateMatchedBits.push(polarBitsArray[i % N]);
+            }
+            
+            output += `Output (first 30 bits):\n`;
+            output += `  ${rateMatchedBits.slice(0, 30).join(' ')}...\n\n`;
+            
+            output += `✅ Rate Matching Complete!\n`;
+            output += `  • Total output bits: ${E}\n`;
+            output += `  • Ready for PDCCH transmission\n`;
+            
+            contentDiv.innerHTML = output.replace(/\n/g, '<br>');
+            
+            // Scroll to output
+            outputDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
+```

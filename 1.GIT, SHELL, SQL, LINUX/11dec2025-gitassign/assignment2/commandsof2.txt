@@ -1,0 +1,55 @@
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments (master)
+$ mkdir assignment2
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments (master)
+$ cd assignment2
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (master)
+$ git branch feature
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (master)
+$ git checkout feature
+D       assignment_1/project1.txt
+Switched to branch 'feature'
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (feature)
+$ ls
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (feature)
+$ vi project1.txt
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (feature)
+$ cat project1.txt
+The changes are being made
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (feature)
+$ git add .
+warning: in the working copy of 'assignment2/project1.txt', LF will be replaced by CRLF the next time Git touches it
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (feature)
+$ git status
+On branch feature
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   project1.txt
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    ../assignment_1/project1.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        ../assignment1/commands.txt
+
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (feature)
+$ git commit -m "changes done"
+[feature 8033d19] changes done
+ 1 file changed, 1 insertion(+)
+ create mode 100644 assignment2/project1.txt
+
+Harshinie@Asuslaptop-G MINGW64 ~/OneDrive/Desktop/wipro works/15dec2025/Assignments/assignment2 (feature)
+$
+the hotfix had done properly and the code is ready go under production

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4G LTE Architecture - Interactive Guide</title>
+    <style>
+        :root {
+            --google-blue: #4285F4;
+            --google-red: #EA4335;
+            --google-yellow: #FBBC05;
+            --google-green: #34A853;
+            --bg-color: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        h1 { color: #202124; margin: 0; font-size: 1.8rem; }
+        .credit { font-weight: 500; color: #5f6368; margin-top: 5px; }
+
+        .layout-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            max-width: 1500px;
+        }
+
+        .main-container {
+            position: relative;
+            width: 1000px;
+            height: 550px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr 1fr;
+            padding: 30px;
+        }
+
+        /* Section Layouts */
+        .section {
+            position: relative;
+            border-right: 1px solid #f1f3f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .section:last-child { border-right: none; }
+        .section-label {
+            position: absolute;
+            top: 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #9aa0a6;
+            font-weight: bold;
+        }
+
+        /* Node Styling */
+        .node {
+            width: 120px;
+            padding: 18px 10px;
+            background: #fff;
+            border: 2px solid #dadce0;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: absolute;
+        }
+
+        .node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-color: var(--google-blue);
+        }
+
+        .node.active {
+            background-color: #e8f0fe;
+            border-color: var(--google-blue);
+            transform: scale(1.1);
+        }
+
+        /* Positions */
+        #ue { left: 20px; border-top: 5px solid var(--google-red); }
+        #enb { left: 20px; border-top: 5px solid var(--google-blue); }
+        #mme { left: 30px; top: 15%; border-top: 5px solid var(--google-yellow); }
+        #hss { right: 30px; top: 15%; border-top: 5px solid var(--google-yellow); }
+        #sgw { left: 30px; top: 45%; border-top: 5px solid var(--google-blue); }
+        #pgw { right: 30px; top: 45%; border-top: 5px solid var(--google-blue); }
+        #pcrf { right: 30px; bottom: 10%; border-top: 5px solid var(--google-red); }
+        #internet { left: 20px; width: 150px; border-top: 5px solid var(--google-green); }
+
+        /* SVG Connections */
+        svg.overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .link { fill: none; stroke: #e8eaed; stroke-width: 3; transition: all 0.4s; }
+        .link.signaling { stroke: var(--google-yellow); stroke-width: 5; stroke-dasharray: 10,5; animation: flow 2s linear infinite; }
+        .link.data { stroke: var(--google-blue); stroke-width: 6; }
+
+        @keyframes flow { to { stroke-dashoffset: -30; } }
+
+        /* Pop-up Panel moved to the Side */
+        .info-panel {
+            width: 300px;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: opacity 0.3s;
+        }
+
+        .info-panel h3 { margin: 0; color: var(--google-blue); font-size: 1.2rem; }
+        .info-panel p { margin: 0; color: #5f6368; line-height: 1.6; font-size: 0.95rem; }
+
+        /* Controls */
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-sig { background: var(--google-yellow); color: #333; }
+        .btn-data { background: var(--google-blue); color: #fff; }
+        .btn-reset { background: #fff; border: 1px solid #dadce0; }
+        .btn:hover { transform: scale(1.05); filter: brightness(1.05); }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>4G LTE / EPC Architecture</h1>
+    <div class="credit">Made by Harshinie M</div>
+</header>
+
+<div class="controls">
+    <button class="btn btn-sig" onclick="runPath('signaling')">Run Signaling Path (Auth)</button>
+    <button class="btn btn-data" onclick="runPath('data')">Run Data Path</button>
+    <button class="btn btn-reset" onclick="resetAll()">Reset</button>
+</div>
+
+<div class="layout-wrapper">
+    <div class="main-container">
+        <svg class="overlay">
+            <path id="l-ue-enb" class="link" d="M 120 275 L 270 275" />
+            <path id="l-enb-mme" class="link" d="M 390 260 L 480 115" />
+            <path id="l-mme-hss" class="link" d="M 600 115 L 700 115" />
+            <path id="l-mme-sgw" class="link" d="M 540 155 L 540 240" />
+            <path id="l-enb-sgw" class="link" d="M 390 290 L 480 290" />
+            <path id="l-sgw-pgw" class="link" d="M 600 290 L 700 290" />
+            <path id="l-pgw-pcrf" class="link" d="M 760 340 L 760 440" />
+            <path id="l-pgw-net" class="link" d="M 820 290 L 920 290" />
+        </svg>
+
+        <div class="section">
+            <span class="section-label">User Equipment</span>
+            <div id="ue" class="node" onclick="showPopup('ue')">UE<br><small>Mobile Device</small></div>
+        </div>
+
+        <div class="section">
+            <span class="section-label">Radio Access</span>
+            <div id="enb" class="node" onclick="showPopup('enb')">eNodeB<br><small>Base Station</small></div>
+        </div>
+
+        <div class="section">
+            <span class="section-label">Core Network</span>
+            <div id="mme" class="node" onclick="showPopup('mme')">MME<br><small>Control</small></div>
+            <div id="hss" class="node" onclick="showPopup('hss')">HSS<br><small>Database</small></div>
+            <div id="sgw" class="node" onclick="showPopup('sgw')">S-GW<br><small>Serving GW</small></div>
+            <div id="pgw" class="node" onclick="showPopup('pgw')">P-GW<br><small>PDN GW</small></div>
+            <div id="pcrf" class="node" onclick="showPopup('pcrf')">PCRF<br><small>Policy</small></div>
+        </div>
+
+        <div class="section">
+            <span class="section-label">External</span>
+            <div id="internet" class="node" onclick="showPopup('internet')">Internet / PDN</div>
+        </div>
+    </div>
+
+    <div class="info-panel" id="popup">
+        <div style="font-size: 2rem;">💡</div>
+        <div>
+            <h3 id="pop-title">Welcome</h3>
+            <p id="pop-text">Select a node or start a path to learn about the 4G network flow.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const content = {
+        ue: { title: "UE (User Equipment)", text: "The mobile device. It connects wirelessly to the eNodeB using the LTE air interface." },
+        enb: { title: "eNodeB", text: "The base station. It bridges the radio connection to the wired core network." },
+        mme: { title: "MME", text: "The brain of the control plane. Handles authentication and mobility management." },
+        hss: { title: "HSS", text: "The master database. Contains all subscriber information and security keys." },
+        sgw: { title: "S-GW", text: "The anchor for data traffic. Forwards user packets between the eNodeB and P-GW." },
+        pgw: { title: "P-GW", text: "The exit point. Assigns IP addresses and connects the UE to the Internet." },
+        pcrf: { title: "PCRF", text: "Manages data rules, bandwidth limits, and charging policies for users." },
+        internet: { title: "Internet / PDN", text: "The external data network where services like the Web and YouTube reside." }
+    };
+
+    function showPopup(id) {
+        const item = content[id];
+        document.getElementById('pop-title').innerText = item.title;
+        document.getElementById('pop-text').innerText = item.text;
+        document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    async function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function resetAll() {
+        document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.link').forEach(l => {
+            l.classList.remove('signaling');
+            l.classList.remove('data');
+        });
+        document.getElementById('pop-title').innerText = "Welcome";
+        document.getElementById('pop-text').innerText = "Select a node or start a path to learn about the 4G network flow.";
+    }
+
+    async function runPath(type) {
+        resetAll();
+        if (type === 'signaling') {
+            showPopup('ue'); await wait(800);
+            document.getElementById('l-ue-enb').classList.add('signaling');
+            showPopup('enb'); await wait(800);
+            document.getElementById('l-enb-mme').classList.add('signaling');
+            showPopup('mme'); await wait(800);
+            document.getElementById('l-mme-hss').classList.add('signaling');
+            showPopup('hss'); await wait(1500);
+            document.getElementById('pop-text').innerText = "User Authenticated. Connection setup complete.";
+        } else {
+            showPopup('ue'); await wait(800);
+            document.getElementById('l-ue-enb').classList.add('data');
+            showPopup('enb'); await wait(800);
+            document.getElementById('l-enb-sgw').classList.add('data');
+            showPopup('sgw'); await wait(800);
+            document.getElementById('l-sgw-pgw').classList.add('data');
+            showPopup('pgw'); await wait(800);
+            document.getElementById('l-pgw-pcrf').classList.add('signaling');
+            showPopup('pcrf'); await wait(1000);
+            document.getElementById('l-pgw-net').classList.add('data');
+            showPopup('internet');
+        }
+    }
+</script>
+
+</body>
+</html>

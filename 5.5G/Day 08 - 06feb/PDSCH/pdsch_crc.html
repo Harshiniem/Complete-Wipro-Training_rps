@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR CRC Attachment | Engineering Deep Dive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: #161b22;
+            --primary-cyan: #00f2ff;
+            --primary-blue: #0070f3;
+            --accent-purple: #7000ff;
+            --text-main: #e6edf3;
+            --text-dim: #8b949e;
+            --border-color: #30363d;
+            --success: #238636;
+            --error: #da3633;
+            --warning: #d29922;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1a1f35 0%, #0b0e14 100%);
+            position: relative;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .hero-content {
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--primary-cyan);
+            border-radius: 20px;
+            color: var(--primary-cyan);
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            background: linear-gradient(90deg, #fff, var(--primary-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        section {
+            margin-bottom: 100px;
+            scroll-margin-top: 80px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary-cyan);
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2 i { margin-right: 15px; color: var(--primary-cyan); }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary-cyan);
+        }
+
+        /* 5G Flow Diagram */
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-step {
+            background: #1c2128;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .flow-step.active {
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+            color: var(--primary-cyan);
+        }
+
+        .flow-arrow {
+            color: var(--border-color);
+            font-size: 1.5rem;
+        }
+
+        /* Interactive Simulator */
+        .simulator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .simulator-grid { grid-template-columns: 1fr; }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover { background: #1f88ff; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary-cyan); color: var(--primary-cyan); margin-top: 10px;}
+
+        /* Division Visualization */
+        .viz-box {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .bit-stream {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .bit {
+            width: 30px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #21262d;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .bit.active { background: var(--primary-blue); }
+        .bit.xor { background: var(--accent-purple); }
+        .bit.remainder { background: var(--success); }
+        .bit.error { background: var(--error); cursor: pointer; }
+
+        /* Formula Styling */
+        .formula {
+            background: #1c2128;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-style: italic;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            border: 1px dashed var(--border-color);
+        }
+
+        code-block {
+            display: block;
+            background: #0d1117;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            color: #d1d5db;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .comment { color: #6a9955; }
+        .keyword { color: #569cd6; }
+        .number { color: #b5cea8; }
+
+        /* Receiver Section */
+        .receiver-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .status-pass { background: rgba(35, 134, 54, 0.1); border: 1px solid var(--success); color: var(--success); }
+        .status-fail { background: rgba(218, 54, 51, 0.1); border: 1px solid var(--error); color: var(--error); }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(11, 14, 20, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-links {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--primary-cyan); }
+
+        .tooltip {
+            position: relative;
+            border-bottom: 1px dotted var(--primary-cyan);
+            cursor: help;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-links">
+            <a href="#intro">Introduction</a>
+            <a href="#5g-nr">5G Architecture</a>
+            <a href="#math">Deep Dive</a>
+            <a href="#simulator">Simulator</a>
+            <a href="#insights">Insights</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <canvas id="heroCanvas" class="hero-canvas"></canvas>
+        <div class="hero-content">
+            <span class="badge">3GPP TS 38.212 Compliant</span>
+            <h1>CRC Attachment in 5G NR</h1>
+            <p>Master the fundamental error detection mechanism that powers high-reliability wireless data processing in the 5G Physical Layer.</p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn" onclick="document.getElementById('simulator').scrollIntoView()">Start Simulation</button>
+                <button class="btn btn-outline" onclick="document.getElementById('math').scrollIntoView()">Technical Specs</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Introduction -->
+        <section id="intro">
+            <h2><i class="fas fa-info-circle"></i> Understanding CRC</h2>
+            <div class="simulator-grid">
+                <div class="card">
+                    <h3>What is Cyclic Redundancy Check?</h3>
+                    <p>CRC is a mathematical algorithm used to detect accidental changes to raw data. In 5G, where mmWave and high-frequency channels are noisy, CRC is the first line of defense.</p>
+                    <ul style="margin-left: 20px; margin-top: 15px; color: var(--text-dim);">
+                        <li>Detects burst errors common in wireless fades.</li>
+                        <li>Uses Binary Polynomial Division (GF(2) arithmetic).</li>
+                        <li>Critical for the <b>HARQ (Hybrid ARQ)</b> process.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Error Detection vs Correction</h3>
+                    <p>Unlike <b>LDPC</b> or <b>Polar Codes</b> which <i>correct</i> errors, CRC can only <i>detect</i> them. If the CRC check fails at the gNB or UE, the Physical layer triggers a NACK, requesting a retransmission.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5G NR Context -->
+        <section id="5g-nr">
+            <h2><i class="fas fa-layer-group"></i> 5G NR Transport Block Processing</h2>
+            <div class="card">
+                <p>In 5G NR PDSCH (Downlink) or PUSCH (Uplink), data arrives from the MAC layer as a <b>Transport Block (TB)</b>. CRC is attached before the data is segmented for channel coding.</p>
+                
+                <div class="flow-container">
+                    <div class="flow-step">Transport Block (A bits)</div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-step active">TB CRC Attachment</div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-step">LDPC Base Graph Selection</div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-step">Code Block Segmentation</div>
+                </div>
+
+                <div class="simulator-grid" style="margin-top: 20px;">
+                    <div>
+                        <h4>TB-Level CRC</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-dim);">For TB sizes > 3824 bits, 5G uses <b>CRC24A</b>. For smaller blocks, <b>CRC16</b> is common. This CRC checks the integrity of the entire payload.</p>
+                    </div>
+                    <div>
+                        <h4>CB-Level CRC</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-dim);">After segmentation, each Code Block (CB) gets its own <b>CRC24B</b>. This allows the receiver to stop decoding early if a specific block is corrupted.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Deep Dive -->
+        <section id="math">
+            <h2><i class="fas fa-square-root-variable"></i> The Mathematical Engine</h2>
+            <div class="card">
+                <p>The CRC calculation is defined as the remainder of the division of the input polynomial by a generator polynomial.</p>
+                <div class="formula">
+                    R(x) = [X<sup>L</sup> · B(x)] mod G(x)
+                </div>
+                <p>Where:</p>
+                <ul style="margin-left: 40px; color: var(--text-dim); margin-bottom: 20px;">
+                    <li><b>B(x)</b>: Input data bits represented as a polynomial.</li>
+                    <li><b>L</b>: Length of the CRC (11, 16, or 24 bits).</li>
+                    <li><b>G(x)</b>: The generator polynomial (defined by 3GPP).</li>
+                </ul>
+
+                <h4>Standard 5G Polynomials:</h4>
+                <div style="margin-top: 15px; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 10px;">Type</th>
+                            <th>Polynomial G(x)</th>
+                            <th>Hex Rep</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">CRC24A</td>
+                            <td>D<sup>24</sup>+D<sup>23</sup>+D<sup>18</sup>+D<sup>17</sup>+D<sup>14</sup>+D<sup>11</sup>+D<sup>10</sup>+D<sup>7</sup>+D<sup>6</sup>+D<sup>5</sup>+D<sup>4</sup>+D<sup>3</sup>+D+1</td>
+                            <td>0x1864CFB</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">CRC24B</td>
+                            <td>D<sup>24</sup>+D<sup>23</sup>+D<sup>6</sup>+D<sup>5</sup>+D+1</td>
+                            <td>0x1800063</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">CRC16</td>
+                            <td>D<sup>16</sup>+D<sup>12</sup>+D<sup>5</sup>+1</td>
+                            <td>0x11021</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Simulator -->
+        <section id="simulator">
+            <h2><i class="fas fa-microchip"></i> Interactive CRC Simulator</h2>
+            <div class="simulator-grid">
+                <div class="card">
+                    <h3>Transmitter (TX)</h3>
+                    <div class="input-group">
+                        <label>Input Binary Data (Max 24 bits for demo):</label>
+                        <input type="text" id="txData" value="11010011101100" maxlength="24">
+                    </div>
+                    <div class="input-group">
+                        <label>Generator Polynomial:</label>
+                        <select id="polySelect">
+                            <option value="1100001">CRC6 (5G standard: 0x41)</option>
+                            <option value="11021">CRC16 (CCITT)</option>
+                            <option value="1100001100100110011111011">CRC24A (5G TB CRC)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="runSimulation()">Generate CRC & Transmit</button>
+                    
+                    <div id="txResult" style="margin-top: 20px; display: none;">
+                        <p style="color: var(--text-dim); margin-bottom: 5px;">Transmitted Packet (Data + CRC):</p>
+                        <div id="txPacketBits" class="bit-stream"></div>
+                        <p style="font-size: 0.8rem; color: var(--primary-cyan);">The green bits represent the calculated CRC remainder attached to the end.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Receiver (RX)</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 15px;">Simulate channel noise by clicking a bit to flip it (0 &harr; 1).</p>
+                    <div id="rxPacketBits" class="bit-stream">
+                        <p>Waiting for TX...</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="verifyCRC()">Perform CRC Check</button>
+                    
+                    <div id="rxStatus" class="receiver-status" style="display: none;">
+                        <i id="statusIcon" class="fas"></i>
+                        <span id="statusText"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 30px;">
+                <h3>Binary Division Visualization (Modulo-2)</h3>
+                <div id="vizBox" class="viz-box">
+                    <p style="color: var(--text-dim);">Click 'Generate' to see the XOR division steps...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Engineering Insights -->
+        <section id="insights">
+            <h2><i class="fas fa-lightbulb"></i> Engineering Insights</h2>
+            <div class="simulator-grid">
+                <div class="card">
+                    <h4>Why before LDPC?</h4>
+                    <p>CRC is added <i>before</i> LDPC coding so that at the receiver, the LDPC decoder can attempt to fix bit errors. If LDPC succeeds, CRC then confirms if the result is actually the original block. If CRC fails after LDPC, the block is discarded.</p>
+                </div>
+                <div class="card">
+                    <h4>CRC Scrambling</h4>
+                    <p>In 5G NR, for some channels like PDCCH, the CRC is <b>scrambled with the RNTI</b> (Radio Network Temporary Identifier). This allows the UE to verify if the message was intended for it while checking errors simultaneously.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section id="code">
+            <h2><i class="fas fa-code"></i> Reference Implementation (C++)</h2>
+            <code-block>
+<span class="comment">// 5G NR CRC24A Logic - Simplified Reference</span>
+<span class="keyword">uint32_t</span> calculateCRC24A(<span class="keyword">uint8_t</span>* data, <span class="keyword">int</span> len) {
+    <span class="keyword">uint32_t</span> crc = <span class="number">0x000000</span>; <span class="comment">// Initial value</span>
+    <span class="keyword">uint32_t</span> poly = <span class="number">0x1864CFB</span>; <span class="comment">// G(x) for CRC24A</span>
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i < len; i++) {
+        crc ^= (data[i] << <span class="number">16</span>);
+        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j < <span class="number">8</span>; j++) {
+            <span class="keyword">if</span> (crc & <span class="number">0x800000</span>)
+                crc = (crc << <span class="number">1</span>) ^ poly;
+            <span class="keyword">else</span>
+                crc <<= <span class="number">1</span>;
+        }
+    }
+    <span class="keyword">return</span> crc & <span class="number">0xFFFFFF</span>;
+}
+            </code-block>
+        </section>
+    </div>
+
+    <script>
+        // Hero Animation
+        const canvas = document.getElementById('heroCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+            }
+            draw() {
+                ctx.fillStyle = '#00f2ff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        animate();
+
+        // Simulator Logic
+        let currentPacket = [];
+        let dataLength = 0;
+        let polyLength = 0;
+
+        function runSimulation() {
+            const dataStr = document.getElementById('txData').value.replace(/[^01]/g, '');
+            const polyStr = document.getElementById('polySelect').value;
+            
+            if (!dataStr) return alert("Enter binary data!");
+
+            const dataArr = dataStr.split('').map(Number);
+            const polyArr = polyStr.split('').map(Number);
+            
+            dataLength = dataArr.length;
+            polyLength = polyArr.length;
+
+            // Step 1: Append Zeros
+            let augmentedData = [...dataArr, ...new Array(polyLength - 1).fill(0)];
+            
+            // Visualize Division
+            let steps = "Binary Long Division (GF2):\n\n";
+            let remainder = [...augmentedData];
+
+            for (let i = 0; i <= augmentedData.length - polyLength; i++) {
+                if (remainder[i] === 1) {
+                    steps += `Step ${i+1}: XOR at position ${i}\n`;
+                    steps += `   ${remainder.join('')}\n`;
+                    let xorLine = new Array(i).fill(' ').join('') + polyStr;
+                    steps += ` XOR ${xorLine.trim()}\n`;
+                    
+                    for (let j = 0; j < polyLength; j++) {
+                        remainder[i + j] = remainder[i + j] ^ polyArr[j];
+                    }
+                    steps += `   ${new Array(i).fill('-').join('')}${new Array(polyLength).fill('-').join('')}\n`;
+                }
+            }
+
+            const crcResult = remainder.slice(- (polyLength - 1));
+            currentPacket = [...dataArr, ...crcResult];
+
+            // Update UI
+            document.getElementById('vizBox').innerHTML = `<pre>${steps}\nFinal Remainder: ${crcResult.join('')}</pre>`;
+            document.getElementById('txResult').style.display = 'block';
+            
+            renderBits('txPacketBits', currentPacket, dataLength);
+            renderBits('rxPacketBits', currentPacket, dataLength, true);
+            document.getElementById('rxStatus').style.display = 'none';
+        }
+
+        function renderBits(containerId, bits, splitIndex, interactive = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            bits.forEach((bit, idx) => {
+                const bitDiv = document.createElement('div');
+                bitDiv.className = 'bit';
+                if (idx >= splitIndex) bitDiv.classList.add('remainder');
+                bitDiv.innerText = bit;
+                
+                if (interactive) {
+                    bitDiv.classList.add('error');
+                    bitDiv.title = "Click to flip bit";
+                    bitDiv.onclick = () => {
+                        bits[idx] = bits[idx] === 1 ? 0 : 1;
+                        bitDiv.innerText = bits[idx];
+                        bitDiv.style.background = '#da3633';
+                    };
+                }
+                container.appendChild(bitDiv);
+            });
+        }
+
+        function verifyCRC() {
+            const polyStr = document.getElementById('polySelect').value;
+            const polyArr = polyStr.split('').map(Number);
+            
+            let remainder = [...currentPacket];
+            for (let i = 0; i <= remainder.length - polyArr.length; i++) {
+                if (remainder[i] === 1) {
+                    for (let j = 0; j < polyArr.length; j++) {
+                        remainder[i + j] = remainder[i + j] ^ polyArr[j];
+                    }
+                }
+            }
+
+            const sum = remainder.reduce((a, b) => a + b, 0);
+            const statusDiv = document.getElementById('rxStatus');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+
+            statusDiv.style.display = 'flex';
+            if (sum === 0) {
+                statusDiv.className = 'receiver-status status-pass';
+                statusIcon.className = 'fas fa-check-circle';
+                statusText.innerText = "CRC Check PASSED: No errors detected.";
+            } else {
+                statusDiv.className = 'receiver-status status-fail';
+                statusIcon.className = 'fas fa-times-circle';
+                statusText.innerText = "CRC Check FAILED: Bit errors detected in transmission!";
+            }
+        }
+    </script>
+</body>
+</html>

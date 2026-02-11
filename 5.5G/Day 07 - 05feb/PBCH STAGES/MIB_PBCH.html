@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIB in PBCH - Learn Easy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            color: white;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, #0f3460, #533483);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: #00d9ff;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #a8dadc;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #00d9ff;
+        }
+
+        h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        h3 {
+            color: #f72585;
+            margin: 20px 0 10px 0;
+        }
+
+        /* Animation Section */
+        .animation-box {
+            background: #0a1929;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            margin: 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Workflow Animation */
+        .workflow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+            min-height: 200px;
+        }
+
+        .device {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 12px;
+            min-width: 150px;
+            transition: all 0.5s;
+        }
+
+        .device-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+
+        .signal {
+            width: 100px;
+            height: 5px;
+            background: #00d9ff;
+            margin: 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .signal.active {
+            opacity: 1;
+            animation: signalFlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes signalFlow {
+            0% { transform: scaleX(0.5); opacity: 0.5; }
+            50% { transform: scaleX(1); opacity: 1; }
+            100% { transform: scaleX(0.5); opacity: 0.5; }
+        }
+
+        .stage-text {
+            background: #1e3a5f;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #f72585;
+        }
+
+        .stage-text h4 {
+            color: #f72585;
+            margin-bottom: 8px;
+        }
+
+        /* MIB Structure */
+        .mib-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .mib-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .mib-card:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .mib-card h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .bits {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Code Section */
+        .code-box {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+
+        .code-title {
+            color: #4ec9b0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .copy-btn {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: #005a9e;
+        }
+
+        pre {
+            margin: 0;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .function { color: #dcdcaa; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .number { color: #b5cea8; }
+
+        .run-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: block;
+            margin: 20px auto;
+            transition: transform 0.3s;
+        }
+
+        .run-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .output {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            display: none;
+            white-space: pre-wrap;
+        }
+
+        .output.show {
+            display: block;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Interactive Form */
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group label {
+            display: block;
+            color: #00d9ff;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00d9ff;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 1em;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #0f3460, #533483);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .info-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        ul {
+            margin-left: 30px;
+            margin-top: 10px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .workflow { flex-direction: column; }
+            .signal { width: 5px; height: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📡 MIB in PBCH</h1>
+        <p class="subtitle">Master Information Block - Easy Learning Guide</p>
+    </div>
+
+    <div class="container">
+        <!-- Section 1: What is MIB -->
+        <div class="section">
+            <h2>📚 What is MIB?</h2>
+            <p><strong>Simple Answer:</strong> MIB (Master Information Block) is the first message your phone receives from a cell tower. It contains basic information needed to connect to the network.</p>
+            
+            <div class="info-box">
+                <h3>🎯 Think of it like this:</h3>
+                <p>When you enter a new building, you look at the directory first. MIB is like that directory - it tells your phone the basic layout of the network!</p>
+            </div>
+
+            <h3>Key Facts:</h3>
+            <ul>
+                <li>📻 <strong>Transmitted on:</strong> PBCH (Physical Broadcast Channel)</li>
+                <li>⏱️ <strong>How often:</strong> Every 80 milliseconds</li>
+                <li>📏 <strong>Size:</strong> 24 bits (LTE) or 32 bits (5G)</li>
+                <li>🎯 <strong>Purpose:</strong> Initial network access information</li>
+            </ul>
+        </div>
+
+        <!-- Section 2: Where MIB fits in 5G NR -->
+        <div class="section">
+            <h2>🔍 Where MIB Fits in 5G NR</h2>
+            <p>Understanding the hierarchy is crucial for trainers and learners:</p>
+
+            <div class="info-box">
+                <h3>📡 SS/PBCH Block (SSB) Structure:</h3>
+                <p style="font-size: 1.1em; margin: 15px 0;">
+                    <strong>SSB = PSS + SSS + PBCH</strong>
+                </p>
+                <ul>
+                    <li><strong>PSS (Primary Synchronization Signal):</strong> Used for initial time/frequency synchronization</li>
+                    <li><strong>SSS (Secondary Synchronization Signal):</strong> Provides Physical Cell ID</li>
+                    <li><strong>PBCH (Physical Broadcast Channel):</strong> Carries the MIB payload</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h3>🎯 Key Relationship:</h3>
+                <p><strong>MIB is carried INSIDE PBCH</strong></p>
+                <p style="margin-top: 10px;">The MIB is the information content (payload) that is encoded and transmitted on the Physical Broadcast Channel (PBCH).</p>
+            </div>
+
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 25px; border-radius: 12px; margin: 20px 0;">
+                <h3 style="color: #00d9ff; margin-bottom: 15px;">📋 UE Initial Access Sequence:</h3>
+                <div style="display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
+                    <div style="text-align: center; padding: 15px; background: rgba(99, 102, 241, 0.2); border-radius: 10px; min-width: 150px;">
+                        <div style="font-size: 2.5em; margin-bottom: 10px;">1️⃣</div>
+                        <strong>PSS/SSS Detection</strong>
+                        <p style="font-size: 0.9em; color: #94a3b8; margin-top: 5px;">Time/Freq sync + Cell ID</p>
+                    </div>
+                    <div style="font-size: 2em; color: #00d9ff;">→</div>
+                    <div style="text-align: center; padding: 15px; background: rgba(139, 92, 246, 0.2); border-radius: 10px; min-width: 150px;">
+                        <div style="font-size: 2.5em; margin-bottom: 10px;">2️⃣</div>
+                        <strong>PBCH Decode</strong>
+                        <p style="font-size: 0.9em; color: #94a3b8; margin-top: 5px;">Extract PBCH payload</p>
+                    </div>
+                    <div style="font-size: 2em; color: #00d9ff;">→</div>
+                    <div style="text-align: center; padding: 15px; background: rgba(236, 72, 153, 0.2); border-radius: 10px; min-width: 150px;">
+                        <div style="font-size: 2.5em; margin-bottom: 10px;">3️⃣</div>
+                        <strong>Read MIB</strong>
+                        <p style="font-size: 0.9em; color: #94a3b8; margin-top: 5px;">Get essential parameters</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>💡 Important Note:</h3>
+                <p>The UE (User Equipment/Phone) <strong>first synchronizes</strong> using PSS and SSS signals, which allows it to know the timing and cell identity. Only after this synchronization can the UE successfully <strong>decode PBCH</strong> to extract the <strong>MIB information</strong>.</p>
+            </div>
+        </div>
+
+        <!-- Section 3: MIB Payload Size Explanation -->
+        <div class="section">
+            <h2>📏 MIB Payload Size Explanation</h2>
+            <p>Understanding the exact bit composition is essential for implementation:</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 25px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">24</div>
+                    <h4>MIB Information Elements</h4>
+                    <p style="margin-top: 10px; font-size: 0.95em;">Network configuration parameters explicitly defined in MIB IE</p>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 25px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">+ 8</div>
+                    <h4>Additional Timing Bits</h4>
+                    <p style="margin-top: 10px; font-size: 0.95em;">Half frame bit + k_SSB MSBs (implicitly signaled)</p>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 25px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">= 32</div>
+                    <h4>Total PBCH Payload</h4>
+                    <p style="margin-top: 10px; font-size: 0.95em;">Complete payload BEFORE channel coding (CRC attachment)</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <h3>🔢 Bit Allocation Formula:</h3>
+                <p style="font-family: monospace; font-size: 1.2em; margin: 15px 0; text-align: center;">
+                    <strong>MIB IE (24 bits) + Timing Info (8 bits) = 32-bit PBCH Payload</strong>
+                </p>
+                <p style="margin-top: 10px;"><strong>Note:</strong> After this 32-bit payload is formed, the PBCH encoding process adds CRC, performs Polar encoding, rate matching, etc. However, the <strong>MIB content itself is these 32 bits</strong>.</p>
+            </div>
+
+            <div class="info-box">
+                <h3>📌 Why Two Components?</h3>
+                <ul>
+                    <li><strong>24-bit MIB IE:</strong> Explicitly transmitted fields defined in 3GPP specs (TS 38.331)</li>
+                    <li><strong>8-bit Timing Info:</strong> Derived from PBCH transmission timing and SSB index, providing additional frame timing information implicitly</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 4: How it Works - Animation -->
+        <div class="section">
+            <h2>🎬 How MIB Works - Watch the Process</h2>
+            
+            <div class="animation-box">
+                <div class="controls">
+                    <button class="btn" onclick="startDemo()">▶️ Start Demo</button>
+                    <button class="btn" onclick="resetDemo()">🔄 Reset</button>
+                </div>
+
+                <div class="workflow" id="workflow">
+                    <div class="device" id="phone">
+                        <div class="device-icon">📱</div>
+                        <div>Your Phone</div>
+                    </div>
+
+                    <div class="signal" id="signal1"></div>
+
+                    <div class="device" id="tower">
+                        <div class="device-icon">🗼</div>
+                        <div>Cell Tower</div>
+                    </div>
+                </div>
+
+                <div class="stage-text" id="stageInfo">
+                    <h4>Ready to Start</h4>
+                    <p>Click "Start Demo" to see how your phone receives MIB from the tower!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Detailed MIB Bit Mapping -->
+        <div class="section">
+            <h2>📦 MIB Payload Layout - Complete Bit Mapping</h2>
+            <p>This table shows the exact bit allocation in the 32-bit PBCH payload:</p>
+
+            <div style="background: rgba(0, 0, 0, 0.4); padding: 25px; border-radius: 12px; margin: 20px 0; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; color: white;">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            <th style="padding: 12px; border: 1px solid rgba(255,255,255,0.2);">Bit Range</th>
+                            <th style="padding: 12px; border: 1px solid rgba(255,255,255,0.2);">Bits</th>
+                            <th style="padding: 12px; border: 1px solid rgba(255,255,255,0.2);">Field Name</th>
+                            <th style="padding: 12px; border: 1px solid rgba(255,255,255,0.2);">Meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(99, 102, 241, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a0 – a5</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>6</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>systemFrameNumber (SFN[9:4])</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">6 MSBs of 10-bit SFN</td>
+                        </tr>
+                        <tr style="background: rgba(139, 92, 246, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a6</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>1</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>subCarrierSpacingCommon</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">SCS for SIB1 & Msg2/4 (0=15kHz/60kHz, 1=30kHz/120kHz)</td>
+                        </tr>
+                        <tr style="background: rgba(236, 72, 153, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a7 – a10</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>4</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>ssb-SubcarrierOffset (kSSB[4:0] LSBs)</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">4 LSBs of SSB subcarrier offset within CRB 0</td>
+                        </tr>
+                        <tr style="background: rgba(99, 102, 241, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a11</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>1</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>dmrs-TypeA-Position</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">DMRS position (0=pos2, 1=pos3)</td>
+                        </tr>
+                        <tr style="background: rgba(139, 92, 246, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a12 – a19</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>8</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>pdcch-ConfigSIB1</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">PDCCH configuration for SIB1 scheduling</td>
+                        </tr>
+                        <tr style="background: rgba(236, 72, 153, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a20</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>1</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>cellBarred</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">Cell access status (0=not barred, 1=barred)</td>
+                        </tr>
+                        <tr style="background: rgba(99, 102, 241, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a21</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>1</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>intraFreqReselection</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">Cell reselection allowed (0=not allowed, 1=allowed)</td>
+                        </tr>
+                        <tr style="background: rgba(139, 92, 246, 0.1);">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a22 – a23</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>2</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>spare</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">Reserved for future use (set to 0)</td>
+                        </tr>
+                        <tr style="background: rgba(16, 185, 129, 0.2); border-top: 2px solid #10b981;">
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><code>a24 – a31</code></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center;"><strong>8</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);"><strong>Timing Information (Implicit)</strong></td>
+                            <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.1);">Half frame bit + k_SSB MSBs + SFN[3:0]</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: rgba(0, 217, 255, 0.2); font-weight: bold;">
+                            <td colspan="2" style="padding: 12px; border: 1px solid rgba(255,255,255,0.2); text-align: center;">TOTAL</td>
+                            <td colspan="2" style="padding: 12px; border: 1px solid rgba(255,255,255,0.2);">32 bits (24 explicit + 8 timing)</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="info-box">
+                <h3>📌 Key Points:</h3>
+                <ul>
+                    <li><strong>Bits a0–a23:</strong> Explicit MIB Information Elements (24 bits)</li>
+                    <li><strong>Bits a24–a31:</strong> Additional timing information (8 bits) derived implicitly</li>
+                    <li><strong>Bit numbering:</strong> a0 is transmitted first (LSB first order in some contexts)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 6: Field-by-Field Explanation -->
+        <div class="section">
+            <h2>🔍 MIB Fields - Why Each is Needed</h2>
+
+            <div class="mib-grid">
+                <div class="mib-card">
+                    <h4>systemFrameNumber (SFN)</h4>
+                    <div class="bits">6 bits (MSBs)</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> Provides timing reference for frame numbering. UE needs SFN to decode SIB1 and track frame timing.</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>subCarrierSpacingCommon</h4>
+                    <div class="bits">1 bit</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> UE must know the subcarrier spacing to correctly decode PDCCH for SIB1 and initial access messages.</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>ssb-SubcarrierOffset (kSSB)</h4>
+                    <div class="bits">4 bits (LSBs)</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> Tells UE the frequency offset of SSB relative to reference point, critical for locating PDCCH/PDSCH.</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>dmrs-TypeA-Position</h4>
+                    <div class="bits">1 bit</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> Specifies DMRS symbol position for channel estimation during PDSCH decoding (SIB1 reception).</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>pdcch-ConfigSIB1</h4>
+                    <div class="bits">8 bits</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> Provides PDCCH search space configuration so UE can find and decode DCI scheduling SIB1.</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>cellBarred</h4>
+                    <div class="bits">1 bit</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> Indicates if cell is accessible. UE must skip barred cells during cell selection.</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>intraFreqReselection</h4>
+                    <div class="bits">1 bit</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> Tells UE if cell reselection to cells on same frequency is allowed in idle mode.</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>spare bits</h4>
+                    <div class="bits">2 bits</div>
+                    <p style="margin-top: 15px;"><strong>Why needed:</strong> Reserved for future enhancements without breaking backward compatibility.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 7: SFN Example Explanation -->
+        <div class="section">
+            <h2>📊 SFN (System Frame Number) - Detailed Example</h2>
+
+            <div class="info-box">
+                <h3>🔢 Understanding SFN Structure:</h3>
+                <ul>
+                    <li><strong>SFN Range:</strong> 0 to 1023 (10 bits total)</li>
+                    <li><strong>In MIB:</strong> Only SFN[9:4] transmitted (6 MSBs)</li>
+                    <li><strong>Remaining 4 bits (SFN[3:0]):</strong> Derived from PBCH timing (in the 8-bit timing information)</li>
+                </ul>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #0f3460, #533483); padding: 30px; border-radius: 12px; margin: 20px 0;">
+                <h3 style="color: #00d9ff; margin-bottom: 20px; text-align: center;">🎯 Practical Example: SFN = 42</h3>
+                
+                <div style="background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <p><strong>Step 1: Convert SFN to Binary</strong></p>
+                    <p style="font-family: monospace; font-size: 1.3em; color: #00d9ff; margin: 10px 0;">
+                        SFN = 42 (decimal) = <span style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 5px;">0000101010</span> (binary)
+                    </p>
+                    <p style="font-size: 0.9em; color: #94a3b8;">10 bits total</p>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <p><strong>Step 2: Split into MSBs and LSBs</strong></p>
+                    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin: 15px 0; gap: 15px;">
+                        <div style="text-align: center; padding: 15px; background: rgba(99, 102, 241, 0.3); border-radius: 8px; flex: 1; min-width: 200px;">
+                            <p style="color: #a5b4fc; margin-bottom: 8px;">SFN[9:4] - MSBs</p>
+                            <p style="font-family: monospace; font-size: 1.5em; color: #fff;">000010</p>
+                            <p style="font-size: 0.85em; color: #94a3b8; margin-top: 8px;">6 bits in MIB (a0–a5)</p>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(236, 72, 153, 0.3); border-radius: 8px; flex: 1; min-width: 200px;">
+                            <p style="color: #fda4af; margin-bottom: 8px;">SFN[3:0] - LSBs</p>
+                            <p style="font-family: monospace; font-size: 1.5em; color: #fff;">1010</p>
+                            <p style="font-size: 0.85em; color: #94a3b8; margin-top: 8px;">4 bits in timing info (a24–a31)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <p><strong>Step 3: Verification</strong></p>
+                    <p style="font-family: monospace; font-size: 1.1em; margin: 10px 0;">
+                        MSB: 000010 (binary) = 2 (decimal)<br>
+                        LSB: 1010 (binary) = 10 (decimal)<br>
+                        <span style="color: #10b981;">Complete SFN = (2 × 16) + 10 = 32 + 10 = 42 ✓</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <h3>💡 Why This Split?</h3>
+                <p>The 4 LSBs of SFN change every frame (10ms), while the 6 MSBs change every 16 frames (160ms). By transmitting MSBs in MIB and deriving LSBs from PBCH timing periodicity, the design saves explicit MIB bits while still providing complete SFN information to the UE.</p>
+            </div>
+        </div>
+
+        <!-- Section 8: MIB Structure OLD (keep for compatibility) -->
+        <div class="section">
+            <h2>📦 Quick Reference - Main MIB Fields</h2>
+            <p>Simplified view for quick understanding:</p>
+
+            <div class="mib-grid">
+                <div class="mib-card">
+                    <h4>System Frame Number</h4>
+                    <div class="bits">10 bits</div>
+                    <p>Timing information (0-1023)</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>Subcarrier Spacing</h4>
+                    <div class="bits">2 bits</div>
+                    <p>15, 30, 60, or 120 kHz</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>Cell Barred</h4>
+                    <div class="bits">1 bit</div>
+                    <p>Can phone access? (Yes/No)</p>
+                </div>
+
+                <div class="mib-card">
+                    <h4>Intra-Freq Reselection</h4>
+                    <div class="bits">1 bit</div>
+                    <p>Can switch cells? (Yes/No)</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>💡 Total:</strong> 10 + 2 + 1 + 1 = 14 bits (plus additional spare bits)
+            </div>
+        </div>
+
+        <!-- Section 9: UE Workflow using MIB -->
+        <div class="section">
+            <h2>🔄 UE Workflow Using MIB</h2>
+            <p>Step-by-step process from cell detection to network access:</p>
+
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 30px; border-radius: 12px; margin: 20px 0;">
+                <div style="display: flex; flex-direction: column; gap: 25px;">
+                    <!-- Step 1 -->
+                    <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), transparent); border-radius: 10px; border-left: 5px solid #6366f1;">
+                        <div style="background: #6366f1; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; font-weight: bold; flex-shrink: 0;">1</div>
+                        <div style="flex: 1;">
+                            <h3 style="color: #a5b4fc; margin-bottom: 8px;">Detect PSS/SSS</h3>
+                            <p><strong>Action:</strong> UE performs cell search by detecting Primary and Secondary Synchronization Signals</p>
+                            <p style="color: #94a3b8; font-size: 0.95em; margin-top: 5px;"><strong>Result:</strong> Time/frequency synchronization achieved + Physical Cell ID (PCI) obtained</p>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; font-size: 2em; color: #00d9ff;">⬇️</div>
+
+                    <!-- Step 2 -->
+                    <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: linear-gradient(90deg, rgba(139, 92, 246, 0.2), transparent); border-radius: 10px; border-left: 5px solid #8b5cf6;">
+                        <div style="background: #8b5cf6; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; font-weight: bold; flex-shrink: 0;">2</div>
+                        <div style="flex: 1;">
+                            <h3 style="color: #c4b5fd; margin-bottom: 8px;">Decode PBCH</h3>
+                            <p><strong>Action:</strong> UE decodes Physical Broadcast Channel to extract the 32-bit payload</p>
+                            <p style="color: #94a3b8; font-size: 0.95em; margin-top: 5px;"><strong>Result:</strong> MIB information extracted (24 explicit bits + 8 timing bits)</p>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; font-size: 2em; color: #00d9ff;">⬇️</div>
+
+                    <!-- Step 3 -->
+                    <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: linear-gradient(90deg, rgba(236, 72, 153, 0.2), transparent); border-radius: 10px; border-left: 5px solid #ec4899;">
+                        <div style="background: #ec4899; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; font-weight: bold; flex-shrink: 0;">3</div>
+                        <div style="flex: 1;">
+                            <h3 style="color: #fda4af; margin-bottom: 8px;">Extract MIB & Proceed to SIB1</h3>
+                            <p><strong>Action:</strong> UE reads MIB fields (SFN, SCS, PDCCH config, etc.) and uses pdcch-ConfigSIB1 to locate and decode SIB1</p>
+                            <p style="color: #94a3b8; font-size: 0.95em; margin-top: 5px;"><strong>Result:</strong> UE can now access detailed system information and perform cell selection/reselection</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>🎯 Key Takeaway:</h3>
+                <p>MIB acts as a <strong>bridge</strong> between initial synchronization (PSS/SSS) and accessing detailed system information (SIB1). Without MIB, the UE cannot proceed to decode SIB1 because it wouldn't know the PDCCH configuration or other essential parameters.</p>
+            </div>
+        </div>
+
+        <!-- Section 10: MIB vs SIB1 Comparison -->
+        <div class="section">
+            <h2>⚖️ MIB vs SIB1 - Quick Difference</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 25px; border-radius: 12px;">
+                    <h3 style="text-align: center; margin-bottom: 20px; font-size: 1.5em;">📡 MIB</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>📏 Size:</strong> 32 bits (compact)
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>📻 Channel:</strong> PBCH (part of SSB)
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>⏱️ Periodicity:</strong> Every 80ms (half radio frame)
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>📦 Content:</strong> Minimal essential info (SFN, SCS, PDCCH config)
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>🎯 Purpose:</strong> Enable SIB1 decoding
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 25px; border-radius: 12px;">
+                    <h3 style="text-align: center; margin-bottom: 20px; font-size: 1.5em;">📋 SIB1</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>📏 Size:</strong> Variable (typically hundreds of bits)
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>📻 Channel:</strong> PDSCH (scheduled by PDCCH)
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>⏱️ Periodicity:</strong> Every 160ms (configurable)
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <strong>📦 Content:</strong> Detailed cell info (PLMN, TAC, cell selection, etc.)
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>🎯 Purpose:</strong> Complete cell selection/reselection info
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <h3>🔗 Relationship:</h3>
+                <p><strong>MIB → SIB1:</strong> MIB provides the <code>pdcch-ConfigSIB1</code> field which tells the UE <em>where and how</em> to find the PDCCH that schedules SIB1. Without MIB, UE cannot decode SIB1.</p>
+            </div>
+
+            <div class="info-box">
+                <h3>📌 Memory Aid:</h3>
+                <ul>
+                    <li><strong>MIB:</strong> "Quick start guide" - minimal info to get going</li>
+                    <li><strong>SIB1:</strong> "Full user manual" - comprehensive cell information</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 11: C++ Code -->
+        <div class="section">
+            <h2>💻 C++ Code - MIB Generator</h2>
+            <p>This code generates MIB bits from network parameters:</p>
+
+            <div class="code-box">
+                <div class="code-header">
+                    <span class="code-title">5G_MIB_Generator.cpp</span>
+                    <button class="copy-btn" onclick="copyCode()">📋 Copy</button>
+                </div>
+<pre id="codeContent"><span class="comment">// 5G NR MIB Generator</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;vector&gt;</span>
+<span class="keyword">using namespace</span> <span class="type">std</span>;
+
+<span class="comment">// Convert integer to binary bits</span>
+<span class="type">vector</span>&lt;<span class="type">int</span>&gt; <span class="function">intToBits</span>(<span class="type">int</span> value, <span class="type">int</span> bitSize) {
+    <span class="type">vector</span>&lt;<span class="type">int</span>&gt; bits;
+    <span class="keyword">for</span> (<span class="type">int</span> i = bitSize - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) {
+        bits.<span class="function">push_back</span>((value &gt;&gt; i) & <span class="number">1</span>);
+    }
+    <span class="keyword">return</span> bits;
+}
+
+<span class="comment">// Print bits</span>
+<span class="type">void</span> <span class="function">printBits</span>(<span class="keyword">const</span> <span class="type">vector</span>&lt;<span class="type">int</span>&gt;& bits, <span class="type">string</span> title) {
+    <span class="type">cout</span> &lt;&lt; title &lt;&lt; <span class="string">" ("</span> &lt;&lt; bits.<span class="function">size</span>() &lt;&lt; <span class="string">" bits): "</span>;
+    <span class="keyword">for</span> (<span class="type">int</span> b : bits) <span class="type">cout</span> &lt;&lt; b;
+    <span class="type">cout</span> &lt;&lt; <span class="type">endl</span>;
+}
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">cout</span> &lt;&lt; <span class="string">"===== 5G NR MIB GENERATOR =====\n\n"</span>;
+    
+    <span class="comment">// MIB Parameters</span>
+    <span class="type">int</span> SFN = <span class="number">512</span>;            <span class="comment">// System Frame Number (0-1023)</span>
+    <span class="type">int</span> SCS = <span class="number">1</span>;              <span class="comment">// Subcarrier Spacing (01 = 30kHz)</span>
+    <span class="type">int</span> cellBarred = <span class="number">0</span>;      <span class="comment">// 0 = not barred</span>
+    <span class="type">int</span> intraFreqResel = <span class="number">1</span>; <span class="comment">// 1 = allowed</span>
+    
+    <span class="type">cout</span> &lt;&lt; <span class="string">"Input Parameters:\n"</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  SFN = "</span> &lt;&lt; SFN &lt;&lt; <span class="type">endl</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  SCS = "</span> &lt;&lt; SCS &lt;&lt; <span class="string">" (30 kHz)\n"</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  Cell Barred = "</span> &lt;&lt; cellBarred &lt;&lt; <span class="type">endl</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  IntraFreq Reselection = "</span> &lt;&lt; intraFreqResel &lt;&lt; <span class="string">"\n\n"</span>;
+    
+    <span class="comment">// Convert to bits</span>
+    <span class="type">vector</span>&lt;<span class="type">int</span>&gt; mibBits;
+    <span class="type">vector</span>&lt;<span class="type">int</span>&gt; sfnBits = <span class="function">intToBits</span>(SFN, <span class="number">10</span>);
+    <span class="type">vector</span>&lt;<span class="type">int</span>&gt; scsBits = <span class="function">intToBits</span>(SCS, <span class="number">2</span>);
+    <span class="type">vector</span>&lt;<span class="type">int</span>&gt; cellBarredBits = <span class="function">intToBits</span>(cellBarred, <span class="number">1</span>);
+    <span class="type">vector</span>&lt;<span class="type">int</span>&gt; intraFreqBits = <span class="function">intToBits</span>(intraFreqResel, <span class="number">1</span>);
+    
+    <span class="comment">// Combine all bits</span>
+    mibBits.<span class="function">insert</span>(mibBits.<span class="function">end</span>(), sfnBits.<span class="function">begin</span>(), sfnBits.<span class="function">end</span>());
+    mibBits.<span class="function">insert</span>(mibBits.<span class="function">end</span>(), scsBits.<span class="function">begin</span>(), scsBits.<span class="function">end</span>());
+    mibBits.<span class="function">insert</span>(mibBits.<span class="function">end</span>(), cellBarredBits.<span class="function">begin</span>(), cellBarredBits.<span class="function">end</span>());
+    mibBits.<span class="function">insert</span>(mibBits.<span class="function">end</span>(), intraFreqBits.<span class="function">begin</span>(), intraFreqBits.<span class="function">end</span>());
+    
+    <span class="type">cout</span> &lt;&lt; <span class="string">"===== MIB BITSTREAM =====\n"</span>;
+    <span class="function">printBits</span>(mibBits, <span class="string">"MIB"</span>);
+    
+    <span class="type">cout</span> &lt;&lt; <span class="string">"\nBit Breakdown:\n"</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  Bits 0-9:   SFN = "</span> &lt;&lt; SFN &lt;&lt; <span class="type">endl</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  Bits 10-11: SCS = 30 kHz\n"</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  Bit 12:     Cell Not Barred\n"</span>;
+    <span class="type">cout</span> &lt;&lt; <span class="string">"  Bit 13:     Reselection Allowed\n"</span>;
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+            </div>
+
+            <button class="run-btn" onclick="runCode()">▶️ RUN CODE</button>
+
+            <div class="output" id="output"></div>
+        </div>
+
+        <!-- Section 5: Try It Yourself -->
+        <div class="section">
+            <h2>🎯 Try It Yourself - MIB Generator</h2>
+            <p>Enter your own values and generate MIB bits:</p>
+
+            <div class="form-group">
+                <label>System Frame Number (0-1023):</label>
+                <input type="number" id="sfnInput" value="512" min="0" max="1023">
+            </div>
+
+            <div class="form-group">
+                <label>Subcarrier Spacing:</label>
+                <select id="scsInput">
+                    <option value="0">15 kHz</option>
+                    <option value="1" selected>30 kHz</option>
+                    <option value="2">60 kHz</option>
+                    <option value="3">120 kHz</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Cell Barred:</label>
+                <select id="barredInput">
+                    <option value="0" selected>Not Barred (Accessible)</option>
+                    <option value="1">Barred (Not Accessible)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Intra-Frequency Reselection:</label>
+                <select id="reselInput">
+                    <option value="0">Not Allowed</option>
+                    <option value="1" selected>Allowed</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="generateMIB()" style="width: 100%; padding: 15px; font-size: 1.2em;">
+                🚀 Generate My MIB
+            </button>
+
+            <div class="result-box" id="resultBox"></div>
+        </div>
+
+        <!-- Section 13: Final Output Example -->
+        <div class="section">
+            <h2>🎯 Final Output Example (32-bit PBCH Payload)</h2>
+            <p>Here's a complete example showing the final 32-bit MIB payload:</p>
+
+            <div style="background: linear-gradient(135deg, #0f3460, #533483); padding: 30px; border-radius: 12px; margin: 20px 0;">
+                <h3 style="color: #00d9ff; margin-bottom: 20px; text-align: center;">📊 Complete MIB Payload Example</h3>
+
+                <div style="background: rgba(0, 0, 0, 0.5); padding: 25px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="color: #10b981; margin-bottom: 15px;">Input Parameters:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">SFN:</strong> 512
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">subCarrierSpacingCommon:</strong> 1 (30kHz)
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">kSSB (4 LSBs):</strong> 5
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">dmrs-TypeA-Position:</strong> 1 (pos3)
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">pdcch-ConfigSIB1:</strong> 85
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">cellBarred:</strong> 0 (not barred)
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">intraFreqReselection:</strong> 1 (allowed)
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <strong style="color: #a5b4fc;">spare:</strong> 0
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #000; padding: 25px; border-radius: 10px; margin: 20px 0; border: 2px solid #00d9ff;">
+                    <h4 style="color: #00d9ff; margin-bottom: 15px; text-align: center;">32-bit PBCH Payload (a0 to a31):</h4>
+                    <div style="font-family: 'Courier New', monospace; font-size: 1.3em; color: #0f0; text-align: center; letter-spacing: 3px; line-height: 1.8; word-break: break-all;">
+                        <div style="background: rgba(99, 102, 241, 0.2); padding: 10px; border-radius: 5px; margin: 5px 0;">
+                            <span style="color: #6366f1;">100000</span><span style="color: #8b5cf6;">1</span><span style="color: #ec4899;">0101</span><span style="color: #6366f1;">1</span><span style="color: #8b5cf6;">01010101</span><span style="color: #ec4899;">0</span><span style="color: #6366f1;">1</span><span style="color: #8b5cf6;">00</span><span style="color: #10b981;">00000000</span>
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #94a3b8; margin-top: 15px; font-size: 0.9em;">
+                        (Spaces added for readability - actual transmission is continuous 32 bits)
+                    </p>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.5); padding: 25px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="color: #f59e0b; margin-bottom: 15px;">🔍 Bit-by-Bit Breakdown:</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95em;">
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a0–a5:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #6366f1;">100000</td>
+                            <td style="padding: 10px;">SFN[9:4] = 32 → Full SFN = 512</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a6:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #8b5cf6;">1</td>
+                            <td style="padding: 10px;">subCarrierSpacingCommon = 30kHz</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a7–a10:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #ec4899;">0101</td>
+                            <td style="padding: 10px;">kSSB[3:0] = 5</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a11:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #6366f1;">1</td>
+                            <td style="padding: 10px;">dmrs-TypeA-Position = pos3</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a12–a19:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #8b5cf6;">01010101</td>
+                            <td style="padding: 10px;">pdcch-ConfigSIB1 = 85</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a20:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #ec4899;">0</td>
+                            <td style="padding: 10px;">cellBarred = not barred</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a21:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #6366f1;">1</td>
+                            <td style="padding: 10px;">intraFreqReselection = allowed</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td style="padding: 10px;"><strong>a22–a23:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #8b5cf6;">00</td>
+                            <td style="padding: 10px;">spare bits</td>
+                        </tr>
+                        <tr style="background: rgba(16, 185, 129, 0.2);">
+                            <td style="padding: 10px;"><strong>a24–a31:</strong></td>
+                            <td style="padding: 10px; font-family: monospace; color: #10b981;">00000000</td>
+                            <td style="padding: 10px;">Timing info (half frame + k_SSB MSBs + SFN LSBs)</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>📌 Important Notes:</h3>
+                <ul>
+                    <li>This 32-bit payload is what gets <strong>input to PBCH channel coding</strong> (CRC, Polar encoding, etc.)</li>
+                    <li>The UE reverses this process: decodes PBCH → extracts 32 bits → interprets MIB fields</li>
+                    <li>Bit ordering follows 3GPP TS 38.212 specifications</li>
+                    <li>All values shown are in <strong>binary format</strong> as they appear in the actual transmission</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h3>🎓 For Trainers:</h3>
+                <p>This example can be used to validate implementation code. Students should be able to:</p>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Convert each parameter to its binary representation</li>
+                    <li>Concatenate bits in the correct order (a0 to a31)</li>
+                    <li>Verify the total is exactly 32 bits</li>
+                    <li>Decode back to original parameters for verification</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Section 14: Summary -->
+        <div class="section">
+            <h2>✅ Complete Learning Summary</h2>
+            <div class="info-box">
+                <h3>What You Learned:</h3>
+                <ul>
+                    <li>✅ <strong>MIB Hierarchy:</strong> SSB = PSS + SSS + PBCH, MIB is carried inside PBCH</li>
+                    <li>✅ <strong>Payload Structure:</strong> 32 bits total (24 explicit MIB IE + 8 timing bits)</li>
+                    <li>✅ <strong>Complete Bit Mapping:</strong> All fields from a0 to a31 with their exact positions</li>
+                    <li>✅ <strong>Field Purpose:</strong> Why each MIB field is needed for network access</li>
+                    <li>✅ <strong>SFN Handling:</strong> How 10-bit SFN is split (6 MSBs in MIB, 4 LSBs in timing)</li>
+                    <li>✅ <strong>UE Workflow:</strong> PSS/SSS detection → PBCH decode → MIB extraction → SIB1 access</li>
+                    <li>✅ <strong>MIB vs SIB1:</strong> MIB is minimal/fast, SIB1 is detailed/comprehensive</li>
+                    <li>✅ <strong>Practical Implementation:</strong> How to generate and decode MIB programmatically</li>
+                </ul>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #4caf50, #45a049); color: white; padding: 25px; border-radius: 12px; margin: 20px 0;">
+                <h3 style="color: white; margin-bottom: 15px;">🎓 For Trainers & Students:</h3>
+                <p style="margin-bottom: 10px;"><strong>This guide covers:</strong></p>
+                <ul style="margin-left: 20px;">
+                    <li>Complete technical specifications per 3GPP TS 38.331 and TS 38.212</li>
+                    <li>Bit-level details suitable for implementation and testing</li>
+                    <li>Clear explanations without unnecessary complexity</li>
+                    <li>Practical examples with real binary values</li>
+                    <li>Workflow understanding from UE perspective</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h3>🚀 Next Steps in Your 5G NR Journey:</h3>
+                <ul>
+                    <li>📖 Study SIB1 structure and content (builds on MIB knowledge)</li>
+                    <li>🔧 Explore PDCCH search space configuration using pdcch-ConfigSIB1</li>
+                    <li>📡 Learn about SSB beam sweeping and cell detection procedures</li>
+                    <li>🧮 Understand PBCH channel coding (CRC, Polar codes, rate matching)</li>
+                    <li>💻 Implement complete MIB encoder/decoder in your preferred language</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>📚 Key Standards References:</h3>
+                <ul>
+                    <li><strong>3GPP TS 38.331:</strong> Radio Resource Control (RRC) protocol - MIB IE definition</li>
+                    <li><strong>3GPP TS 38.212:</strong> Multiplexing and channel coding - MIB payload structure</li>
+                    <li><strong>3GPP TS 38.213:</strong> Physical layer procedures - MIB timing information</li>
+                    <li><strong>3GPP TS 38.211:</strong> Physical channels and modulation - PBCH structure</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation Demo
+        let demoStep = 0;
+        let demoInterval;
+
+        function startDemo() {
+            resetDemo();
+            demoStep = 0;
+            demoInterval = setInterval(nextStep, 2000);
+            nextStep();
+        }
+
+        function nextStep() {
+            const stageInfo = document.getElementById('stageInfo');
+            const signal1 = document.getElementById('signal1');
+            const phone = document.getElementById('phone');
+            const tower = document.getElementById('tower');
+
+            demoStep++;
+
+            switch(demoStep) {
+                case 1:
+                    stageInfo.innerHTML = '<h4>Step 1: Cell Search</h4><p>📱 Your phone searches for nearby cell towers...</p>';
+                    phone.style.transform = 'scale(1.1)';
+                    break;
+                case 2:
+                    stageInfo.innerHTML = '<h4>Step 2: Synchronization</h4><p>🔄 Phone locks onto tower timing...</p>';
+                    signal1.classList.add('active');
+                    break;
+                case 3:
+                    stageInfo.innerHTML = '<h4>Step 3: PBCH Detection</h4><p>📡 Listening to Physical Broadcast Channel...</p>';
+                    tower.style.transform = 'scale(1.1)';
+                    break;
+                case 4:
+                    stageInfo.innerHTML = '<h4>Step 4: MIB Decoding</h4><p>🔓 Extracting MIB information from PBCH...</p>';
+                    phone.style.background = 'rgba(16, 185, 129, 0.3)';
+                    break;
+                case 5:
+                    stageInfo.innerHTML = '<h4>Step 5: Success! ✅</h4><p>🎉 Phone now knows network parameters and can proceed to connect!</p>';
+                    clearInterval(demoInterval);
+                    break;
+            }
+        }
+
+        function resetDemo() {
+            clearInterval(demoInterval);
+            demoStep = 0;
+            document.getElementById('signal1').classList.remove('active');
+            document.getElementById('phone').style.transform = 'scale(1)';
+            document.getElementById('phone').style.background = 'rgba(0, 217, 255, 0.1)';
+            document.getElementById('tower').style.transform = 'scale(1)';
+            document.getElementById('stageInfo').innerHTML = '<h4>Ready to Start</h4><p>Click "Start Demo" to see how your phone receives MIB from the tower!</p>';
+        }
+
+        // Copy Code
+        function copyCode() {
+            const code = document.getElementById('codeContent').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Code copied to clipboard!');
+            });
+        }
+
+        // Run Code Simulation
+        function runCode() {
+            const output = document.getElementById('output');
+            output.classList.add('show');
+            output.textContent = `===== 5G NR MIB GENERATOR =====
+
+Input Parameters:
+  SFN = 512
+  SCS = 1 (30 kHz)
+  Cell Barred = 0
+  IntraFreq Reselection = 1
+
+===== MIB BITSTREAM =====
+MIB (14 bits): 10000000000101
+
+Bit Breakdown:
+  Bits 0-9:   SFN = 512
+  Bits 10-11: SCS = 30 kHz
+  Bit 12:     Cell Not Barred
+  Bit 13:     Reselection Allowed
+
+✅ Program executed successfully!`;
+        }
+
+        // Generate Custom MIB
+        function generateMIB() {
+            const sfn = parseInt(document.getElementById('sfnInput').value);
+            const scs = parseInt(document.getElementById('scsInput').value);
+            const barred = parseInt(document.getElementById('barredInput').value);
+            const resel = parseInt(document.getElementById('reselInput').value);
+
+            if (sfn < 0 || sfn > 1023) {
+                alert('❌ SFN must be between 0 and 1023!');
+                return;
+            }
+
+            // Convert to binary
+            const sfnBits = sfn.toString(2).padStart(10, '0');
+            const scsBits = scs.toString(2).padStart(2, '0');
+            const barredBits = barred.toString(2);
+            const reselBits = resel.toString(2);
+            const mibBits = sfnBits + scsBits + barredBits + reselBits;
+
+            const scsNames = ['15 kHz', '30 kHz', '60 kHz', '120 kHz'];
+
+            const resultBox = document.getElementById('resultBox');
+            resultBox.classList.add('show');
+            resultBox.innerHTML = `
+                <h3 style="color: #00d9ff; margin-bottom: 20px;">🎉 Your MIB Generated!</h3>
+                
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="color: #10b981;">📊 Input Parameters:</h4>
+                    <p><strong>SFN:</strong> ${sfn}</p>
+                    <p><strong>Subcarrier Spacing:</strong> ${scsNames[scs]}</p>
+                    <p><strong>Cell Barred:</strong> ${barred === 0 ? 'Not Barred ✅' : 'Barred ❌'}</p>
+                    <p><strong>Reselection:</strong> ${resel === 1 ? 'Allowed ✅' : 'Not Allowed ❌'}</p>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="color: #f59e0b;">🔢 MIB Bitstream:</h4>
+                    <p style="font-family: monospace; font-size: 1.3em; background: #000; padding: 15px; border-radius: 5px; color: #0f0;">
+                        ${mibBits}
+                    </p>
+                    <p style="color: #94a3b8; margin-top: 10px;">Total: ${mibBits.length} bits</p>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="color: #ec4899;">🔍 Bit Breakdown:</h4>
+                    <p><strong>Bits 0-9:</strong> <code>${sfnBits}</code> = SFN (${sfn})</p>
+                    <p><strong>Bits 10-11:</strong> <code>${scsBits}</code> = ${scsNames[scs]}</p>
+                    <p><strong>Bit 12:</strong> <code>${barredBits}</code> = ${barred === 0 ? 'Not Barred' : 'Barred'}</p>
+                    <p><strong>Bit 13:</strong> <code>${reselBits}</code> = Reselection ${resel === 1 ? 'Allowed' : 'Not Allowed'}</p>
+                </div>
+
+                <div class="info-box" style="margin-top: 20px;">
+                    <strong>💡 What this means:</strong> This MIB tells a phone that the network is at frame ${sfn}, uses ${scsNames[scs]} subcarrier spacing, the cell is ${barred === 0 ? 'accessible' : 'not accessible'}, and phones ${resel === 1 ? 'can' : 'cannot'} switch to other cells.
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

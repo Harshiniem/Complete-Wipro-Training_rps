@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLC ARQ Protocol - Advanced Interactive Simulator</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e27;
+            --panel-bg: rgba(15, 23, 42, 0.8);
+            --border-cyan: #00d4ff;
+            --neon-cyan: #00f3ff;
+            --neon-violet: #bc13fe;
+            --neon-green: #0aff64;
+            --neon-red: #ff003c;
+            --neon-orange: #ff9500;
+            --text-main: #e0e6ed;
+            --text-dim: #8fa0b5;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid var(--border-cyan);
+            padding: 20px 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 5px;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            margin-bottom: 20px;
+        }
+
+        .control-panel h3 {
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #sduInput {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-cyan);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .slider-value {
+            color: var(--neon-violet);
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            outline: none;
+            accent-color: var(--neon-violet);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: 2px solid;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-start {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .btn-start:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .btn-stop {
+            background: rgba(255, 0, 60, 0.1);
+            border-color: var(--neon-red);
+            color: var(--neon-red);
+        }
+
+        .btn-stop:hover {
+            background: var(--neon-red);
+            color: #fff;
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+
+        .btn-reset {
+            background: rgba(188, 19, 254, 0.1);
+            border-color: var(--neon-violet);
+            color: var(--neon-violet);
+            grid-column: span 2;
+        }
+
+        .btn-reset:hover {
+            background: var(--neon-violet);
+            color: #fff;
+            box-shadow: 0 0 20px var(--neon-violet);
+        }
+
+        /* Simulation Canvas */
+        .simulation-canvas {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            min-height: 600px;
+            position: relative;
+        }
+
+        .canvas-title {
+            color: var(--neon-cyan);
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+            text-align: center;
+        }
+
+        /* Protocol Stack Visualization */
+        .protocol-stacks {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 40px;
+            min-height: 500px;
+            position: relative;
+        }
+
+        .stack {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stack-header {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--neon-violet);
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--neon-violet);
+            padding: 10px;
+            background: rgba(188, 19, 254, 0.1);
+            border: 1px solid var(--neon-violet);
+            border-radius: 8px;
+        }
+
+        .process-block {
+            background: rgba(10, 20, 40, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .process-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .process-block:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .process-block:hover::before {
+            opacity: 1;
+        }
+
+        .process-block.active {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 30px rgba(10, 255, 100, 0.5);
+            animation: pulse 1s infinite;
+        }
+
+        .process-block.error {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 30px rgba(255, 0, 60, 0.5);
+            animation: shake 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .block-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .block-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .block-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Channel Visualization */
+        .channel-area {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 180px;
+            height: 400px;
+            border-left: 2px dashed rgba(255, 255, 255, 0.2);
+            border-right: 2px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .channel-label {
+            background: rgba(188, 19, 254, 0.2);
+            border: 1px solid var(--neon-violet);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--neon-violet);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            text-shadow: 0 0 10px var(--neon-violet);
+        }
+
+        /* Animated Packets */
+        .packet {
+            position: fixed;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .packet-data {
+            background: linear-gradient(135deg, rgba(255, 149, 0, 0.3), rgba(255, 149, 0, 0.1));
+            border-color: var(--neon-orange);
+            color: var(--neon-orange);
+            box-shadow: 0 0 30px rgba(255, 149, 0, 0.5);
+        }
+
+        .packet-ack {
+            background: linear-gradient(135deg, rgba(10, 255, 100, 0.3), rgba(10, 255, 100, 0.1));
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            box-shadow: 0 0 30px rgba(10, 255, 100, 0.5);
+        }
+
+        .packet-nack {
+            background: linear-gradient(135deg, rgba(255, 0, 60, 0.3), rgba(255, 0, 60, 0.1));
+            border-color: var(--neon-red);
+            color: var(--neon-red);
+            box-shadow: 0 0 30px rgba(255, 0, 60, 0.5);
+        }
+
+        /* Right Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .stats-title {
+            color: var(--neon-cyan);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid var(--neon-violet);
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            color: var(--neon-cyan);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .detail-title {
+            color: var(--neon-green);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .detail-content {
+            color: var(--text-dim);
+            line-height: 1.8;
+            font-size: 0.9rem;
+        }
+
+        /* Console Log */
+        .console-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .console-title {
+            color: var(--neon-cyan);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            border-left: 3px solid;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .log-tx {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .log-rx {
+            background: rgba(10, 255, 100, 0.1);
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .log-error {
+            background: rgba(255, 0, 60, 0.1);
+            border-color: var(--neon-red);
+            color: var(--neon-red);
+        }
+
+        .log-sys {
+            background: rgba(188, 19, 254, 0.1);
+            border-color: var(--neon-violet);
+            color: var(--neon-violet);
+        }
+
+        /* Reassembly Display */
+        .reassembly-panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .reassembly-title {
+            color: var(--neon-green);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .reassembly-content {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-green);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 60px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            color: var(--neon-green);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 15px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            max-width: 300px;
+            z-index: 2000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            line-height: 1.6;
+        }
+
+        /* Workflow Documentation */
+        .workflow-section {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            margin-top: 30px;
+            grid-column: span 2;
+        }
+
+        .workflow-title {
+            color: var(--neon-cyan);
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+            text-align: center;
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .workflow-card {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--neon-violet);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .workflow-card:hover {
+            border-left-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .workflow-card h4 {
+            color: var(--neon-violet);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .workflow-card p {
+            color: var(--text-dim);
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-violet);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div>
+                <div class="logo">⚡ RLC ARQ PROTOCOL SIMULATOR</div>
+                <div class="subtitle">Advanced Radio Link Control - Automatic Repeat Request Visualization</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Left Side -->
+        <div>
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h3>🎮 SIMULATION CONTROLS</h3>
+                <div class="input-group">
+                    <label>Data Input (SDU):</label>
+                    <input type="text" id="sduInput" placeholder="Enter data to transmit..." value="HELLO RLC ARQ">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Error Rate (Packet Loss):</span>
+                        <span class="slider-value" id="lossValue">30%</span>
+                    </div>
+                    <input type="range" id="lossSlider" min="0" max="80" value="30">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Simulation Speed:</span>
+                        <span class="slider-value" id="speedValue">800ms</span>
+                    </div>
+                    <input type="range" id="speedSlider" min="400" max="2000" value="800" step="100">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-start" onclick="startSimulation()">▶ START</button>
+                    <button class="btn-stop" onclick="stopSimulation()">⏸ STOP</button>
+                    <button class="btn-reset" onclick="resetSimulation()">🔄 RESET</button>
+                </div>
+            </div>
+
+            <!-- Simulation Canvas -->
+            <div class="simulation-canvas">
+                <h2 class="canvas-title">📡 PROTOCOL ARCHITECTURE & DATA FLOW</h2>
+                
+                <div class="protocol-stacks">
+                    <!-- Transmitter Stack -->
+                    <div class="stack">
+                        <div class="stack-header">📤 TRANSMITTER (TX)</div>
+                        
+                        <div class="process-block" id="tx-buffer" 
+                             data-info="TX Buffer: Stores incoming Service Data Units (SDUs) from upper layers before processing. Acts as a queue to manage data flow.">
+                            <span class="block-status">📥</span>
+                            <div class="block-title">TX Buffer</div>
+                            <div class="block-subtitle">Data Reception</div>
+                        </div>
+
+                        <div class="process-block" id="tx-segment"
+                             data-info="Segmentation: Divides large SDUs into smaller Protocol Data Units (PDUs) that fit within the transmission window. Each segment gets prepared for header attachment.">
+                            <span class="block-status">✂️</span>
+                            <div class="block-title">Segmentation</div>
+                            <div class="block-subtitle">PDU Creation</div>
+                        </div>
+
+                        <div class="process-block" id="tx-header"
+                             data-info="Header Addition: Attaches RLC AM header containing Sequence Number (SN), segmentation info, and polling bits. This metadata enables reliable delivery and reassembly.">
+                            <span class="block-status">🏷️</span>
+                            <div class="block-title">Add RLC Header</div>
+                            <div class="block-subtitle">SN Assignment</div>
+                        </div>
+
+                        <div class="process-block" id="tx-retx"
+                             data-info="Retransmission Buffer: Keeps copies of transmitted PDUs until ACK is received. When NACK arrives or timeout occurs, PDUs are retransmitted from this buffer.">
+                            <span class="block-status">💾</span>
+                            <div class="block-title">Retx Buffer</div>
+                            <div class="block-subtitle">ARQ Management</div>
+                        </div>
+
+                        <div class="process-block" id="tx-routing"
+                             data-info="Routing & Scheduling: Determines transmission timing and priority. Manages the sending window and flow control to prevent receiver buffer overflow.">
+                            <span class="block-status">🔀</span>
+                            <div class="block-title">TX Routing</div>
+                            <div class="block-subtitle">Scheduler</div>
+                        </div>
+
+                        <div class="process-block" id="tx-control"
+                             data-info="TX ARQ Control: Processes ACK/NACK feedback from receiver. Updates transmission window, triggers retransmissions, and manages the ARQ state machine.">
+                            <span class="block-status">🎛️</span>
+                            <div class="block-title">TX ARQ Control</div>
+                            <div class="block-subtitle">Feedback Handler</div>
+                        </div>
+                    </div>
+
+                    <!-- Air Interface -->
+                    <div class="channel-area">
+                        <div class="channel-label" id="channel">🌊 AIR INTERFACE</div>
+                    </div>
+
+                    <!-- Receiver Stack -->
+                    <div class="stack">
+                        <div class="stack-header">📥 RECEIVER (RX)</div>
+                        
+                        <div class="process-block" id="rx-control"
+                             data-info="RX ARQ Control: Monitors received sequence numbers, detects gaps and duplicates, generates ACK for successful reception and NACK for errors or missing packets.">
+                            <span class="block-status">🎛️</span>
+                            <div class="block-title">RX ARQ Control</div>
+                            <div class="block-subtitle">Status Reporting</div>
+                        </div>
+
+                        <div class="process-block" id="rx-buffer"
+                             data-info="RX Buffer: Temporarily stores received PDUs. Out-of-order packets are buffered here until missing segments arrive to enable in-order delivery.">
+                            <span class="block-status">📦</span>
+                            <div class="block-title">RX Buffer</div>
+                            <div class="block-subtitle">Packet Storage</div>
+                        </div>
+
+                        <div class="process-block" id="rx-reorder"
+                             data-info="Reordering: Arranges PDUs by sequence number. Wireless channels can cause out-of-sequence delivery, so this ensures correct ordering before reassembly.">
+                            <span class="block-status">🔢</span>
+                            <div class="block-title">Reordering</div>
+                            <div class="block-subtitle">Sequence Control</div>
+                        </div>
+
+                        <div class="process-block" id="rx-remove"
+                             data-info="Header Removal: Strips RLC headers from PDUs after validation. Extracts sequence numbers and control information before passing data for reassembly.">
+                            <span class="block-status">🏷️</span>
+                            <div class="block-title">Remove Header</div>
+                            <div class="block-subtitle">Decapsulation</div>
+                        </div>
+
+                        <div class="process-block" id="rx-reassembly"
+                             data-info="Reassembly: Combines segmented PDUs back into the original SDU. Reconstructs the complete message and delivers it to upper protocol layers.">
+                            <span class="block-status">🔨</span>
+                            <div class="block-title">Reassembly</div>
+                            <div class="block-subtitle">SDU Recreation</div>
+                        </div>
+
+                        <div class="process-block" id="rx-delivery"
+                             data-info="SDU Delivery: Passes reassembled data to upper layers (PDCP/IP). Ensures in-sequence, error-free delivery of the complete message.">
+                            <span class="block-status">📤</span>
+                            <div class="block-title">Upper Layer</div>
+                            <div class="block-subtitle">Data Delivery</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar">
+            <!-- Stats Panel -->
+            <div class="stats-panel">
+                <h3 class="stats-title">📊 STATISTICS</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total PDUs Sent</span>
+                    <span class="stat-value" id="stat-sent">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">PDUs Received</span>
+                    <span class="stat-value" id="stat-received">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ACKs Sent</span>
+                    <span class="stat-value" id="stat-acks">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Retransmissions</span>
+                    <span class="stat-value" id="stat-retx">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Errors Detected</span>
+                    <span class="stat-value" id="stat-errors">0</span>
+                </div>
+            </div>
+
+            <!-- Detail Panel -->
+            <div class="detail-panel">
+                <h3 class="detail-title" id="detail-title">ℹ️ COMPONENT DETAILS</h3>
+                <p class="detail-content" id="detail-content">
+                    Click on any process block to view detailed information about its function in the RLC ARQ protocol. 
+                    Each component plays a critical role in ensuring reliable data transmission over wireless channels.
+                </p>
+            </div>
+
+            <!-- Reassembly Display -->
+            <div class="reassembly-panel">
+                <h3 class="reassembly-title">🔨 REASSEMBLED DATA</h3>
+                <div class="reassembly-content" id="reassembly">
+                    Waiting for transmission...
+                </div>
+            </div>
+
+            <!-- Console Log -->
+            <div class="console-panel">
+                <h3 class="console-title">📝 SYSTEM LOG</h3>
+                <div id="console"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow Documentation -->
+    <div class="main-container">
+        <div class="workflow-section">
+            <h2 class="workflow-title">🔄 RLC ARQ WORKFLOW STAGES</h2>
+            <div class="workflow-grid">
+                <div class="workflow-card">
+                    <h4>Stage 1: Data Reception & Buffering</h4>
+                    <p>
+                        The TX Buffer receives SDUs (Service Data Units) from upper protocol layers (PDCP/IP). 
+                        Data is queued and prepared for segmentation. This stage manages flow control between layers.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 2: Segmentation</h4>
+                    <p>
+                        Large SDUs are divided into smaller PDUs (Protocol Data Units) based on the transmission window size 
+                        and channel capacity. Each segment is sized appropriately for wireless transmission.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 3: Header Addition</h4>
+                    <p>
+                        RLC AM headers are attached to each PDU containing: Sequence Number (SN), segmentation information, 
+                        polling bit (P), and final bit (F). This metadata enables reliable delivery and correct reassembly.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 4: Retransmission Buffering</h4>
+                    <p>
+                        PDUs are copied to the retransmission buffer before transmission. These copies are retained until 
+                        positive acknowledgment (ACK) is received, enabling retransmission if needed.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 5: Transmission & Scheduling</h4>
+                    <p>
+                        The TX Routing module schedules PDU transmission based on priority, available bandwidth, and window size. 
+                        It manages the sending window to prevent receiver buffer overflow.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 6: Air Interface Transmission</h4>
+                    <p>
+                        PDUs are transmitted over the wireless channel (air interface). During transmission, packets may be 
+                        corrupted, lost, or delayed due to signal interference, fading, or congestion.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 7: Reception & Error Detection</h4>
+                    <p>
+                        RX ARQ Control receives PDUs and performs error checking (CRC validation). It monitors sequence numbers 
+                        to detect missing packets, duplicates, or out-of-order delivery.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 8: Status Reporting (ACK/NACK)</h4>
+                    <p>
+                        For successfully received PDUs, RX sends ACK (Acknowledgment). For corrupted or missing PDUs, 
+                        it sends NACK (Negative Acknowledgment) or timeout triggers retransmission.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 9: Retransmission (if needed)</h4>
+                    <p>
+                        Upon receiving NACK or timeout, TX ARQ Control retrieves the PDU from the retransmission buffer 
+                        and resends it. This continues until ACK is received or maximum retry limit is reached.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 10: Reordering</h4>
+                    <p>
+                        The reordering module arranges received PDUs by sequence number. This ensures in-sequence delivery 
+                        even when packets arrive out of order due to retransmissions or channel variations.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 11: Header Removal</h4>
+                    <p>
+                        RLC headers are stripped from PDUs after validation and reordering. The extracted sequence numbers 
+                        and control bits have already served their purpose.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <h4>Stage 12: Reassembly & Delivery</h4>
+                    <p>
+                        Segmented PDUs are reassembled into the original SDU. The complete, error-free message is then 
+                        delivered to upper protocol layers (PDCP/IP) for further processing.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Configuration & State
+        const CONFIG = {
+            speedBase: 800,
+            lossProbability: 30
+        };
+
+        let state = {
+            running: false,
+            segments: [],
+            receivedSegments: [],
+            currentSN: 0,
+            stats: {
+                sent: 0,
+                received: 0,
+                acks: 0,
+                retx: 0,
+                errors: 0
+            }
+        };
+
+        // DOM Elements
+        const dom = {
+            // Controls
+            sduInput: document.getElementById('sduInput'),
+            lossSlider: document.getElementById('lossSlider'),
+            lossValue: document.getElementById('lossValue'),
+            speedSlider: document.getElementById('speedSlider'),
+            speedValue: document.getElementById('speedValue'),
+            
+            // TX Blocks
+            txBuffer: document.getElementById('tx-buffer'),
+            txSegment: document.getElementById('tx-segment'),
+            txHeader: document.getElementById('tx-header'),
+            txRetx: document.getElementById('tx-retx'),
+            txRouting: document.getElementById('tx-routing'),
+            txControl: document.getElementById('tx-control'),
+            
+            // Channel
+            channel: document.getElementById('channel'),
+            
+            // RX Blocks
+            rxControl: document.getElementById('rx-control'),
+            rxBuffer: document.getElementById('rx-buffer'),
+            rxReorder: document.getElementById('rx-reorder'),
+            rxRemove: document.getElementById('rx-remove'),
+            rxReassembly: document.getElementById('rx-reassembly'),
+            rxDelivery: document.getElementById('rx-delivery'),
+            
+            // Info Panels
+            console: document.getElementById('console'),
+            reassembly: document.getElementById('reassembly'),
+            detailTitle: document.getElementById('detail-title'),
+            detailContent: document.getElementById('detail-content'),
+            tooltip: document.getElementById('tooltip'),
+            
+            // Stats
+            statSent: document.getElementById('stat-sent'),
+            statReceived: document.getElementById('stat-received'),
+            statAcks: document.getElementById('stat-acks'),
+            statRetx: document.getElementById('stat-retx'),
+            statErrors: document.getElementById('stat-errors')
+        };
+
+        // Event Listeners
+        dom.lossSlider.addEventListener('input', (e) => {
+            CONFIG.lossProbability = parseInt(e.target.value);
+            dom.lossValue.textContent = CONFIG.lossProbability + '%';
+        });
+
+        dom.speedSlider.addEventListener('input', (e) => {
+            CONFIG.speedBase = parseInt(e.target.value);
+            dom.speedValue.textContent = CONFIG.speedBase + 'ms';
+        });
+
+        // Tooltip functionality
+        document.querySelectorAll('.process-block').forEach(block => {
+            block.addEventListener('mouseenter', (e) => {
+                dom.tooltip.textContent = e.currentTarget.dataset.info;
+                dom.tooltip.style.opacity = '1';
+            });
+
+            block.addEventListener('mousemove', (e) => {
+                dom.tooltip.style.left = (e.pageX + 15) + 'px';
+                dom.tooltip.style.top = (e.pageY + 15) + 'px';
+            });
+
+            block.addEventListener('mouseleave', () => {
+                dom.tooltip.style.opacity = '0';
+            });
+
+            block.addEventListener('click', (e) => {
+                const title = e.currentTarget.querySelector('.block-title').textContent;
+                const info = e.currentTarget.dataset.info;
+                dom.detailTitle.textContent = '🔍 ' + title;
+                dom.detailContent.textContent = info + '\n\nThis component operates at the RLC sublayer of the LTE/5G protocol stack, working in real-time to ensure reliable data delivery over wireless channels.';
+            });
+        });
+
+        // Logging
+        function log(message, type = 'sys') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            dom.console.insertBefore(entry, dom.console.firstChild);
+
+            // Keep only last 100 entries
+            while (dom.console.children.length > 100) {
+                dom.console.removeChild(dom.console.lastChild);
+            }
+        }
+
+        // Update Stats
+        function updateStats() {
+            dom.statSent.textContent = state.stats.sent;
+            dom.statReceived.textContent = state.stats.received;
+            dom.statAcks.textContent = state.stats.acks;
+            dom.statRetx.textContent = state.stats.retx;
+            dom.statErrors.textContent = state.stats.errors;
+        }
+
+        // Utility Functions
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function getCenter(element) {
+            const rect = element.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        }
+
+        async function flashBlock(block, className = 'active') {
+            block.classList.add(className);
+            await sleep(CONFIG.speedBase / 2);
+            block.classList.remove(className);
+        }
+
+        async function animatePacket(fromElement, toElement, text, type = 'data') {
+            const start = getCenter(fromElement);
+            const end = getCenter(toElement);
+
+            const packet = document.createElement('div');
+            packet.className = `packet packet-${type}`;
+            packet.textContent = text;
+            document.body.appendChild(packet);
+
+            packet.style.left = start.x + 'px';
+            packet.style.top = start.y + 'px';
+
+            await sleep(50);
+
+            const animation = packet.animate([
+                { left: start.x + 'px', top: start.y + 'px', opacity: 1 },
+                { left: end.x + 'px', top: end.y + 'px', opacity: 1 }
+            ], {
+                duration: CONFIG.speedBase,
+                easing: 'ease-in-out',
+                fill: 'forwards'
+            });
+
+            await animation.finished;
+            packet.remove();
+        }
+
+        // Core Simulation
+        async function startSimulation() {
+            if (state.running) return;
+            
+            state.running = true;
+            const input = dom.sduInput.value || "HELLO";
+            
+            log(`🚀 Simulation started`, 'sys');
+            log(`📥 SDU received from upper layer: "${input}"`, 'tx');
+            
+            dom.reassembly.textContent = '';
+            
+            // Stage 1: RX Buffer
+            await flashBlock(dom.txBuffer);
+            log(`📦 Data buffered in TX Buffer`, 'tx');
+            await sleep(CONFIG.speedBase / 2);
+            
+            // Stage 2: Segmentation
+            await flashBlock(dom.txSegment);
+            state.segments = input.split('');
+            state.receivedSegments = new Array(state.segments.length).fill(null);
+            log(`✂️ Segmentation: Split into ${state.segments.length} PDUs`, 'tx');
+            await sleep(CONFIG.speedBase / 2);
+            
+            // Process each PDU
+            for (let i = 0; i < state.segments.length; i++) {
+                if (!state.running) break;
+                await processPDU(i, state.segments[i]);
+            }
+            
+            if (state.running) {
+                log(`✅ All PDUs successfully transmitted and reassembled`, 'rx');
+                log(`📤 SDU delivered to upper layer: "${input}"`, 'rx');
+                state.running = false;
+            }
+        }
+
+        async function processPDU(sn, data) {
+            let transmitted = false;
+            let attempt = 0;
+            
+            while (!transmitted && state.running) {
+                attempt++;
+                const isRetransmission = attempt > 1;
+                
+                if (isRetransmission) {
+                    log(`🔄 Retransmitting PDU SN=${sn} (Attempt ${attempt})`, 'error');
+                    state.stats.retx++;
+                    updateStats();
+                    await flashBlock(dom.txRetx, 'error');
+                } else {
+                    // Stage 3: Header Addition
+                    await animatePacket(dom.txSegment, dom.txHeader, data);
+                    await flashBlock(dom.txHeader);
+                    log(`🏷️ RLC header added: SN=${sn}`, 'tx');
+                    await sleep(CONFIG.speedBase / 3);
+                    
+                    // Stage 4: Copy to Retx Buffer
+                    await animatePacket(dom.txHeader, dom.txRetx, `SN${sn}`);
+                    await flashBlock(dom.txRetx);
+                    log(`💾 PDU copied to retransmission buffer`, 'tx');
+                    await sleep(CONFIG.speedBase / 3);
+                }
+                
+                // Stage 5: Routing & Scheduling
+                await animatePacket(dom.txRetx, dom.txRouting, `SN${sn}`);
+                await flashBlock(dom.txRouting);
+                log(`🔀 PDU scheduled for transmission`, 'tx');
+                await sleep(CONFIG.speedBase / 3);
+                
+                // Stage 6: Transmission
+                state.stats.sent++;
+                updateStats();
+                log(`📡 Transmitting PDU SN=${sn} over air interface`, 'tx');
+                
+                // Simulate packet loss
+                const isLost = Math.random() * 100 < CONFIG.lossProbability;
+                
+                if (isLost) {
+                    // Packet lost in channel
+                    await animatePacket(dom.txRouting, dom.channel, `SN${sn}`);
+                    await flashBlock(dom.channel, 'error');
+                    state.stats.errors++;
+                    updateStats();
+                    log(`❌ PACKET LOSS: PDU SN=${sn} corrupted in air interface`, 'error');
+                    await sleep(CONFIG.speedBase / 2);
+                    
+                    // Stage 7: RX detects missing packet
+                    await flashBlock(dom.rxControl, 'error');
+                    log(`🔍 RX ARQ Control detected missing SN=${sn}`, 'error');
+                    await sleep(CONFIG.speedBase / 3);
+                    
+                    // Stage 8: Send NACK
+                    log(`📤 Sending NACK for SN=${sn}`, 'error');
+                    await animatePacket(dom.rxControl, dom.txControl, `NACK ${sn}`, 'nack');
+                    await flashBlock(dom.txControl, 'error');
+                    log(`📥 TX received NACK, triggering retransmission`, 'error');
+                    await sleep(CONFIG.speedBase / 2);
+                    
+                    continue; // Retry
+                }
+                
+                // Successful reception
+                await animatePacket(dom.txRouting, dom.rxControl, `SN${sn}`);
+                
+                // Stage 7: RX Control validates
+                await flashBlock(dom.rxControl);
+                log(`✅ PDU SN=${sn} received successfully`, 'rx');
+                await sleep(CONFIG.speedBase / 3);
+                
+                // Stage 8: Send ACK (in parallel)
+                state.stats.acks++;
+                updateStats();
+                log(`📤 Sending ACK for SN=${sn}`, 'rx');
+                animatePacket(dom.rxControl, dom.txControl, `ACK ${sn}`, 'ack').then(async () => {
+                    await flashBlock(dom.txControl);
+                    log(`📥 TX received ACK for SN=${sn}, removing from retx buffer`, 'tx');
+                });
+                
+                // Continue RX processing
+                await animatePacket(dom.rxControl, dom.rxBuffer, `SN${sn}`);
+                await flashBlock(dom.rxBuffer);
+                log(`📦 PDU buffered in RX Buffer`, 'rx');
+                await sleep(CONFIG.speedBase / 3);
+                
+                // Stage 10: Reordering
+                await animatePacket(dom.rxBuffer, dom.rxReorder, `SN${sn}`);
+                await flashBlock(dom.rxReorder);
+                log(`🔢 PDU reordered by sequence number`, 'rx');
+                await sleep(CONFIG.speedBase / 3);
+                
+                // Stage 11: Header Removal
+                await animatePacket(dom.rxReorder, dom.rxRemove, `SN${sn}`);
+                await flashBlock(dom.rxRemove);
+                log(`🏷️ RLC header removed from PDU`, 'rx');
+                await sleep(CONFIG.speedBase / 3);
+                
+                // Stage 12: Reassembly
+                await animatePacket(dom.rxRemove, dom.rxReassembly, data);
+                await flashBlock(dom.rxReassembly);
+                state.receivedSegments[sn] = data;
+                state.stats.received++;
+                updateStats();
+                dom.reassembly.textContent = state.receivedSegments.filter(s => s !== null).join('');
+                log(`🔨 Data segment reassembled`, 'rx');
+                await sleep(CONFIG.speedBase / 3);
+                
+                // Final delivery
+                if (sn === state.segments.length - 1) {
+                    await animatePacket(dom.rxReassembly, dom.rxDelivery, '✓');
+                    await flashBlock(dom.rxDelivery);
+                }
+                
+                transmitted = true;
+            }
+        }
+
+        function stopSimulation() {
+            state.running = false;
+            log(`⏸️ Simulation paused`, 'sys');
+        }
+
+        function resetSimulation() {
+            state.running = false;
+            state.currentSN = 0;
+            state.segments = [];
+            state.receivedSegments = [];
+            state.stats = {
+                sent: 0,
+                received: 0,
+                acks: 0,
+                retx: 0,
+                errors: 0
+            };
+            
+            updateStats();
+            dom.console.innerHTML = '';
+            dom.reassembly.textContent = 'Waiting for transmission...';
+            log(`🔄 Simulation reset`, 'sys');
+        }
+
+        // Initialize
+        log(`💻 RLC ARQ Simulator initialized`, 'sys');
+        log(`ℹ️ Click on process blocks for detailed information`, 'sys');
+    </script>
+</body>
+</html>

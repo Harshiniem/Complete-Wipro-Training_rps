@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR RRC States - Harshinie M</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00d2ff;
+            --neon-purple: #9d50bb;
+            --deep-space: #02050a;
+            --glass: rgba(255, 255, 255, 0.07);
+            --active-green: #00ffaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--deep-space);
+            color: #ffffff;
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 210, 255, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(157, 80, 187, 0.05) 0%, transparent 20%);
+        }
+
+        /* Header Section */
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-bottom: 1px solid var(--glass);
+        }
+
+        .title-box h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 4.5rem;
+            letter-spacing: 15px;
+            background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .student-tag {
+            font-size: 1.2rem;
+            color: var(--neon-blue);
+            margin-top: 10px;
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+
+        /* Interactive Dashboard */
+        .dashboard {
+            max-width: 1200px;
+            margin: -100px auto 100px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .state-node {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(15px);
+            position: relative;
+        }
+
+        .state-node:hover {
+            transform: translateY(-15px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+        }
+
+        .state-node.active {
+            border-color: var(--active-green);
+            background: rgba(0, 255, 170, 0.05);
+            box-shadow: 0 0 40px rgba(0, 255, 170, 0.15);
+        }
+
+        .state-node h2 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        .status-light {
+            width: 12px;
+            height: 12px;
+            background: #444;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+        }
+
+        .active .status-light {
+            background: var(--active-green);
+            box-shadow: 0 0 10px var(--active-green);
+        }
+
+        /* Content Display Area */
+        .display-area {
+            max-width: 900px;
+            margin: 0 auto 100px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 30px;
+            padding: 50px;
+            border: 1px solid var(--glass);
+            min-height: 400px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.5s;
+        }
+
+        .display-area.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--glass);
+            padding-bottom: 20px;
+        }
+
+        .detail-title {
+            color: var(--neon-blue);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .audio-wave {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .bar {
+            width: 3px;
+            height: 15px;
+            background: var(--neon-blue);
+            animation: pulse 1s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { height: 5px; }
+            50% { height: 25px; }
+        }
+
+        .tech-list {
+            list-style: none;
+        }
+
+        .tech-list li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .tech-list li::before {
+            content: '➤';
+            position: absolute;
+            left: 0;
+            color: var(--neon-purple);
+        }
+
+        /* Bottom Controls */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--neon-blue);
+            color: var(--deep-space);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        footer {
+            text-align: center;
+            padding: 50px;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title-box">
+            <p style="letter-spacing: 5px; opacity: 0.7;">3GPP TS 38.331</p>
+            <h1>5G NR RRC</h1>
+            <p class="student-tag">HARSHINIE M • PROTOTYPE DESIGN</p>
+        </div>
+        <p style="margin-top: 40px; max-width: 500px; opacity: 0.6;">Interactive protocol state machine exploring Idle, Connected, and Inactive modes with integrated voice analysis.</p>
+    </header>
+
+    <!-- State Selection -->
+    <div class="dashboard">
+        <div class="state-node" id="node-idle" onclick="activateState('idle')">
+            <div class="status-light"></div>
+            <h2>RRC_IDLE</h2>
+            <p>Power Save Mode</p>
+        </div>
+
+        <div class="state-node" id="node-inactive" onclick="activateState('inactive')">
+            <div class="status-light"></div>
+            <h2>RRC_INACTIVE</h2>
+            <p>Suspended State</p>
+        </div>
+
+        <div class="state-node" id="node-connected" onclick="activateState('connected')">
+            <div class="status-light"></div>
+            <h2>RRC_CONNECTED</h2>
+            <p>Active Transmission</p>
+        </div>
+    </div>
+
+    <!-- Details Display -->
+    <div class="display-area" id="display-box">
+        <div class="detail-header">
+            <div class="detail-title" id="content-title">Select a State</div>
+            <div class="audio-wave" id="wave-container" style="display: none;">
+                <div class="bar" style="animation-delay: 0.1s"></div>
+                <div class="bar" style="animation-delay: 0.2s"></div>
+                <div class="bar" style="animation-delay: 0.3s"></div>
+                <div class="bar" style="animation-delay: 0.4s"></div>
+                <div class="bar" style="animation-delay: 0.5s"></div>
+            </div>
+        </div>
+        <div id="content-body">
+            <p style="font-size: 1.3rem; opacity: 0.6; text-align: center; margin-top: 50px;">
+                Click on the architectural nodes above to initialize the RRC Analysis and hear the technical breakdown.
+            </p>
+        </div>
+    </div>
+
+    <div class="controls" onclick="stopAudio()">STOP VOICE NARRATION</div>
+
+    <footer>
+        &copy; 2024 Harshinie M - Academic Prize Submission
+    </footer>
+
+    <script>
+        const stateData = {
+            idle: {
+                title: "RRC_IDLE State",
+                body: `
+                    <ul class="tech-list">
+                        <li><b>PLMN Selection:</b> The UE selects the best Public Land Mobile Network.</li>
+                        <li><b>Cell Reselection:</b> UE-controlled mobility where it monitors neighboring cells.</li>
+                        <li><b>Paging Monitoring:</b> Monitors the paging channel for CN-triggered calls via 5G-S-TMSI.</li>
+                        <li><b>SI Acquisition:</b> Receives MIB and SIB1 broadcasts to stay synchronized.</li>
+                        <li><b>Power:</b> Lowest consumption; No RRC context exists in the gNB.</li>
+                    </ul>
+                `,
+                voiceText: "In the RRC Idle state, the User Equipment is in its most power-efficient mode. It has no active signaling connection with the g-N-B. Instead, it focuses on monitoring paging messages from the Core Network and performing cell reselection to find the best signal. This is Harshinie's analysis of the idle state."
+            },
+            inactive: {
+                title: "RRC_INACTIVE State",
+                body: `
+                    <ul class="tech-list">
+                        <li><b>New in 5G:</b> Designed to reduce signaling overhead for small data bursts.</li>
+                        <li><b>AS Context:</b> Both UE and gNB store the Access Stratum context.</li>
+                        <li><b>RNA:</b> RAN-based Notification Area is configured for the UE.</li>
+                        <li><b>Fast Access:</b> Transition to Connected state is significantly faster than from Idle.</li>
+                        <li><b>Suspension:</b> The RRC connection is suspended rather than released.</li>
+                    </ul>
+                `,
+                voiceText: "The RRC Inactive state is a revolutionary 5G feature. Think of it as a suspended animation for the connection. Both the device and the base station save the configuration context. This allows the device to wake up and transmit data almost instantly with very little battery drain. This is essential for modern high-speed 5G networks."
+            },
+            connected: {
+                title: "RRC_CONNECTED State",
+                body: `
+                    <ul class="tech-list">
+                        <li><b>Unicast Data:</b> Full bidirectional data transfer is active.</li>
+                        <li><b>Network Control:</b> Mobility is controlled by the gNB via Handovers.</li>
+                        <li><b>C-RNTI:</b> UE is identified by a temporary cell-specific identity.</li>
+                        <li><b>Measurements:</b> UE reports signal quality (CSI, RSRP) back to the network.</li>
+                        <li><b>Carrier Aggregation:</b> Multiple frequencies can be configured for high throughput.</li>
+                    </ul>
+                `,
+                voiceText: "In RRC Connected state, the device is fully engaged with the network. High-speed data transfer is happening, and the network takes full control of which cell the device should be in. The device continuously sends channel quality reports back to the g-N-B to ensure the best possible performance."
+            }
+        };
+
+        const speech = window.speechSynthesis;
+        let currentUtterance = null;
+
+        function activateState(stateKey) {
+            // Stop any current voice
+            stopAudio();
+
+            // UI Transitions
+            document.querySelectorAll('.state-node').forEach(n => n.classList.remove('active'));
+            document.getElementById(`node-${stateKey}`).classList.add('active');
+            
+            const display = document.getElementById('display-box');
+            display.classList.remove('show');
+
+            setTimeout(() => {
+                const data = stateData[stateKey];
+                document.getElementById('content-title').innerText = data.title;
+                document.getElementById('content-body').innerHTML = data.body;
+                document.getElementById('wave-container').style.display = 'flex';
+                display.classList.add('show');
+                
+                // Voice Narration
+                playVoice(data.voiceText);
+            }, 300);
+        }
+
+        function playVoice(text) {
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            
+            // Try to find a high-quality natural voice
+            const voices = speech.getVoices();
+            currentUtterance.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Natural')) || voices[0];
+            
+            currentUtterance.pitch = 1.1; // Slightly higher for a student persona
+            currentUtterance.rate = 0.95;  // Calm, professional pace
+
+            currentUtterance.onend = () => {
+                document.getElementById('wave-container').style.display = 'none';
+            };
+
+            speech.speak(currentUtterance);
+        }
+
+        function stopAudio() {
+            speech.cancel();
+            document.getElementById('wave-container').style.display = 'none';
+        }
+
+        // Initialize voices for chrome
+        speech.onvoiceschanged = () => { speech.getVoices(); };
+
+        /* 
+           HARSHINIE'S FIRST PRIZE PRO-TIP:
+           To use your ACTUAL recorded voice files:
+           1. Record three mp3s (idle.mp3, inactive.mp3, connected.mp3)
+           2. Replace the playVoice function with this:
+           
+           function playVoice(text, stateKey) {
+               let myAudio = new Audio(stateKey + '.mp3');
+               myAudio.play();
+           }
+        */
+    </script>
+</body>
+</html>

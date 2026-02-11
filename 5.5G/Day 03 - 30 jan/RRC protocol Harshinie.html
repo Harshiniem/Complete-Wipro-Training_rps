@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR RRC Architecture - Harshinie M</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg-dark: #050a18;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.1);
+            --text-main: #e0e0e0;
+            --accent-green: #00ff88;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: radial-gradient(circle at center, #102a43 0%, #050a18 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 8vw, 4rem);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        .student-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        /* Container & Titles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin: 60px 0 30px 0;
+            border-left: 5px solid var(--primary);
+            padding-left: 20px;
+            color: #fff;
+        }
+
+        /* INTERACTIVE ARCHITECTURE SECTION */
+        .arch-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--glass);
+            min-height: 500px;
+        }
+
+        .arch-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .arch-node {
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.3s;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .arch-node:hover {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+
+        .arch-node.active {
+            background: var(--primary);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .srb-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .srb-node {
+            padding: 10px 5px;
+            background: var(--secondary);
+            font-size: 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .info-panel {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #detail-title { color: var(--primary); font-family: 'Orbitron', sans-serif; margin-bottom: 15px; }
+        #detail-desc { font-size: 1.1rem; line-height: 1.8; }
+
+        /* Existing RRC States Grid */
+        .states-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .state-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass);
+            padding: 30px;
+            border-radius: 20px;
+            transition: 0.4s;
+        }
+
+        .state-card:hover { transform: translateY(-10px); border-color: var(--primary); }
+
+        .tag {
+            background: var(--secondary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            padding: 60px 20px;
+            text-align: center;
+            background: #03070f;
+            border-top: 1px solid var(--glass);
+            margin-top: 100px;
+        }
+
+        /* Animations */
+        .reveal { opacity: 0; transform: translateY(30px); transition: 0.8s all ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            .arch-wrapper { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <h1>5G NR RRC</h1>
+        <p class="student-name">Advanced Protocol Design by Harshinie M</p>
+        <p style="max-width: 600px; opacity: 0.8;">The Control Plane Mastermind: Navigating Architecture, States, and Procedures.</p>
+        <a href="#arch" style="margin-top:20px; color: var(--primary); text-decoration: none; border: 1px solid var(--primary); padding: 10px 20px; border-radius: 50px;">Explore Architecture</a>
+    </section>
+
+    <div class="container">
+        
+        <!-- NEW INTERACTIVE ARCHITECTURE SECTION -->
+        <section id="arch" class="reveal">
+            <h2 class="section-title">Interactive RRC Architecture</h2>
+            <p style="margin-bottom: 20px; opacity: 0.7;">Click on any layer or SRB to inspect its technical role in the 5G Stack.</p>
+            
+            <div class="arch-wrapper">
+                <div class="arch-diagram">
+                    <div class="arch-node" onclick="showDetail('nas')">NAS (Non-Access Stratum)</div>
+                    <div style="text-align: center; color: var(--primary);">↓</div>
+                    <div class="arch-node active" id="rrc-main-node" onclick="showDetail('rrc')">RRC (Radio Resource Control)</div>
+                    
+                    <div class="srb-group">
+                        <div class="srb-node" onclick="showDetail('srb0')">SRB0</div>
+                        <div class="srb-node" onclick="showDetail('srb1')">SRB1</div>
+                        <div class="srb-node" onclick="showDetail('srb2')">SRB2</div>
+                        <div class="srb-node" onclick="showDetail('srb3')">SRB3</div>
+                    </div>
+
+                    <div class="arch-node" onclick="showDetail('pdcp')">PDCP (Security/Integrity)</div>
+                    <div class="arch-node" onclick="showDetail('rlc')">RLC (Segmentation)</div>
+                    <div class="arch-node" onclick="showDetail('mac')">MAC (Scheduling)</div>
+                    <div class="arch-node" onclick="showDetail('phy')">PHY (Physical Layer)</div>
+                </div>
+
+                <div class="info-panel" id="info-panel">
+                    <h3 id="detail-title">RRC Layer</h3>
+                    <p id="detail-desc">Select a component on the left to view architectural details. The RRC (Radio Resource Control) acts as the central controller of the Access Stratum.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- RRC States -->
+        <section class="reveal">
+            <h2 class="section-title">State Management Model</h2>
+            <div class="states-grid">
+                <div class="state-card">
+                    <span class="tag">Energy Saving</span>
+                    <h3>RRC_IDLE</h3>
+                    <p>Minimal power consumption. UE monitors paging and performs cell reselection. No connection exists at the gNB level.</p>
+                </div>
+                <div class="state-card" style="border: 1px solid var(--accent-green);">
+                    <span class="tag" style="background: var(--accent-green); color: black;">5G Innovation</span>
+                    <h3>RRC_INACTIVE</h3>
+                    <p>The "Suspended" state. The UE and gNB keep the <b>AS Context</b> saved. Allows near-instant transition to Connected with zero signaling overhead.</p>
+                </div>
+                <div class="state-card">
+                    <span class="tag">High Throughput</span>
+                    <h3>RRC_CONNECTED</h3>
+                    <p>Active data transmission. The UE has a dedicated C-RNTI and follows network-controlled handovers.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Functions -->
+        <section class="reveal">
+            <h2 class="section-title">Core Procedures</h2>
+            <div class="states-grid">
+                <div class="state-card">
+                    <h3>System Information</h3>
+                    <p>Handles MIB and SIBs. 5G NR uses "On-Demand" SIB delivery to save radio resources.</p>
+                </div>
+                <div class="state-card">
+                    <h3>Paging</h3>
+                    <p>Used to reach UEs in Idle or Inactive states for incoming calls or system info updates.</p>
+                </div>
+                <div class="state-card">
+                    <h3>Measurement Reporting</h3>
+                    <p>RRC configures the UE to report signal quality (RSRP/RSRQ) to facilitate seamless handovers.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Design & Research by <strong>Harshinie M</strong></p>
+        <p style="font-size: 0.8rem; opacity: 0.5; margin-top: 10px;">5G NR Protocol Stack Evaluation Portfolio</p>
+    </footer>
+
+    <script>
+        const details = {
+            nas: {
+                title: "NAS (Non-Access Stratum)",
+                desc: "The highest layer of the control plane. It handles Authentication, Service Request, and Mobility Management between the UE and the 5G Core (AMF)."
+            },
+            rrc: {
+                title: "RRC Layer",
+                desc: "The Brain of the radio interface. It handles connection establishment, system information broadcast, and radio bearer configuration. It controls all lower layers."
+            },
+            srb0: {
+                title: "SRB0 (Signaling Radio Bearer 0)",
+                desc: "Used for RRC messages using the CCCH (Common Control Channel) logical channel. Used before a connection is established (e.g., RRC Setup Request)."
+            },
+            srb1: {
+                title: "SRB1",
+                desc: "Used for RRC messages (and high-priority NAS messages) using the DCCH logical channel. It is the primary link for control signaling."
+            },
+            srb2: {
+                title: "SRB2",
+                desc: "Lower priority than SRB1. Used for NAS messages and logged measurement information. Always configured after security activation."
+            },
+            srb3: {
+                title: "SRB3",
+                desc: "Specific to 5G NR Dual Connectivity (EN-DC). Used for direct RRC signaling between the UE and the Secondary gNB (SgNB)."
+            },
+            pdcp: {
+                title: "PDCP Layer",
+                desc: "In the control plane, PDCP is responsible for Ciphering and Integrity Protection. It ensures that RRC messages cannot be intercepted or tampered with."
+            },
+            rlc: {
+                title: "RLC Layer",
+                desc: "Provides Error Correction (ARQ) and handles segmentation. For RRC, it usually operates in Acknowledged Mode (AM) to ensure no signaling is lost."
+            },
+            mac: {
+                title: "MAC Layer",
+                desc: "Handles Logical Channel Multiplexing and mapping RRC messages onto Transport Channels (UL-SCH/DL-SCH)."
+            },
+            phy: {
+                title: "Physical Layer (PHY)",
+                desc: "The actual radio transmission. RRC configures the PHY parameters like frequency, bandwidth parts (BWP), and MIMO settings."
+            }
+        };
+
+        function showDetail(key) {
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('detail-title');
+            const desc = document.getElementById('detail-desc');
+            
+            // Add a small fade effect
+            panel.style.opacity = 0;
+            
+            setTimeout(() => {
+                title.innerText = details[key].title;
+                desc.innerText = details[key].desc;
+                panel.style.opacity = 1;
+            }, 200);
+
+            // Highlight active node
+            document.querySelectorAll('.arch-node, .srb-node').forEach(el => el.style.borderColor = 'rgba(255,255,255,0.1)');
+            // You can add more complex highlighting logic here
+        }
+
+        // Scroll Reveal
+        window.addEventListener("scroll", () => {
+            document.querySelectorAll(".reveal").forEach(el => {
+                if (el.getBoundingClientRect().top < window.innerHeight - 100) {
+                    el.classList.add("active");
+                }
+            });
+        });
+        
+        // Initial Trigger
+        window.dispatchEvent(new Event('scroll'));
+    </script>
+</body>
+</html>

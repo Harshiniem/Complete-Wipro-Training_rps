@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G Session Management | PDU Session Blueprint</title>
+    <style>
+        :root {
+            --bg-base: #020617;
+            --bg-card: #0f172a;
+            --accent-cyan: #22d3ee;
+            --accent-gold: #fbbf24;
+            --accent-pink: #f472b6;
+            --text-main: #f1f5f9;
+            --text-dim: #64748b;
+            --border-glow: rgba(34, 211, 238, 0.3);
+            --interface-line: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+        
+        body { 
+            background-color: var(--bg-base); 
+            color: var(--text-main); 
+            line-height: 1.5;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        header {
+            padding: 50px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-glow);
+            background: linear-gradient(to bottom, #0f172a, var(--bg-base));
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--accent-cyan), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* --- PDU Session Blueprint Visual --- */
+        .blueprint-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 8px;
+            height: 550px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+
+        .nf-node {
+            position: absolute;
+            width: 140px;
+            padding: 15px;
+            background: #1e293b;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 4px;
+            text-align: center;
+            z-index: 10;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .nf-node:hover {
+            box-shadow: 0 0 20px var(--accent-cyan);
+            transform: scale(1.05);
+        }
+
+        .nf-label { font-size: 0.9rem; font-weight: bold; color: var(--accent-cyan); display: block; }
+        .nf-sub { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; }
+
+        /* Logic Pipes (Interfaces) */
+        .svg-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+        }
+
+        .interface-path {
+            fill: none;
+            stroke: var(--interface-line);
+            stroke-width: 2;
+        }
+
+        .signal-pulse {
+            fill: none;
+            stroke: var(--accent-gold);
+            stroke-width: 3;
+            stroke-dasharray: 10, 100;
+            display: none;
+        }
+
+        .pdu-tunnel {
+            fill: none;
+            stroke: rgba(251, 191, 36, 0.1);
+            stroke-width: 20;
+            stroke-linecap: round;
+            display: none;
+        }
+
+        /* Flow Control Panel */
+        .flow-stepper {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(2, 6, 23, 0.8);
+            padding: 10px;
+            border-radius: 40px;
+            border: 1px solid var(--border-glow);
+            z-index: 20;
+        }
+
+        .step-dot {
+            width: 12px; height: 12px;
+            background: var(--interface-line);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .step-dot.active { background: var(--accent-gold); box-shadow: 0 0 10px var(--accent-gold); }
+
+        /* --- Content Layout --- */
+        .grid-layout {
+            max-width: 1200px;
+            margin: 0 auto 100px;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        .info-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            padding: 30px;
+            border-radius: 8px;
+            min-height: 400px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .stat-title { font-size: 0.75rem; color: var(--accent-gold); text-transform: uppercase; margin-bottom: 5px; }
+        .stat-value { font-size: 1rem; font-weight: bold; }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-right: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* Step Tooltip */
+        .step-description {
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Interface List */
+        .interface-list {
+            margin-top: 20px;
+            font-size: 0.8rem;
+        }
+        .if-item { margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--interface-line); padding-bottom: 2px; }
+
+        @keyframes pulse-anim {
+            from { stroke-dashoffset: 200; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .active-pulse { display: block; animation: pulse-anim 2s linear infinite; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="hero-title">PDU Session Management</div>
+    <p style="color: var(--text-dim); margin-top: 10px;">End-to-End QoS, Session Establishment & Logic Flows</p>
+</header>
+
+<div class="blueprint-container">
+    <svg class="svg-overlay" id="svg-canvas">
+        <!-- Interfaces -->
+        <path id="n1-path" class="interface-path" d="M 120 400 L 350 150" /> <!-- UE to AMF -->
+        <path id="n11-path" class="interface-path" d="M 490 150 L 710 150" /> <!-- AMF to SMF -->
+        <path id="n4-path" class="interface-path" d="M 780 150 L 1010 400" /> <!-- SMF to UPF -->
+        <path id="n3-path" class="interface-path" d="M 120 400 Q 565 500 1010 400" /> <!-- UE to UPF (User Plane) -->
+
+        <!-- Pulse Overlay -->
+        <path id="pulse-n1" class="signal-pulse" d="M 120 400 L 350 150" />
+        <path id="pulse-n11" class="signal-pulse" d="M 490 150 L 710 150" />
+        <path id="pulse-n4" class="signal-pulse" d="M 780 150 L 1010 400" />
+        
+        <!-- Final Session Tunnel -->
+        <path id="pdu-tunnel-visual" class="pdu-tunnel" d="M 120 400 Q 565 500 1010 400" />
+    </svg>
+
+    <!-- Network Function Nodes -->
+    <div class="nf-node" style="top: 380px; left: 50px;" onclick="explainNF('UE')">
+        <span class="nf-sub">Endpoint</span>
+        <span class="nf-label">UE</span>
+    </div>
+
+    <div class="nf-node" style="top: 130px; left: 350px;" onclick="explainNF('AMF')">
+        <span class="nf-sub">Gateway</span>
+        <span class="nf-label">AMF</span>
+    </div>
+
+    <div class="nf-node" style="top: 130px; left: 710px;" onclick="explainNF('SMF')">
+        <span class="nf-sub">Logic / IP</span>
+        <span class="nf-label">SMF</span>
+    </div>
+
+    <div class="nf-node" style="top: 380px; left: 1010px;" onclick="explainNF('UPF')">
+        <span class="nf-sub">User Plane</span>
+        <span class="nf-label">UPF</span>
+    </div>
+
+    <!-- Stepper Buttons -->
+    <div class="flow-stepper">
+        <div class="step-dot active" onclick="gotoStep(0)"></div>
+        <div class="step-dot" onclick="gotoStep(1)"></div>
+        <div class="step-dot" onclick="gotoStep(2)"></div>
+        <div class="step-dot" onclick="gotoStep(3)"></div>
+        <div class="step-dot" onclick="gotoStep(4)"></div>
+        <div class="step-dot" onclick="gotoStep(5)"></div>
+    </div>
+</div>
+
+<div class="grid-layout">
+    <div class="info-panel" id="main-content">
+        <!-- Content injected by JS -->
+    </div>
+
+    <div class="sidebar">
+        <div class="stat-card">
+            <div class="stat-title">Session State</div>
+            <div id="session-state" class="stat-value">IDLE</div>
+        </div>
+
+        <div class="stat-card" style="border-left-color: var(--accent-cyan);">
+            <div class="stat-title">PDU Session Type</div>
+            <div class="stat-value">IPv4 / IPv6 / Ethernet</div>
+        </div>
+
+        <div class="info-panel" style="min-height: auto; padding: 20px;">
+            <div class="stat-title">Interfaces (Logic)</div>
+            <div class="interface-list">
+                <div class="if-item"><span>N1</span><span>UE ↔ AMF</span></div>
+                <div class="if-item"><span>N11</span><span>AMF ↔ SMF</span></div>
+                <div class="if-item"><span>N4</span><span>SMF ↔ UPF</span></div>
+                <div class="if-item"><span>N3</span><span>gNB ↔ UPF</span></div>
+                <div class="if-item"><span>N7</span><span>SMF ↔ PCF</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const steps = [
+        {
+            title: "1. NAS Session Request",
+            desc: "The UE sends a <strong>PDU Session Establishment Request</strong> inside a NAS message. This message is sent to the AMF over the N1 interface.",
+            pulses: ["pulse-n1"],
+            state: "INITIATING",
+            exam: "Architecture Note: The AMF acts as a transparent relay for session management messages, forwarding them to the SMF."
+        },
+        {
+            title: "2. SMF Selection & Auth",
+            desc: "The AMF selects an appropriate SMF and forwards the request via the <strong>N11 interface</strong>. The SMF checks user subscription data (via UDM) to see if the requested PDU session is allowed.",
+            pulses: ["pulse-n11"],
+            state: "AUTHORIZING",
+            exam: "Key NF: The SMF is the 'Brain' of session management, handling IP address allocation and QoS policy."
+        },
+        {
+            title: "3. Policy Association (PCF)",
+            desc: "SMF contacts the <strong>PCF (Policy Control Function)</strong> via N7 to retrieve default QoS policies, charging rules, and bandwidth limits for this specific user session.",
+            pulses: ["pulse-n11"],
+            state: "POLICY_GET",
+            exam: "5G Fact: 5G uses 'Flow-based QoS' instead of 4G's 'Bearer-based QoS', allowing much finer control."
+        },
+        {
+            title: "4. UPF Session Establishment",
+            desc: "The SMF selects a UPF and sends an <strong>N4 Session Establishment Request</strong>. This provides the UPF with packet detection, forwarding, and reporting rules (PDR/FAR/URR).",
+            pulses: ["pulse-n4"],
+            state: "CONFIGURING_UP",
+            exam: "Interface Tip: N4 interface uses PFCP (Packet Forwarding Control Protocol)."
+        },
+        {
+            title: "5. Radio Resource Setup",
+            desc: "SMF sends the Access Network (gNB) the necessary QoS parameters. The gNB and UE then establish the Data Radio Bearers (DRB) over the air interface.",
+            pulses: ["pulse-n1"],
+            state: "RAN_SETUP",
+            exam: "Note: This is where the SDAP layer in the gNB gets configured to map QoS flows to DRBs."
+        },
+        {
+            title: "6. PDU Session Active",
+            desc: "Success! The PDU tunnel is established. The SMF provides the UE with its IP address. Data can now flow directly from UE to UPF and out to the Data Network.",
+            pulses: ["pulse-n1", "pulse-n11", "pulse-n4"],
+            tunnel: true,
+            state: "ESTABLISHED (ACTIVE)",
+            exam: "Architect Insight: SSC Mode 1 (Session and Service Continuity) ensures the IP address remains the same even if the UE moves across different gNBs."
+        }
+    ];
+
+    function gotoStep(idx) {
+        // Update Dots
+        const dots = document.querySelectorAll('.step-dot');
+        dots.forEach((d, i) => d.className = i === idx ? 'step-dot active' : 'step-dot');
+
+        // Update Text
+        const step = steps[idx];
+        const content = document.getElementById('main-content');
+        content.innerHTML = `
+            <div class="step-description">
+                <div class="tag">Step ${idx + 1}</div>
+                <h2>${step.title}</h2>
+                <p style="margin-top:15px;">${step.desc}</p>
+                <div style="background: rgba(251, 191, 36, 0.05); border-left: 3px solid var(--accent-gold); padding: 15px; margin-top: 25px; font-size: 0.85rem;">
+                    <strong>Exam-Ready Concept:</strong><br>${step.exam}
+                </div>
+            </div>
+        `;
+
+        // Update State
+        document.getElementById('session-state').innerText = step.state;
+        document.getElementById('session-state').style.color = idx === 5 ? 'var(--accent-cyan)' : 'var(--accent-gold)';
+
+        // Update Visuals
+        document.querySelectorAll('.signal-pulse').forEach(p => p.classList.remove('active-pulse'));
+        step.pulses.forEach(pid => {
+            document.getElementById(pid).classList.add('active-pulse');
+        });
+
+        const tunnel = document.getElementById('pdu-tunnel-visual');
+        tunnel.style.display = step.tunnel ? 'block' : 'none';
+    }
+
+    function explainNF(nf) {
+        const details = {
+            'UE': 'User Equipment: Initiates the PDU session and provides the Data Network Name (DNN).',
+            'AMF': 'Access & Mobility Mgmt: Relays session signaling between UE and SMF. Does not handle the session logic itself.',
+            'SMF': 'Session Mgmt Function: Allocates IP addresses, selects UPFs, and controls the User Plane via N4.',
+            'UPF': 'User Plane Function: The gateway to the data network. Routes user packets based on SMF instructions.'
+        };
+        const content = document.getElementById('main-content');
+        content.innerHTML = `
+            <div class="step-description">
+                <div class="tag">Network Function Node</div>
+                <h2>${nf} Module</h2>
+                <p style="margin-top:15px;">${details[nf]}</p>
+                <button onclick="gotoStep(0)" style="margin-top:20px; background:none; border:1px solid var(--accent-cyan); color:var(--accent-cyan); padding:8px 15px; cursor:pointer; border-radius:4px;">Back to Flow</button>
+            </div>
+        `;
+    }
+
+    // Init first step
+    gotoStep(0);
+</script>
+
+</body>
+</html>

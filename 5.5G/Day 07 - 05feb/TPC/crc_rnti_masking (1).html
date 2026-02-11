@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR - CRC Attachment & RNTI Masking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        header {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            padding: 25px 35px;
+            border-bottom: 4px solid #f39c12;
+            border-radius: 12px 12px 0 0;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 30px 35px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .section h2 {
+            color: #764ba2;
+            margin-bottom: 18px;
+            font-size: 1.5em;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .formula-box {
+            background: #fff;
+            border: 3px solid #f39c12;
+            padding: 18px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 18px 0;
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            padding: 18px;
+            border-radius: 8px;
+            margin: 18px 0;
+            border-left: 5px solid #f39c12;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin: 25px 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #764ba2;
+            font-size: 0.95em;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            padding: 10px;
+            font-size: 0.95em;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #f39c12;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 18px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 0.95em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .btn-primary {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+        }
+
+        .btn-secondary {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Bit Display */
+        .bit-display {
+            margin: 18px 0;
+        }
+
+        .bit-label {
+            font-weight: 600;
+            color: #764ba2;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 1em;
+        }
+
+        .bit-row {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .bit {
+            min-width: 28px;
+            width: 28px;
+            height: 28px;
+            border: 2px solid #f39c12;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .bit.zero {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .bit.one {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .bit.highlight {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.9);
+            z-index: 10;
+            border-color: #e74c3c;
+            border-width: 3px;
+        }
+
+        .bit.unknown {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        /* Animation Container */
+        .animation-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 3px solid #f39c12;
+        }
+
+        /* XOR Table */
+        .xor-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            margin: 18px 0;
+            background: white;
+        }
+
+        .xor-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .xor-table th {
+            background: #764ba2;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.95em;
+        }
+
+        .xor-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9em;
+        }
+
+        .xor-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .xor-table tr.highlight-row {
+            background: #fff3cd;
+            animation: rowHighlight 0.5s ease;
+        }
+
+        @keyframes rowHighlight {
+            0% { background: #f39c12; }
+            100% { background: #fff3cd; }
+        }
+
+        /* Status Bar */
+        .status-bar {
+            padding: 15px 20px;
+            background: #e9ecef;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 1.05em;
+            color: #495057;
+        }
+
+        .status-bar.processing {
+            background: #fff3cd;
+            color: #856404;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-bar.complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Code Section */
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .code-header {
+            background: #2d2d30;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        .code-title {
+            color: #cccccc;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .code-content {
+            padding: 20px;
+            color: #d4d4d4;
+            font-size: 0.9em;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .keyword { color: #569cd6; }
+        .function { color: #dcdcaa; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .number { color: #b5cea8; }
+        .type { color: #4ec9b0; }
+
+        #output {
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            border-radius: 0 0 8px 8px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        #output.show {
+            display: block;
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            position: relative;
+        }
+
+        .step::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #ddd;
+        }
+
+        .step:last-child::after {
+            content: '';
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #e9ecef;
+            color: #6c757d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background: #f39c12;
+            color: white;
+            transform: scale(1.2);
+        }
+
+        .step.completed .step-number {
+            background: #27ae60;
+            color: white;
+        }
+
+        .step-title {
+            font-size: 0.85em;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .step.active .step-title {
+            color: #f39c12;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.5em; }
+            .content { padding: 20px; }
+            .section { padding: 18px; }
+            .step-indicator { flex-direction: column; }
+            .step::after { content: '↓'; right: 50%; bottom: -15px; top: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>5G NR - CRC Attachment & RNTI Masking</h1>
+            <p>Interactive Visualization of PDCCH DCI Processing</p>
+        </header>
+
+        <div class="content">
+            <!-- Introduction -->
+            <div class="section">
+                <h2>📡 Overview</h2>
+                <div class="info-box">
+                    <strong>CRC Attachment & RNTI Masking</strong> is a critical process in 5G NR PDCCH (Physical Downlink Control Channel) that ensures both data integrity and UE-specific addressing.
+                    <br><br>
+                    <strong>Process:</strong>
+                    <br>1. Compute 24-bit CRC-24C from DCI payload using polynomial 0x1864CFB
+                    <br>2. Mask the last 16 bits of CRC with 16-bit RNTI (XOR operation)
+                    <br>3. Attach the masked CRC to the DCI payload
+                </div>
+
+                <div class="formula-box">
+                    Masked_CRC[8:23] = CRC[8:23] ⊕ RNTI[0:15]
+                </div>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="section">
+                <div class="step-indicator" id="stepIndicator">
+                    <div class="step" id="step1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">DCI Payload</div>
+                    </div>
+                    <div class="step" id="step2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">CRC Computation</div>
+                    </div>
+                    <div class="step" id="step3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">RNTI Masking</div>
+                    </div>
+                    <div class="step" id="step4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">CRC Attachment</div>
+                    </div>
+                    <div class="step" id="step5">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Final Output</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="section">
+                <h2>⚙️ Configuration</h2>
+                <div class="control-panel">
+                    <div class="control-group">
+                        <label>DCI Payload (42 bits)</label>
+                        <input type="text" id="dciInput" value="101100101101011001101001101001100110100101" maxlength="42">
+                    </div>
+                    <div class="control-group">
+                        <label>RNTI (Hex)</label>
+                        <input type="text" id="rntiInput" value="4E21" maxlength="4">
+                    </div>
+                    <div class="control-group">
+                        <label>Animation Speed (ms)</label>
+                        <select id="speedControl">
+                            <option value="1500">Slow (1.5s)</option>
+                            <option value="1000" selected>Normal (1s)</option>
+                            <option value="500">Fast (0.5s)</option>
+                            <option value="200">Very Fast (0.2s)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn-primary" onclick="autoPlay()" id="autoPlayBtn">▶ Auto Play</button>
+                    <button class="btn-secondary" onclick="nextStep()" id="nextStepBtn">Next Step ➔</button>
+                    <button class="btn-success" onclick="instantResult()">⚡ Instant Result</button>
+                    <button class="btn-danger" onclick="resetAnimation()">🔄 Reset</button>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn-secondary" onclick="loadInputs()">📥 Load Inputs</button>
+                    <button class="btn-secondary" onclick="generateRandomDCI()">🎲 Random DCI</button>
+                    <button class="btn-secondary" onclick="resetToDefault()">↩️ Default Values</button>
+                </div>
+
+                <div class="status-bar" id="statusBar">
+                    Ready - Click Auto Play or Next Step to start
+                </div>
+            </div>
+
+            <!-- Live Animation -->
+            <div class="section">
+                <h2>🎬 Live Animation</h2>
+
+                <!-- Step 1: DCI Payload -->
+                <div class="animation-box" id="animStep1" style="display: none;">
+                    <div class="bit-display">
+                        <span class="bit-label">Step 1: DCI Payload (42 bits)</span>
+                        <div class="bit-row" id="dciPayloadBits"></div>
+                    </div>
+                </div>
+
+                <!-- Step 2: CRC Computation -->
+                <div class="animation-box" id="animStep2" style="display: none;">
+                    <div class="bit-display">
+                        <span class="bit-label">Step 2: Computed CRC-24C (24 bits)</span>
+                        <div class="bit-row" id="crcBits"></div>
+                        <div style="margin-top: 10px; color: #764ba2; font-weight: 600;">
+                            CRC Value: <span id="crcHexValue">0x000000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: RNTI Masking -->
+                <div class="animation-box" id="animStep3" style="display: none;">
+                    <h3 style="color: #764ba2; margin-bottom: 15px;">XOR Masking Operation</h3>
+                    
+                    <div class="bit-display">
+                        <span class="bit-label">CRC Last 16 bits [8:23]</span>
+                        <div class="bit-row" id="crcLast16Bits"></div>
+                    </div>
+
+                    <div style="text-align: center; font-size: 2em; color: #f39c12; margin: 15px 0;">⊕</div>
+
+                    <div class="bit-display">
+                        <span class="bit-label">RNTI (16 bits)</span>
+                        <div class="bit-row" id="rntiBits"></div>
+                        <div style="margin-top: 10px; color: #764ba2; font-weight: 600;">
+                            RNTI Value: <span id="rntiHexValue">0x4E21</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; font-size: 2em; color: #27ae60; margin: 15px 0;">⬇</div>
+
+                    <div class="bit-display">
+                        <span class="bit-label">Masked Result (16 bits)</span>
+                        <div class="bit-row" id="maskedBits"></div>
+                    </div>
+
+                    <!-- XOR Table -->
+                    <div class="xor-table-container" id="xorTableContainer" style="margin-top: 20px;">
+                        <table class="xor-table">
+                            <thead>
+                                <tr>
+                                    <th>Bit Index</th>
+                                    <th>CRC[i]</th>
+                                    <th>RNTI[i]</th>
+                                    <th>XOR</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="xorTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Step 4: CRC Attachment -->
+                <div class="animation-box" id="animStep4" style="display: none;">
+                    <div class="bit-display">
+                        <span class="bit-label">Step 4: Complete Masked CRC (24 bits)</span>
+                        <div class="bit-row" id="completeMaskedCRC"></div>
+                        <div style="margin-top: 10px; color: #764ba2; font-size: 0.9em;">
+                            First 8 bits unchanged + Last 16 bits masked with RNTI
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Final Output -->
+                <div class="animation-box" id="animStep5" style="display: none;">
+                    <div class="bit-display">
+                        <span class="bit-label">Step 5: Final Output - DCI + Masked CRC (66 bits)</span>
+                        <div class="bit-row" id="finalOutputBits"></div>
+                        <div style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 6px; border-left: 4px solid #27ae60;">
+                            <strong style="color: #155724;">✅ Process Complete!</strong>
+                            <br>DCI Payload (42 bits) + Masked CRC (24 bits) = 66 bits total
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- C++ Code -->
+            <div class="section">
+                <h2>💻 C++ Implementation</h2>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">CRC_RNTI_Masking.cpp</span>
+                        <button class="btn-primary" onclick="runCode()">▶ Run Code</button>
+                    </div>
+                    <div class="code-content">
+<pre><span class="comment">// 5G NR - CRC Attachment & RNTI Masking Implementation</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;vector&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;iomanip&gt;</span>
+<span class="keyword">using namespace</span> <span class="type">std</span>;
+
+<span class="comment">// Convert integer to bits (MSB first)</span>
+<span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="function">intToBits</span>(<span class="keyword">uint32_t</span> value, <span class="keyword">int</span> bitSize) {
+    <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; bits(bitSize, <span class="number">0</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; bitSize; i++) {
+        bits[i] = (value &gt;&gt; (bitSize - <span class="number">1</span> - i)) & <span class="number">1</span>;
+    }
+    <span class="keyword">return</span> bits;
+}
+
+<span class="comment">// CRC-24C polynomial: 0x1864CFB</span>
+<span class="keyword">uint32_t</span> <span class="function">computeCRC24C</span>(<span class="keyword">const</span> <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt;& dataBits) {
+    <span class="keyword">uint32_t</span> poly = <span class="number">0x1864CFB</span>;   <span class="comment">// CRC-24C polynomial</span>
+    <span class="keyword">uint32_t</span> crc = <span class="number">0x000000</span>;
+    
+    <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; bits = dataBits;
+    bits.insert(bits.end(), <span class="number">24</span>, <span class="number">0</span>);
+    
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; (<span class="keyword">int</span>)dataBits.size(); i++) {
+        <span class="keyword">if</span> (bits[i] == <span class="number">1</span>) {
+            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">25</span>; j++) {
+                bits[i + j] ^= (poly &gt;&gt; (<span class="number">24</span> - j)) & <span class="number">1</span>;
+            }
+        }
+    }
+    
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = bits.size() - <span class="number">24</span>; i &lt; (<span class="keyword">int</span>)bits.size(); i++) {
+        crc = (crc &lt;&lt; <span class="number">1</span>) | bits[i];
+    }
+    
+    <span class="keyword">return</span> crc;
+}
+
+<span class="comment">// Attach CRC and apply RNTI masking</span>
+<span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="function">attachCRCAndMaskRNTI</span>(<span class="keyword">const</span> <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt;& dciPayload, <span class="keyword">uint16_t</span> rnti) {
+    <span class="keyword">uint32_t</span> crc24 = computeCRC24C(dciPayload);
+    <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; crcBits = intToBits(crc24, <span class="number">24</span>);
+    <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; rntiBits = intToBits(rnti, <span class="number">16</span>);
+    
+    <span class="comment">// Mask last 16 bits of CRC with RNTI</span>
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">16</span>; i++) {
+        crcBits[<span class="number">8</span> + i] ^= rntiBits[i];
+    }
+    
+    <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; finalBits = dciPayload;
+    finalBits.insert(finalBits.end(), crcBits.begin(), crcBits.end());
+    
+    <span class="keyword">return</span> finalBits;
+}
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; dciPayload = {
+        <span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,  <span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,
+        <span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,  <span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,
+        <span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,  <span class="number">0</span>,<span class="number">1</span>
+    };
+    
+    <span class="keyword">uint16_t</span> rnti = <span class="number">0x4E21</span>;
+    
+    <span class="type">vector</span>&lt;<span class="keyword">int</span>&gt; finalBits = attachCRCAndMaskRNTI(dciPayload, rnti);
+    
+    <span class="type">cout</span> &lt;&lt; <span class="string">"DCI Payload (42 bits): "</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> b : dciPayload) <span class="type">cout</span> &lt;&lt; b;
+    <span class="type">cout</span> &lt;&lt; <span class="type">endl</span>;
+    
+    <span class="type">cout</span> &lt;&lt; <span class="string">"Final Output (66 bits): "</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> b : finalBits) <span class="type">cout</span> &lt;&lt; b;
+    <span class="type">cout</span> &lt;&lt; <span class="type">endl</span>;
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+                    </div>
+                    <div id="output">Click "Run Code" to execute...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default values
+        const DEFAULT_DCI = [1,0,1,1,0,0,1,0,1,1,0,1,0,1,1,0,0,1,1,0,1,0,0,1,1,0,1,0,0,1,1,0,1,1,0,0,1,0,1,0,0,1];
+        const DEFAULT_RNTI = 0x4E21;
+
+        // State variables
+        let dciPayload = [...DEFAULT_DCI];
+        let rnti = DEFAULT_RNTI;
+        let crcBits = [];
+        let maskedCRC = [];
+        let finalOutput = [];
+        let currentStep = 0;
+        let isPlaying = false;
+        let animationInterval = null;
+        let maskingBitIndex = 0;
+
+        // Convert integer to bits
+        function intToBits(value, bitSize) {
+            const bits = [];
+            for (let i = 0; i < bitSize; i++) {
+                bits[i] = (value >> (bitSize - 1 - i)) & 1;
+            }
+            return bits;
+        }
+
+        // Compute CRC-24C
+        function computeCRC24C(dataBits) {
+            const poly = 0x1864CFB;
+            let crc = 0x000000;
+            
+            const bits = [...dataBits, ...Array(24).fill(0)];
+            
+            for (let i = 0; i < dataBits.length; i++) {
+                if (bits[i] === 1) {
+                    for (let j = 0; j < 25; j++) {
+                        bits[i + j] ^= (poly >> (24 - j)) & 1;
+                    }
+                }
+            }
+            
+            for (let i = bits.length - 24; i < bits.length; i++) {
+                crc = (crc << 1) | bits[i];
+            }
+            
+            return crc;
+        }
+
+        // Display bits in a row
+        function displayBits(elementId, bits, highlightIndex = -1) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            bits.forEach((bit, index) => {
+                const bitDiv = document.createElement('div');
+                bitDiv.className = `bit ${bit === 1 ? 'one' : (bit === null ? 'unknown' : 'zero')}`;
+                if (index === highlightIndex) {
+                    bitDiv.classList.add('highlight');
+                }
+                bitDiv.textContent = bit === null ? '?' : bit;
+                bitDiv.id = `${elementId}_${index}`;
+                container.appendChild(bitDiv);
+            });
+        }
+
+        // Update step indicator
+        function updateStepIndicator(step) {
+            for (let i = 1; i <= 5; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                stepEl.classList.remove('active', 'completed');
+                if (i < step) {
+                    stepEl.classList.add('completed');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                }
+            }
+        }
+
+        // Show animation step
+        function showAnimationStep(step) {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`animStep${i}`).style.display = 'none';
+            }
+            if (step >= 1 && step <= 5) {
+                document.getElementById(`animStep${step}`).style.display = 'block';
+            }
+        }
+
+        // Process Step 1: DCI Payload
+        function processStep1() {
+            updateStepIndicator(1);
+            showAnimationStep(1);
+            displayBits('dciPayloadBits', dciPayload);
+            document.getElementById('statusBar').textContent = 'Step 1: Displaying DCI Payload (42 bits)';
+            document.getElementById('statusBar').className = 'status-bar processing';
+        }
+
+        // Process Step 2: CRC Computation
+        function processStep2() {
+            updateStepIndicator(2);
+            showAnimationStep(2);
+            
+            const crcValue = computeCRC24C(dciPayload);
+            crcBits = intToBits(crcValue, 24);
+            
+            displayBits('crcBits', crcBits);
+            document.getElementById('crcHexValue').textContent = `0x${crcValue.toString(16).toUpperCase().padStart(6, '0')}`;
+            document.getElementById('statusBar').textContent = 'Step 2: CRC-24C Computed using polynomial 0x1864CFB';
+            document.getElementById('statusBar').className = 'status-bar processing';
+        }
+
+        // Initialize XOR table
+        function initXORTable() {
+            const tbody = document.getElementById('xorTableBody');
+            tbody.innerHTML = '';
+            
+            const rntiBits = intToBits(rnti, 16);
+            const crcLast16 = crcBits.slice(8);
+            
+            for (let i = 0; i < 16; i++) {
+                const row = tbody.insertRow();
+                row.id = `xorRow_${i}`;
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td><span class="bit ${crcLast16[i] === 1 ? 'one' : 'zero'}">${crcLast16[i]}</span></td>
+                    <td><span class="bit ${rntiBits[i] === 1 ? 'one' : 'zero'}">${rntiBits[i]}</span></td>
+                    <td>⊕</td>
+                    <td id="xorResult_${i}"><span class="bit unknown">?</span></td>
+                `;
+            }
+        }
+
+        // Process Step 3: RNTI Masking (animated)
+        function processStep3() {
+            updateStepIndicator(3);
+            showAnimationStep(3);
+            
+            const rntiBits = intToBits(rnti, 16);
+            const crcLast16 = crcBits.slice(8);
+            
+            displayBits('crcLast16Bits', crcLast16);
+            displayBits('rntiBits', rntiBits);
+            displayBits('maskedBits', Array(16).fill(null));
+            
+            document.getElementById('rntiHexValue').textContent = `0x${rnti.toString(16).toUpperCase()}`;
+            
+            initXORTable();
+            
+            document.getElementById('statusBar').textContent = 'Step 3: Performing XOR masking operation...';
+            document.getElementById('statusBar').className = 'status-bar processing';
+            
+            maskingBitIndex = 0;
+        }
+
+        // Animate masking bit by bit
+        function animateMaskingBit() {
+            if (maskingBitIndex >= 16) {
+                return true;
+            }
+            
+            const rntiBits = intToBits(rnti, 16);
+            const crcLast16 = crcBits.slice(8);
+            const result = crcLast16[maskingBitIndex] ^ rntiBits[maskingBitIndex];
+            
+            // Update masked bits display
+            const maskedArray = Array(16).fill(null);
+            for (let i = 0; i <= maskingBitIndex; i++) {
+                maskedArray[i] = crcLast16[i] ^ rntiBits[i];
+            }
+            displayBits('maskedBits', maskedArray, maskingBitIndex);
+            
+            // Update table row
+            const resultCell = document.getElementById(`xorResult_${maskingBitIndex}`);
+            resultCell.innerHTML = `<span class="bit ${result === 1 ? 'one' : 'zero'}">${result}</span>`;
+            document.getElementById(`xorRow_${maskingBitIndex}`).classList.add('highlight-row');
+            
+            // Scroll table
+            const container = document.getElementById('xorTableContainer');
+            const row = document.getElementById(`xorRow_${maskingBitIndex}`);
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            maskingBitIndex++;
+            return maskingBitIndex >= 16;
+        }
+
+        // Process Step 4: Complete Masked CRC
+        function processStep4() {
+            updateStepIndicator(4);
+            showAnimationStep(4);
+            
+            const rntiBits = intToBits(rnti, 16);
+            const crcFirst8 = crcBits.slice(0, 8);
+            const crcLast16 = crcBits.slice(8);
+            const maskedLast16 = crcLast16.map((bit, i) => bit ^ rntiBits[i]);
+            
+            maskedCRC = [...crcFirst8, ...maskedLast16];
+            
+            displayBits('completeMaskedCRC', maskedCRC);
+            document.getElementById('statusBar').textContent = 'Step 4: Complete Masked CRC (24 bits) created';
+            document.getElementById('statusBar').className = 'status-bar processing';
+        }
+
+        // Process Step 5: Final Output
+        function processStep5() {
+            updateStepIndicator(5);
+            showAnimationStep(5);
+            
+            finalOutput = [...dciPayload, ...maskedCRC];
+            
+            displayBits('finalOutputBits', finalOutput);
+            document.getElementById('statusBar').textContent = 'Step 5: Process Complete! Final output ready.';
+            document.getElementById('statusBar').className = 'status-bar complete';
+        }
+
+        // Next step function
+        function nextStep() {
+            if (currentStep === 0) {
+                currentStep = 1;
+                processStep1();
+            } else if (currentStep === 1) {
+                currentStep = 2;
+                processStep2();
+            } else if (currentStep === 2) {
+                currentStep = 3;
+                processStep3();
+            } else if (currentStep === 3) {
+                if (maskingBitIndex < 16) {
+                    const finished = animateMaskingBit();
+                    if (finished) {
+                        currentStep = 4;
+                        setTimeout(() => processStep4(), 500);
+                    }
+                } else {
+                    currentStep = 4;
+                    processStep4();
+                }
+            } else if (currentStep === 4) {
+                currentStep = 5;
+                processStep5();
+            } else {
+                alert('Animation complete! Click Reset to start over.');
+            }
+        }
+
+        // Auto play function
+        function autoPlay() {
+            if (isPlaying) {
+                stopAnimation();
+                return;
+            }
+            
+            if (currentStep === 5) {
+                resetAnimation();
+            }
+            
+            isPlaying = true;
+            document.getElementById('autoPlayBtn').textContent = '⏸ Pause';
+            document.getElementById('nextStepBtn').disabled = true;
+            
+            const speed = parseInt(document.getElementById('speedControl').value);
+            
+            // Special handling for step 3 (bit-by-bit masking)
+            function runNextStep() {
+                if (currentStep === 3 && maskingBitIndex < 16) {
+                    const finished = animateMaskingBit();
+                    if (!finished) {
+                        animationInterval = setTimeout(runNextStep, speed / 4);
+                    } else {
+                        animationInterval = setTimeout(() => {
+                            nextStep();
+                            if (currentStep < 5 && isPlaying) {
+                                runNextStep();
+                            } else {
+                                stopAnimation();
+                            }
+                        }, speed);
+                    }
+                } else {
+                    nextStep();
+                    if (currentStep < 5 && isPlaying) {
+                        animationInterval = setTimeout(runNextStep, speed);
+                    } else {
+                        stopAnimation();
+                    }
+                }
+            }
+            
+            runNextStep();
+        }
+
+        // Stop animation
+        function stopAnimation() {
+            if (animationInterval) {
+                clearTimeout(animationInterval);
+                animationInterval = null;
+            }
+            isPlaying = false;
+            document.getElementById('autoPlayBtn').textContent = '▶ Auto Play';
+            document.getElementById('nextStepBtn').disabled = false;
+        }
+
+        // Instant result
+        function instantResult() {
+            stopAnimation();
+            
+            processStep1();
+            setTimeout(() => {
+                processStep2();
+                setTimeout(() => {
+                    processStep3();
+                    setTimeout(() => {
+                        // Complete all masking bits instantly
+                        while (maskingBitIndex < 16) {
+                            animateMaskingBit();
+                        }
+                        processStep4();
+                        setTimeout(() => {
+                            processStep5();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        }
+
+        // Reset animation
+        function resetAnimation() {
+            stopAnimation();
+            currentStep = 0;
+            maskingBitIndex = 0;
+            crcBits = [];
+            maskedCRC = [];
+            finalOutput = [];
+            
+            updateStepIndicator(0);
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`animStep${i}`).style.display = 'none';
+            }
+            
+            document.getElementById('statusBar').textContent = 'Ready - Click Auto Play or Next Step to start';
+            document.getElementById('statusBar').className = 'status-bar';
+        }
+
+        // Load inputs
+        function loadInputs() {
+            const dciInput = document.getElementById('dciInput').value.trim();
+            const rntiInput = document.getElementById('rntiInput').value.trim();
+            
+            if (dciInput.length !== 42) {
+                alert('❌ DCI Payload must be exactly 42 bits!');
+                return;
+            }
+            
+            if (!/^[01]+$/.test(dciInput)) {
+                alert('❌ DCI Payload must contain only 0s and 1s!');
+                return;
+            }
+            
+            if (!/^[0-9A-Fa-f]{1,4}$/.test(rntiInput)) {
+                alert('❌ RNTI must be a valid hex value (1-4 digits)!');
+                return;
+            }
+            
+            dciPayload = dciInput.split('').map(b => parseInt(b));
+            rnti = parseInt(rntiInput, 16);
+            
+            resetAnimation();
+            alert('✅ Inputs loaded successfully!');
+        }
+
+        // Generate random DCI
+        function generateRandomDCI() {
+            dciPayload = Array.from({length: 42}, () => Math.random() > 0.5 ? 1 : 0);
+            document.getElementById('dciInput').value = dciPayload.join('');
+            resetAnimation();
+        }
+
+        // Reset to default
+        function resetToDefault() {
+            dciPayload = [...DEFAULT_DCI];
+            rnti = DEFAULT_RNTI;
+            document.getElementById('dciInput').value = DEFAULT_DCI.join('');
+            document.getElementById('rntiInput').value = '4E21';
+            resetAnimation();
+        }
+
+        // Run C++ code
+        function runCode() {
+            if (currentStep < 5) {
+                instantResult();
+            }
+            
+            setTimeout(() => {
+                const output = document.getElementById('output');
+                let result = `===== 5G NR - CRC Attachment & RNTI Masking =====
+
+DCI Payload (42 bits):
+${dciPayload.join('')}
+
+CRC-24C Value: 0x${computeCRC24C(dciPayload).toString(16).toUpperCase().padStart(6, '0')}
+RNTI Value: 0x${rnti.toString(16).toUpperCase()}
+
+Final Output (66 bits):
+${finalOutput.join('')}
+
+✅ Process completed successfully!
+`;
+                
+                output.textContent = result;
+                output.classList.add('show');
+            }, 500);
+        }
+
+        // Initialize
+        window.onload = () => {
+            resetAnimation();
+        };
+    </script>
+</body>
+</html>

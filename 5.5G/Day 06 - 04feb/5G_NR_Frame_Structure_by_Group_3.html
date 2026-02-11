@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR Physical Layer - Advanced Masterclass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* New Modern Color Palette */
+            --bg-body: #0a0e27;
+            --bg-card: #151b3d;
+            --purple-frame: #a855f7;     /* Frames & Subframes */
+            --cyan-num: #06b6d4;         /* Numerology & Slots */
+            --magenta-rb: #ec4899;       /* Resource Blocks */
+            --teal-re: #14b8a6;          /* Resource Elements */
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: #1e293b;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f4d 100%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.8;
+            padding-bottom: 50px;
+            min-height: 100vh;
+        }
+
+        /* --- Enhanced Header --- */
+        header {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            padding: 40px 40px;
+            border-bottom: 2px solid var(--purple-frame);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo { 
+            font-weight: 800; 
+            font-size: 2.2rem; 
+            background: linear-gradient(135deg, var(--purple-frame) 0%, var(--cyan-num) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1.5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo span { 
+            background: linear-gradient(135deg, #fff 0%, var(--text-dim) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 400;
+        }
+        
+        .header-desc { 
+            color: var(--text-dim); 
+            font-size: 1rem; 
+            margin-top: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 25px; }
+
+        /* --- Enhanced Navigation Tabs --- */
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0 50px 0;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: currentColor;
+            transition: width 0.3s ease;
+        }
+
+        .tab-btn:hover::before {
+            width: 80%;
+        }
+
+        .tab-btn.active[data-target="frame"] { 
+            background: linear-gradient(135deg, var(--purple-frame) 0%, #9333ea 100%); 
+            color: white; 
+            box-shadow: 0 0 25px var(--purple-frame); 
+        }
+        .tab-btn.active[data-target="numerology"] { 
+            background: linear-gradient(135deg, var(--cyan-num) 0%, #0891b2 100%); 
+            color: white; 
+            box-shadow: 0 0 25px var(--cyan-num); 
+        }
+        .tab-btn.active[data-target="rb"] { 
+            background: linear-gradient(135deg, var(--magenta-rb) 0%, #db2777 100%); 
+            color: white; 
+            box-shadow: 0 0 25px var(--magenta-rb); 
+        }
+        .tab-btn.active[data-target="re"] { 
+            background: linear-gradient(135deg, var(--teal-re) 0%, #0d9488 100%); 
+            color: white; 
+            box-shadow: 0 0 25px var(--teal-re); 
+        }
+
+        /* --- Content Sections --- */
+        .section { display: none; animation: fadeIn 0.6s ease-out; }
+        .section.active { display: block; }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 35px; 
+            align-items: start; 
+        }
+        
+        @media (max-width: 900px) { 
+            .grid-layout { grid-template-columns: 1fr; } 
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(21, 27, 61, 0.8) 100%);
+            padding: 35px;
+            border-radius: 25px;
+            border: 1px solid var(--border);
+            height: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        h2 { 
+            margin-bottom: 25px; 
+            font-size: 2.2rem; 
+            letter-spacing: -1px;
+            font-weight: 800;
+        }
+        
+        h3 { 
+            color: var(--text-main); 
+            font-size: 1.2rem; 
+            margin: 25px 0 12px 0; 
+            border-bottom: 2px solid var(--border); 
+            padding-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        h4 {
+            color: var(--cyan-num);
+            font-size: 1rem;
+            margin: 15px 0 8px 0;
+            font-weight: 600;
+        }
+        
+        p { 
+            margin-bottom: 18px; 
+            color: var(--text-dim); 
+            font-size: 0.98rem;
+        }
+        
+        b { color: #fff; font-weight: 700; }
+
+        ul {
+            margin: 15px 0;
+            padding-left: 25px;
+            color: var(--text-dim);
+        }
+
+        ul li {
+            margin-bottom: 10px;
+            line-height: 1.7;
+        }
+
+        /* --- Enhanced Frame Visuals --- */
+        .frame-visual-container { 
+            background: rgba(0, 0, 0, 0.6); 
+            padding: 30px; 
+            border-radius: 25px; 
+            border: 2px solid var(--purple-frame);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
+        }
+        
+        .frame-grid { 
+            display: grid; 
+            grid-template-columns: repeat(10, 1fr); 
+            gap: 8px; 
+            margin: 25px 0; 
+        }
+        
+        .subframe {
+            background: linear-gradient(135deg, var(--purple-frame) 0%, #9333ea 100%);
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subframe::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+        }
+
+        .subframe:hover::before {
+            left: 100%;
+        }
+        
+        .subframe:hover { 
+            filter: brightness(1.3); 
+            transform: scale(1.08); 
+            box-shadow: 0 5px 20px var(--purple-frame);
+        }
+
+        /* --- Enhanced Numerology Visuals --- */
+        .num-control { 
+            background: rgba(0, 0, 0, 0.6); 
+            padding: 35px; 
+            border-radius: 25px; 
+            border: 2px solid var(--cyan-num);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.2);
+        }
+        
+        input[type=range] { 
+            width: 100%; 
+            height: 8px;
+            accent-color: var(--cyan-num); 
+            margin: 25px 0; 
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--cyan-num);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--cyan-num);
+        }
+        
+        .num-stats { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 18px; 
+        }
+        
+        .stat-box { 
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(21, 27, 61, 0.9) 100%);
+            padding: 25px; 
+            border-radius: 15px; 
+            text-align: center; 
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-3px);
+            border-color: var(--cyan-num);
+            box-shadow: 0 5px 20px rgba(6, 182, 212, 0.3);
+        }
+        
+        .stat-val { 
+            display: block; 
+            font-size: 1.8rem; 
+            font-weight: 700; 
+            color: var(--cyan-num); 
+            font-family: 'JetBrains Mono';
+            margin-top: 8px;
+        }
+
+        /* --- Enhanced RB Grid Visuals --- */
+        .rb-display {
+            display: grid;
+            grid-template-columns: repeat(14, 1fr);
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 3px solid var(--magenta-rb);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
+        }
+        
+        .re-unit { 
+            aspect-ratio: 1; 
+            background: var(--bg-card); 
+            border-radius: 4px; 
+            transition: all 0.2s ease; 
+            cursor: crosshair;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .re-unit:hover { 
+            background: var(--teal-re); 
+            box-shadow: 0 0 15px var(--teal-re);
+            transform: scale(1.1);
+        }
+        
+        .re-dmrs { 
+            background: rgba(6, 182, 212, 0.5); 
+            border: 1px solid var(--cyan-num);
+        }
+
+        .re-control {
+            background: rgba(245, 158, 11, 0.5);
+            border: 1px solid var(--warning);
+        }
+
+        /* --- Comparison Table --- */
+        .comparison-table {
+            width: 100%;
+            margin: 25px 0;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--purple-frame) 0%, #9333ea 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        /* --- Info Box --- */
+        .info-box {
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 4px solid var(--cyan-num);
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        /* --- Summary Box --- */
+        .summary { 
+            background: rgba(168, 85, 247, 0.15); 
+            border: 2px solid var(--purple-frame); 
+            padding: 20px; 
+            border-radius: 15px; 
+            font-size: 0.95rem;
+            margin-top: 25px;
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.1);
+        }
+
+        /* --- Stats Counter --- */
+        .stats-counter {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .counter-box {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(21, 27, 61, 0.8) 100%);
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .counter-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+            border-color: var(--purple-frame);
+        }
+
+        .counter-num {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--purple-frame);
+            font-family: 'JetBrains Mono';
+        }
+
+        .counter-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Interactive Slot Visualizer --- */
+        .slot-visualizer {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid var(--cyan-num);
+            margin: 25px 0;
+        }
+
+        .symbol-timeline {
+            display: flex;
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .symbol-block {
+            flex: 1;
+            height: 60px;
+            background: linear-gradient(135deg, var(--cyan-num) 0%, #0891b2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .symbol-block:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px var(--cyan-num);
+        }
+
+        /* --- Bandwidth Calculator --- */
+        .calculator {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid var(--magenta-rb);
+            margin: 25px 0;
+        }
+
+        .calc-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .calc-result {
+            background: linear-gradient(135deg, var(--magenta-rb) 0%, #db2777 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">5G NR <span>PHYSICAL LAYER MASTERCLASS</span></div>
+    <p class="header-desc">Deep Dive into New Radio (NR) Air Interface Architecture & Design Principles</p>
+</header>
+
+<div class="container">
+    <!-- Enhanced Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" data-target="frame">📡 Frame Structure</button>
+        <button class="tab-btn" data-target="numerology">⚡ Numerology</button>
+        <button class="tab-btn" data-target="rb">📊 Resource Blocks</button>
+        <button class="tab-btn" data-target="re">🔬 Resource Elements</button>
+    </div>
+
+    <!-- Section 1: Enhanced Frame Structure -->
+    <div id="frame" class="section active">
+        <div class="grid-layout">
+            <div class="info-card">
+                <span class="tag" style="background: var(--purple-frame);">Time Domain Organization</span>
+                <h2>Frame Structure in 5G NR</h2>
+                
+                <p>The 5G NR frame structure is the fundamental <b>time-domain organization</b> that governs how data is transmitted over the air interface. It provides a standardized timing reference for all network operations.</p>
+                
+                <h3>📐 Hierarchical Structure</h3>
+                <p>The frame structure follows a clear hierarchy:</p>
+                
+                <h4>1. Radio Frame (10ms)</h4>
+                <p>The largest time unit in 5G NR. One radio frame is exactly <b>10 milliseconds</b> long and forms the basic timing reference for the entire system.</p>
+                
+                <h4>2. Subframe (1ms)</h4>
+                <p>Each radio frame is divided into <b>10 subframes</b>, with each subframe lasting exactly <b>1 millisecond</b>. This is inherited from LTE for backward compatibility.</p>
+                
+                <h4>3. Slot (Variable)</h4>
+                <p>The slot duration <b>depends on numerology (μ)</b>. At μ=0 (15kHz SCS), one slot = 1ms. At μ=1 (30kHz SCS), one slot = 0.5ms. The slot is the <b>fundamental scheduling unit</b>.</p>
+                
+                <h4>4. OFDM Symbol</h4>
+                <p>Each slot contains <b>14 OFDM symbols</b> (for normal cyclic prefix). This is the smallest time unit in the physical layer.</p>
+
+                <div class="info-box">
+                    <b>💡 Key Insight:</b> Unlike 4G which had a fixed structure, 5G's frame structure is <b>flexible</b> and adapts based on numerology. This allows 5G to serve diverse use cases from IoT to Ultra-Reliable Low Latency Communications (URLLC).
+                </div>
+
+                <h3>🔄 Frame Numbering</h3>
+                <p>Frames are numbered from 0 to 1023, and then the cycle repeats. This creates a <b>10.24-second hyper frame</b> that helps in timing synchronization and system information updates.</p>
+
+                <div class="stats-counter">
+                    <div class="counter-box">
+                        <div class="counter-num">10</div>
+                        <div class="counter-label">Subframes/Frame</div>
+                    </div>
+                    <div class="counter-box">
+                        <div class="counter-num">14</div>
+                        <div class="counter-label">Symbols/Slot</div>
+                    </div>
+                    <div class="counter-box">
+                        <div class="counter-num">1024</div>
+                        <div class="counter-label">Total Frames</div>
+                    </div>
+                </div>
+
+                <div class="summary" style="border-color: var(--purple-frame); background: rgba(168, 85, 247, 0.1);">
+                    <b>📌 Remember:</b> Frame structure provides the <b>time scaffolding</b> on which all 5G transmissions are organized. Think of it as the "clock" of the 5G network.
+                </div>
+            </div>
+
+            <div class="frame-visual-container">
+                <h3 style="color: var(--purple-frame); border: none; margin-bottom: 15px;">Interactive Frame Visualization</h3>
+                <p style="font-size: 0.9rem; color: var(--text-dim);">One complete 10ms radio frame with 10 subframes. Hover to highlight!</p>
+                
+                <div class="frame-grid">
+                    <div class="subframe">SF 0<br>0-1ms</div>
+                    <div class="subframe">SF 1<br>1-2ms</div>
+                    <div class="subframe">SF 2<br>2-3ms</div>
+                    <div class="subframe">SF 3<br>3-4ms</div>
+                    <div class="subframe">SF 4<br>4-5ms</div>
+                    <div class="subframe">SF 5<br>5-6ms</div>
+                    <div class="subframe">SF 6<br>6-7ms</div>
+                    <div class="subframe">SF 7<br>7-8ms</div>
+                    <div class="subframe">SF 8<br>8-9ms</div>
+                    <div class="subframe">SF 9<br>9-10ms</div>
+                </div>
+
+                <div style="margin-top: 25px; padding: 20px; background: rgba(168, 85, 247, 0.1); border-radius: 12px;">
+                    <h4 style="color: var(--purple-frame); margin: 0 0 10px 0;">Frame Timing Details</h4>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Component</th>
+                            <th>Duration</th>
+                            <th>Count</th>
+                        </tr>
+                        <tr>
+                            <td><b>Radio Frame</b></td>
+                            <td>10 ms</td>
+                            <td>1 per 10ms</td>
+                        </tr>
+                        <tr>
+                            <td><b>Subframe</b></td>
+                            <td>1 ms</td>
+                            <td>10 per frame</td>
+                        </tr>
+                        <tr>
+                            <td><b>Slot (μ=0)</b></td>
+                            <td>1 ms</td>
+                            <td>1 per subframe</td>
+                        </tr>
+                        <tr>
+                            <td><b>OFDM Symbol</b></td>
+                            <td>~71.4 μs</td>
+                            <td>14 per slot</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Enhanced Numerology -->
+    <div id="numerology" class="section">
+        <div class="grid-layout">
+            <div class="info-card">
+                <span class="tag" style="background: var(--cyan-num);">Frequency Domain Flexibility</span>
+                <h2>Numerology (μ) - The 5G Game Changer</h2>
+                
+                <p>Numerology is 5G's <b>secret weapon</b> for flexibility. It defines how the frequency spectrum is divided and directly impacts latency, coverage, and spectral efficiency.</p>
+                
+                <h3>🎯 What is Numerology?</h3>
+                <p><b>Numerology (μ)</b> is a parameter that determines the <b>Subcarrier Spacing (SCS)</b>. The formula is simple but powerful:</p>
+                
+                <div style="text-align: center; padding: 20px; background: rgba(6, 182, 212, 0.1); border-radius: 12px; margin: 15px 0;">
+                    <h3 style="color: var(--cyan-num); border: none; font-family: 'JetBrains Mono'; font-size: 1.5rem;">
+                        SCS = 15 kHz × 2<sup>μ</sup>
+                    </h3>
+                </div>
+
+                <h3>📊 Numerology Values & Applications</h3>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>μ</th>
+                        <th>SCS</th>
+                        <th>Slot Duration</th>
+                        <th>Use Case</th>
+                    </tr>
+                    <tr>
+                        <td><b>0</b></td>
+                        <td>15 kHz</td>
+                        <td>1 ms</td>
+                        <td>FR1: Coverage, IoT, Rural</td>
+                    </tr>
+                    <tr>
+                        <td><b>1</b></td>
+                        <td>30 kHz</td>
+                        <td>0.5 ms</td>
+                        <td>FR1: Urban, Enhanced Mobile</td>
+                    </tr>
+                    <tr>
+                        <td><b>2</b></td>
+                        <td>60 kHz</td>
+                        <td>0.25 ms</td>
+                        <td>FR1/FR2: URLLC, Industrial</td>
+                    </tr>
+                    <tr>
+                        <td><b>3</b></td>
+                        <td>120 kHz</td>
+                        <td>0.125 ms</td>
+                        <td>FR2: mmWave, Fixed Wireless</td>
+                    </tr>
+                    <tr>
+                        <td><b>4</b></td>
+                        <td>240 kHz</td>
+                        <td>0.0625 ms</td>
+                        <td>FR2: Future mmWave</td>
+                    </tr>
+                </table>
+
+                <h3>⚖️ The Trade-off Triangle</h3>
+                
+                <h4>Low μ (15-30 kHz) Advantages:</h4>
+                <ul>
+                    <li><b>Better Coverage:</b> Longer symbol duration = more resilient to delay spread</li>
+                    <li><b>Lower Power:</b> Ideal for IoT devices and rural areas</li>
+                    <li><b>Better Penetration:</b> Works well indoors and in challenging environments</li>
+                </ul>
+
+                <h4>High μ (120-240 kHz) Advantages:</h4>
+                <ul>
+                    <li><b>Ultra-Low Latency:</b> Essential for autonomous vehicles, robotics</li>
+                    <li><b>Phase Noise Resistance:</b> Critical for mmWave frequencies</li>
+                    <li><b>Higher Throughput:</b> More symbols per second = faster data</li>
+                </ul>
+
+                <div class="warning-box">
+                    <b>⚠️ Critical Understanding:</b> When SCS <b>doubles</b>, slot duration <b>halves</b>. This is how 5G achieves sub-1ms latency for URLLC applications like remote surgery and industrial automation.
+                </div>
+
+                <h3>🌐 Frequency Range (FR) Mapping</h3>
+                <p><b>FR1 (Sub-6 GHz):</b> Uses μ = 0, 1, 2<br>
+                <b>FR2 (mmWave):</b> Uses μ = 2, 3, 4</p>
+
+                <div class="summary" style="border-color: var(--cyan-num); background: rgba(6, 182, 212, 0.1);">
+                    <b>🎓 Key Takeaway:</b> Numerology allows 5G to be a <b>chameleon network</b> - it can adapt its physical layer to match exactly what each use case needs, from ultra-reliable industrial control to massive IoT deployments.
+                </div>
+            </div>
+
+            <div class="num-control">
+                <h3 style="color: var(--cyan-num); border: none;">🎛️ Interactive Numerology Explorer</h3>
+                <p>Slide to see how physical layer parameters change with different numerology values!</p>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <label style="font-size: 1.2rem; color: var(--cyan-num); font-weight: bold;">μ = <span id="mu-display">0</span></label>
+                </div>
+                
+                <input type="range" id="mu-slider" min="0" max="4" value="0" oninput="updateMu(this.value)">
+                
+                <div class="num-stats">
+                    <div class="stat-box">
+                        <small style="color: var(--text-dim);">μ Value</small>
+                        <span class="stat-val" id="mu-val">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <small style="color: var(--text-dim);">Subcarrier Spacing</small>
+                        <span class="stat-val" id="scs-val">15 kHz</span>
+                    </div>
+                    <div class="stat-box">
+                        <small style="color: var(--text-dim);">Slot Duration</small>
+                        <span class="stat-val" id="slot-val">1.0 ms</span>
+                    </div>
+                    <div class="stat-box">
+                        <small style="color: var(--text-dim);">Slots / Subframe</small>
+                        <span class="stat-val" id="slots-per-sf">1</span>
+                    </div>
+                </div>
+                
+                <div class="slot-visualizer">
+                    <h4 style="color: var(--cyan-num); margin: 0 0 15px 0;">Symbol Timeline in Current Slot</h4>
+                    <div class="symbol-timeline" id="symbol-timeline">
+                        <!-- JavaScript will populate this -->
+                    </div>
+                    <p style="text-align: center; font-size: 0.85rem; margin-top: 10px; color: var(--text-dim);">
+                        14 OFDM symbols per slot (Normal CP)
+                    </p>
+                </div>
+                
+                <p id="fr-note" style="margin-top: 25px; font-weight: bold; text-align: center; color: var(--cyan-num); font-size: 1.1rem; padding: 15px; background: rgba(6, 182, 212, 0.1); border-radius: 10px;">
+                    📡 Operational Mode: FR1 (Sub-6 GHz)
+                </p>
+
+                <div id="use-case-info" style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.4); border-radius: 10px;">
+                    <h4 style="color: var(--cyan-num); margin: 0 0 10px 0;">Typical Use Cases</h4>
+                    <p id="use-case-text" style="margin: 0; color: var(--text-dim); font-size: 0.9rem;">
+                        • Wide area coverage<br>
+                        • IoT and low-power devices<br>
+                        • Rural and suburban deployments
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Enhanced Resource Block -->
+    <div id="rb" class="section">
+        <div class="grid-layout">
+            <div class="info-card">
+                <span class="tag" style="background: var(--magenta-rb);">Frequency Allocation Unit</span>
+                <h2>Resource Block (RB) Architecture</h2>
+                
+                <p>The Resource Block is the <b>fundamental frequency-domain allocation unit</b> in 5G NR. The gNodeB (5G base station) doesn't allocate individual subcarriers - it allocates bundles of 12 subcarriers called Resource Blocks.</p>
+                
+                <h3>📐 The 12-Subcarrier Rule</h3>
+                <p>Every Resource Block contains exactly <b>12 consecutive subcarriers</b> in the frequency domain. This is a fixed rule across all numerology values.</p>
+                
+                <div style="text-align: center; padding: 20px; background: rgba(236, 72, 153, 0.1); border-radius: 12px; margin: 20px 0;">
+                    <h3 style="color: var(--magenta-rb); border: none; font-size: 1.3rem;">
+                        1 RB = 12 Subcarriers × 1 Slot (time)
+                    </h3>
+                </div>
+
+                <h3>🔢 RB Bandwidth Calculation</h3>
+                <p>The physical bandwidth of an RB depends on the numerology:</p>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>Numerology (μ)</th>
+                        <th>SCS</th>
+                        <th>RB Bandwidth</th>
+                    </tr>
+                    <tr>
+                        <td><b>0</b></td>
+                        <td>15 kHz</td>
+                        <td>180 kHz (12 × 15)</td>
+                    </tr>
+                    <tr>
+                        <td><b>1</b></td>
+                        <td>30 kHz</td>
+                        <td>360 kHz (12 × 30)</td>
+                    </tr>
+                    <tr>
+                        <td><b>2</b></td>
+                        <td>60 kHz</td>
+                        <td>720 kHz (12 × 60)</td>
+                    </tr>
+                    <tr>
+                        <td><b>3</b></td>
+                        <td>120 kHz</td>
+                        <td>1.44 MHz (12 × 120)</td>
+                    </tr>
+                </table>
+
+                <h3>🎯 Dynamic Scheduling</h3>
+                <p>The gNodeB scheduler makes intelligent decisions based on:</p>
+                <ul>
+                    <li><b>Channel Quality (CQI):</b> Better signal = More RBs can be allocated</li>
+                    <li><b>User Priority:</b> QoS requirements determine allocation priority</li>
+                    <li><b>Traffic Type:</b> Voice, video, data have different RB needs</li>
+                    <li><b>Load Balancing:</b> Fair distribution among users</li>
+                </ul>
+
+                <h3>📊 PRB vs CRB</h3>
+                <p><b>Physical Resource Block (PRB):</b> The actual RB allocated to a user for transmission</p>
+                <p><b>Common Resource Block (CRB):</b> A reference numbering system for RBs across the entire carrier bandwidth</p>
+
+                <div class="calculator">
+                    <h4 style="color: var(--magenta-rb); margin: 0 0 15px 0;">🧮 RB Bandwidth Calculator</h4>
+                    <label style="color: var(--text-dim); font-size: 0.9rem;">Select Numerology (μ):</label>
+                    <select id="rb-mu" class="calc-input" onchange="calculateRBBandwidth()">
+                        <option value="0">μ = 0 (15 kHz)</option>
+                        <option value="1">μ = 1 (30 kHz)</option>
+                        <option value="2">μ = 2 (60 kHz)</option>
+                        <option value="3">μ = 3 (120 kHz)</option>
+                    </select>
+                    
+                    <label style="color: var(--text-dim); font-size: 0.9rem; margin-top: 10px;">Number of RBs:</label>
+                    <input type="number" id="rb-count" class="calc-input" value="100" min="1" max="275" onchange="calculateRBBandwidth()">
+                    
+                    <div class="calc-result" id="rb-result">
+                        Total Bandwidth: 18.0 MHz
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <b>💡 Pro Tip:</b> In 100 MHz 5G NR carrier with μ=1 (30kHz), you can have approximately <b>273 Resource Blocks</b>. This allows for massive parallelization and multi-user access.
+                </div>
+
+                <div class="summary" style="border-color: var(--magenta-rb); background: rgba(236, 72, 153, 0.1);">
+                    <b>🎯 Key Point:</b> Resource Blocks are <b>frequency-domain containers</b>. The scheduler fills these containers with user data based on channel conditions, creating an efficient and adaptive allocation system.
+                </div>
+            </div>
+
+            <div class="info-card" style="background: rgba(0, 0, 0, 0.7); border-color: var(--magenta-rb);">
+                <h3 style="color: var(--magenta-rb); border: none; margin-bottom: 20px;">📊 RB Grid Visualization (1 Slot)</h3>
+                <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 20px;">
+                    Interactive grid showing 168 Resource Elements (12 subcarriers × 14 symbols). Hover over elements!
+                </p>
+                
+                <div class="rb-display" id="rb-grid">
+                    <!-- Script fills 168 REs (12x14) -->
+                </div>
+                
+                <div style="display: flex; gap: 20px; margin-top: 25px; font-size: 0.85rem; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width:18px; height:18px; background:var(--bg-card); border:1px solid rgba(255,255,255,0.05); border-radius:3px;"></div> 
+                        <span>Data RE</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width:18px; height:18px; background:rgba(6, 182, 212, 0.5); border:1px solid var(--cyan-num); border-radius:3px;"></div> 
+                        <span>DMRS (Reference)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width:18px; height:18px; background:rgba(245, 158, 11, 0.5); border:1px solid var(--warning); border-radius:3px;"></div> 
+                        <span>Control</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px; padding: 20px; background: rgba(236, 72, 153, 0.1); border-radius: 12px;">
+                    <h4 style="color: var(--magenta-rb); margin: 0 0 10px 0;">Grid Dimensions</h4>
+                    <p style="margin: 5px 0;"><b>Vertical (Frequency):</b> 12 Subcarriers</p>
+                    <p style="margin: 5px 0;"><b>Horizontal (Time):</b> 14 OFDM Symbols</p>
+                    <p style="margin: 5px 0;"><b>Total REs:</b> 168 Resource Elements</p>
+                    <p style="margin: 15px 0 5px 0; font-size: 0.85rem; color: var(--text-dim);">
+                        <b>Note:</b> Not all 168 REs carry user data. Some are reserved for DMRS (channel estimation), PTRS (phase tracking), and control signaling.
+                    </p>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.5); border-radius: 10px; border-left: 3px solid var(--magenta-rb);">
+                    <h4 style="color: var(--magenta-rb); margin: 0 0 10px 0;">Resource Efficiency</h4>
+                    <p style="font-size: 0.9rem; margin: 0;">
+                        In typical scenarios, ~80-85% of REs carry actual user data (PDSCH), while 15-20% are used for reference signals and control overhead.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Enhanced Resource Element -->
+    <div id="re" class="section">
+        <div class="grid-layout">
+            <div class="info-card">
+                <span class="tag" style="background: var(--teal-re);">The Quantum of 5G</span>
+                <h2>Resource Element (RE) - The Atomic Unit</h2>
+                
+                <p>The <b>Resource Element</b> is the smallest indivisible unit of the 5G physical layer. Everything in 5G - your voice call, video stream, IoT data - ultimately gets mapped into Resource Elements.</p>
+                
+                <h3>🔬 Precise Definition</h3>
+                <div style="text-align: center; padding: 25px; background: rgba(20, 184, 166, 0.15); border-radius: 15px; margin: 20px 0; border: 2px solid var(--teal-re);">
+                    <h3 style="color: var(--teal-re); border: none; font-size: 1.5rem; margin-bottom: 10px;">
+                        1 RE = 1 Subcarrier × 1 OFDM Symbol
+                    </h3>
+                    <p style="color: var(--text-dim); margin: 0; font-size: 0.95rem;">
+                        The intersection of time and frequency domains
+                    </p>
+                </div>
+
+                <h3>📊 RE Dimensions</h3>
+                <p><b>Frequency Dimension:</b> One subcarrier (width = SCS in kHz)</p>
+                <p><b>Time Dimension:</b> One OFDM symbol (~71.4 μs at μ=0)</p>
+
+                <h3>🎨 Modulation Mapping</h3>
+                <p>Each RE carries exactly <b>one modulation symbol</b>. The number of bits per RE depends on the modulation scheme:</p>
+                
+                <table class="comparison-table">
+                    <tr>
+                        <th>Modulation</th>
+                        <th>Bits per RE</th>
+                        <th>Use Case</th>
+                    </tr>
+                    <tr>
+                        <td><b>QPSK</b></td>
+                        <td>2 bits</td>
+                        <td>Poor signal, cell edge</td>
+                    </tr>
+                    <tr>
+                        <td><b>16-QAM</b></td>
+                        <td>4 bits</td>
+                        <td>Moderate signal</td>
+                    </tr>
+                    <tr>
+                        <td><b>64-QAM</b></td>
+                        <td>6 bits</td>
+                        <td>Good signal</td>
+                    </tr>
+                    <tr>
+                        <td><b>256-QAM</b></td>
+                        <td>8 bits</td>
+                        <td>Excellent signal, close to tower</td>
+                    </tr>
+                    <tr>
+                        <td><b>1024-QAM*</b></td>
+                        <td>10 bits</td>
+                        <td>Future mmWave, ideal conditions</td>
+                    </tr>
+                </table>
+
+                <h3>🎭 Different RE Types</h3>
+                
+                <h4>1. PDSCH (Data REs)</h4>
+                <p>Carry actual user data - your downloads, uploads, streaming content</p>
+                
+                <h4>2. DMRS (Demodulation Reference Signals)</h4>
+                <p>Help the receiver estimate the channel and correct distortion. Essential for coherent demodulation.</p>
+                
+                <h4>3. PTRS (Phase Tracking Reference Signals)</h4>
+                <p>Used in mmWave (FR2) to compensate for phase noise caused by oscillator imperfections</p>
+                
+                <h4>4. PDCCH (Control REs)</h4>
+                <p>Tell the UE when to wake up, where its data is located, and how to decode it</p>
+                
+                <h4>5. CSI-RS (Channel State Information)</h4>
+                <p>Allow the UE to measure channel quality and report back to gNodeB for adaptive transmission</p>
+
+                <div class="info-box">
+                    <b>💡 Efficiency Note:</b> In a typical PDSCH transmission, approximately:
+                    <br>• 75-85% REs → User Data (PDSCH)
+                    <br>• 10-15% REs → Reference Signals (DMRS/PTRS)
+                    <br>• 5-10% REs → Control & Overhead
+                </div>
+
+                <h3>⚡ Throughput Calculation Example</h3>
+                <div style="background: rgba(20, 184, 166, 0.1); padding: 20px; border-radius: 12px; margin: 15px 0;">
+                    <p style="margin: 5px 0; color: var(--text-main);"><b>Scenario:</b> 100 MHz carrier, μ=1 (30kHz SCS), 256-QAM</p>
+                    <p style="margin: 5px 0;">• RBs available: ~273</p>
+                    <p style="margin: 5px 0;">• REs per RB: 168 (12×14)</p>
+                    <p style="margin: 5px 0;">• Data REs (~80%): 134 per RB</p>
+                    <p style="margin: 5px 0;">• Bits per RE: 8 (256-QAM)</p>
+                    <p style="margin: 5px 0;">• Slot duration: 0.5 ms</p>
+                    <hr style="margin: 10px 0; border-color: var(--border);">
+                    <p style="margin: 5px 0; font-size: 1.1rem;"><b>Peak Throughput:</b></p>
+                    <p style="margin: 5px 0; color: var(--teal-re); font-size: 1.3rem; font-weight: bold;">
+                        ~585 Mbps (single layer)
+                    </p>
+                </div>
+
+                <div class="warning-box">
+                    <b>⚠️ Real-world Note:</b> Actual throughput is lower due to:
+                    <br>• Protocol overhead (MAC/RLC/PDCP headers)
+                    <br>• Retransmissions (HARQ)
+                    <br>• Guard bands
+                    <br>• Shared channel access
+                </div>
+
+                <div class="summary" style="border-color: var(--teal-re); background: rgba(20, 184, 166, 0.1);">
+                    <b>🎯 Core Concept:</b> Resource Elements are the <b>"pixels" of the 5G air interface</b>. Just like pixels combine to form images, REs combine to deliver your data. The quality of each "pixel" (modulation) and how many you get (scheduling) determines your 5G experience.
+                </div>
+            </div>
+
+            <div class="info-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; border-color: var(--teal-re); background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 184, 166, 0.1) 100%);">
+                <div style="width: 180px; height: 180px; background: linear-gradient(135deg, var(--teal-re) 0%, #0d9488 100%); border-radius: 20px; box-shadow: 0 0 60px rgba(20, 184, 166, 0.6); display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: 800; color: #fff; position: relative; overflow: hidden;">
+                    <div style="position: absolute; width: 100%; height: 100%; background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%); animation: pulse 2s ease-in-out infinite;"></div>
+                    <span style="font-size: 3rem; position: relative; z-index: 1;">RE</span>
+                    <small style="font-size: 0.75rem; position: relative; z-index: 1;">Smallest Unit</small>
+                </div>
+                
+                <div style="margin-top: 50px; text-align: center; width: 100%;">
+                    <div style="background: rgba(20, 184, 166, 0.1); padding: 20px; border-radius: 15px; border: 2px solid var(--teal-re);">
+                        <p style="color: #fff; font-family: 'JetBrains Mono'; font-size: 1.1rem; margin-bottom: 10px;">
+                            1 RE = (SCS kHz) × (Symbol Duration)
+                        </p>
+                        <p style="color: var(--text-dim); font-size: 0.95rem;">
+                            The "pixel" of the 5G air interface
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; width: 100%;">
+                    <h4 style="color: var(--teal-re); text-align: center; margin-bottom: 15px;">RE at Different Numerologies</h4>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>μ</th>
+                            <th>SCS</th>
+                            <th>Symbol Duration</th>
+                        </tr>
+                        <tr>
+                            <td>0</td>
+                            <td>15 kHz</td>
+                            <td>~71.4 μs</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>30 kHz</td>
+                            <td>~35.7 μs</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>60 kHz</td>
+                            <td>~17.8 μs</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>120 kHz</td>
+                            <td>~8.9 μs</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: rgba(0, 0, 0, 0.5); border-radius: 12px; width: 100%; border-left: 4px solid var(--teal-re);">
+                    <h4 style="color: var(--teal-re); margin: 0 0 10px 0;">Data Capacity per RE</h4>
+                    <p style="font-size: 0.9rem; margin: 5px 0; color: var(--text-dim);">
+                        <b>Maximum:</b> 10 bits (1024-QAM, future)<br>
+                        <b>Typical:</b> 6-8 bits (64-QAM to 256-QAM)<br>
+                        <b>Minimum:</b> 2 bits (QPSK, poor conditions)
+                    </p>
+                </div>
+
+                <div style="margin-top: 25px; padding: 15px; background: linear-gradient(135deg, var(--teal-re) 0%, #0d9488 100%); border-radius: 10px; text-align: center; width: 100%;">
+                    <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">
+                        🌟 In one 100MHz 5G carrier, there can be<br>
+                        <span style="font-size: 1.4rem; display: block; margin-top: 5px;">~45,000 REs per slot!</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>🚀 5G NR Physical Layer Masterclass | Created for Deep Understanding</p>
+    <p style="font-size: 0.85rem; margin-top: 10px; color: var(--text-dim);">
+        Frame Structure • Numerology • Resource Blocks • Resource Elements
+    </p>
+</footer>
+
+<style>
+    @keyframes pulse {
+        0%, 100% { opacity: 0.8; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.05); }
+    }
+</style>
+
+<script>
+    // --- Tab Switching ---
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.target).classList.add('active');
+        });
+    });
+
+    // --- Enhanced Numerology Scaler ---
+    function updateMu(val) {
+        const mu = parseInt(val);
+        const scs = 15 * Math.pow(2, mu);
+        const slot = (1 / Math.pow(2, mu)).toFixed(4);
+        const slotsPerSf = Math.pow(2, mu);
+        
+        document.getElementById('mu-display').innerText = mu;
+        document.getElementById('mu-val').innerText = mu;
+        document.getElementById('scs-val').innerText = scs + " kHz";
+        document.getElementById('slot-val').innerText = parseFloat(slot) + " ms";
+        document.getElementById('slots-per-sf').innerText = slotsPerSf;
+        
+        // Update symbol timeline
+        const symbolTimeline = document.getElementById('symbol-timeline');
+        symbolTimeline.innerHTML = '';
+        for (let i = 0; i < 14; i++) {
+            const symbol = document.createElement('div');
+            symbol.className = 'symbol-block';
+            symbol.innerText = i;
+            symbolTimeline.appendChild(symbol);
+        }
+        
+        // Update frequency range note
+        const note = document.getElementById('fr-note');
+        if (mu >= 3) {
+            note.innerHTML = "📡 Operational Mode: <b>FR2 (mmWave - 24-100 GHz)</b>";
+            note.style.background = "rgba(245, 158, 11, 0.15)";
+            note.style.borderColor = "#f59e0b";
+            note.style.color = "#f59e0b";
+        } else {
+            note.innerHTML = "📡 Operational Mode: <b>FR1 (Sub-6 GHz)</b>";
+            note.style.background = "rgba(6, 182, 212, 0.1)";
+            note.style.borderColor = "#06b6d4";
+            note.style.color = "#06b6d4";
+        }
+
+        // Update use case information
+        const useCases = {
+            0: "• Wide area coverage<br>• IoT and low-power devices<br>• Rural and suburban deployments<br>• Maximum penetration",
+            1: "• Urban mobile broadband<br>• Enhanced mobile broadband (eMBB)<br>• Dense urban areas<br>• Balanced latency/coverage",
+            2: "• Industrial IoT (URLLC)<br>• Low latency applications<br>• Indoor/outdoor FR1<br>• mmWave preparation",
+            3: "• mmWaveFixed Wireless Access (FWA)<br>• Ultra-low latency (< 1ms)<br>• Extreme mobile broadband<br>• Phase noise resistant",
+            4: "• Future mmWave deployments<br>• Extreme high bandwidth<br>• Ultra-dense networks<br>• Research & development"
+        };
+        
+        document.getElementById('use-case-text').innerHTML = useCases[mu];
+    }
+
+    // Initialize on load
+    updateMu(0);
+
+    // --- RB Grid Generation ---
+    const rbGrid = document.getElementById('rb-grid');
+    for (let i = 0; i < 168; i++) {
+        const re = document.createElement('div');
+        re.className = 're-unit';
+        
+        // DMRS pattern (symbols 2, 3, 11)
+        if (i % 14 === 2 || i % 14 === 3 || i % 14 === 11) {
+            re.className += ' re-dmrs';
+        }
+        // Control pattern (first 2 symbols)
+        else if (i % 14 === 0 || i % 14 === 1) {
+            re.className += ' re-control';
+        }
+        
+        rbGrid.appendChild(re);
+    }
+
+    // --- RB Bandwidth Calculator ---
+    function calculateRBBandwidth() {
+        const mu = parseInt(document.getElementById('rb-mu').value);
+        const rbCount = parseInt(document.getElementById('rb-count').value);
+        const scs = 15 * Math.pow(2, mu);
+        const rbBandwidth = 12 * scs; // kHz
+        const totalBandwidth = (rbBandwidth * rbCount) / 1000; // MHz
+        
+        document.getElementById('rb-result').innerHTML = 
+            `Total Bandwidth: <b>${totalBandwidth.toFixed(2)} MHz</b><br>
+            <small style="font-size: 0.85rem; opacity: 0.9;">
+            (${rbCount} RBs × ${rbBandwidth} kHz per RB)
+            </small>`;
+    }
+
+    // Initialize calculator
+    calculateRBBandwidth();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR DC Payload Processing Simulator</title>
+    <style>
+        :root {
+            --bg-color: #0a0e14;
+            --panel-bg: rgba(23, 32, 42, 0.9);
+            --accent-cyan: #00f2ff;
+            --accent-blue: #007bff;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --border-color: #2d3748;
+            --success: #10b981;
+            --gold: #ffcc00;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header & Dashboard Layout */
+        header {
+            background: linear-gradient(90deg, #1a202c 0%, #0a0e14 100%);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .title-group h1 { margin: 0; font-size: 1.4rem; color: var(--accent-cyan); letter-spacing: 1px; }
+        .title-group span { font-size: 0.8rem; color: var(--text-dim); }
+
+        .top-controls { display: flex; gap: 15px; align-items: center; }
+
+        main {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: auto 1fr;
+            flex: 1;
+            gap: 10px;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        /* Panels */
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        h3 { margin-top: 0; font-size: 0.9rem; color: var(--accent-cyan); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; }
+
+        /* Pipeline Styles */
+        .pipeline-container {
+            grid-column: 1 / 4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 40px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .step-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.3s ease;
+            width: 110px;
+        }
+
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1a202c;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: inherit;
+        }
+
+        .step-node:hover .step-circle { border-color: var(--accent-cyan); box-shadow: 0 0 15px var(--accent-cyan); }
+        .step-node.active .step-circle { background: var(--accent-blue); border-color: var(--accent-cyan); box-shadow: 0 0 20px var(--accent-blue); }
+        .step-node span { font-size: 0.7rem; text-align: center; color: var(--text-dim); font-weight: 600; }
+        .step-node.active span { color: var(--accent-cyan); }
+
+        .connector {
+            flex: 1;
+            height: 2px;
+            background: var(--border-color);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connector.active::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            animation: flow 1.5s infinite;
+        }
+
+        @keyframes flow { 100% { left: 100%; } }
+
+        /* Bit Visualization */
+        .bit-container {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            word-break: break-all;
+            font-size: 0.9rem;
+            line-height: 1.2;
+            color: var(--gold);
+            height: 120px;
+            overflow-y: auto;
+            border: 1px inset var(--border-color);
+        }
+
+        .bit-diff { color: var(--accent-cyan); font-weight: bold; }
+
+        /* Interactive Controls */
+        .ctrl-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; }
+        input[type="range"], input[type="text"], select { width: 100%; background: #0f172a; border: 1px solid var(--border-color); color: white; border-radius: 4px; padding: 5px; }
+        
+        button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        button.secondary { background: #4a5568; margin-top: 5px;}
+
+        /* Constellation Canvas */
+        #constellationCanvas {
+            background: #000;
+            border-radius: 4px;
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        /* Utility */
+        .hidden { display: none; }
+        .success-text { color: var(--success); font-weight: bold; }
+        .formula { background: rgba(0,0,0,0.3); padding: 5px; font-family: serif; font-style: italic; border-left: 3px solid var(--accent-cyan); margin: 5px 0; font-size: 0.85rem; }
+
+        /* Narration */
+        #narration-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid var(--accent-cyan);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="title-group">
+        <h1>5G NR DC Payload Processing Simulator</h1>
+        <span>Advanced PHY Layer Visualization • 3GPP TS 38.211/212 Compliant</span>
+    </div>
+    <div class="top-nav">
+        <div class="top-controls">
+            <select id="modeToggle" onchange="updateUI()">
+                <option value="student">Student Mode</option>
+                <option value="engineer">Engineer Mode</option>
+            </select>
+            <button onclick="toggleTheory()" style="width: auto;">Theory Intro</button>
+            <button onclick="startPresentation()" id="btnPresent" style="width: auto; background: var(--success);">Start Presentation</button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- Pipeline -->
+    <section class="pipeline-container" id="pipeline">
+        <div class="step-node active" onclick="jumpToStep(0)" id="node-0">
+            <div class="step-circle">DC</div>
+            <span>Payload</span>
+        </div>
+        <div class="connector active" id="conn-0"></div>
+        <div class="step-node" onclick="jumpToStep(1)" id="node-1">
+            <div class="step-circle">CRC</div>
+            <span>CRC Attach</span>
+        </div>
+        <div class="connector" id="conn-1"></div>
+        <div class="step-node" onclick="jumpToStep(2)" id="node-2">
+            <div class="step-circle">LDPC</div>
+            <span>Channel Coding</span>
+        </div>
+        <div class="connector" id="conn-2"></div>
+        <div class="step-node" onclick="jumpToStep(3)" id="node-3">
+            <div class="step-circle">RM</div>
+            <span>Rate Match</span>
+        </div>
+        <div class="connector" id="conn-3"></div>
+        <div class="step-node" onclick="jumpToStep(4)" id="node-4">
+            <div class="step-circle">SCR</div>
+            <span>Scrambling</span>
+        </div>
+        <div class="connector" id="conn-4"></div>
+        <div class="step-node" onclick="jumpToStep(5)" id="node-5">
+            <div class="step-circle">MOD</div>
+            <span>Modulation</span>
+        </div>
+        <div class="connector" id="conn-5"></div>
+        <div class="step-node" onclick="jumpToStep(6)" id="node-6">
+            <div class="step-circle">RX</div>
+            <span>Receiver</span>
+        </div>
+    </section>
+
+    <!-- Sidebar Left: Config -->
+    <aside class="glass-panel">
+        <h3>Configuration</h3>
+        <div class="ctrl-group">
+            <label>Input Payload (Hex or Binary)</label>
+            <input type="text" id="payloadInput" value="1A2B3C4D" oninput="updatePayload()">
+            <button class="secondary" onclick="randomPayload()">Random Payload</button>
+        </div>
+        <div class="ctrl-group">
+            <label>Cell ID ($N_{ID}^{cell}$)</label>
+            <input type="range" id="cellId" min="0" max="1007" value="102" oninput="updatePayload()">
+            <div id="cellIdVal" style="text-align: right; font-size: 0.8rem;">102</div>
+        </div>
+        <div class="ctrl-group">
+            <label>Modulation</label>
+            <select id="modType" onchange="updatePayload()">
+                <option value="qpsk">QPSK</option>
+                <option value="16qam">16-QAM</option>
+                <option value="64qam">64-QAM</option>
+            </select>
+        </div>
+        <div class="ctrl-group">
+            <label>Redundancy Version (RV)</label>
+            <select id="rvVal" onchange="updatePayload()">
+                <option value="0">RV0</option>
+                <option value="1">RV1</option>
+                <option value="2">RV2</option>
+                <option value="3">RV3</option>
+            </select>
+        </div>
+        
+        <div style="margin-top: auto;">
+            <h3>Live Statistics</h3>
+            <div id="stats" style="font-size: 0.8rem; line-height: 1.6;">
+                <div>Payload Size: <span id="stat-bits">0</span> bits</div>
+                <div>Code Rate: <span id="stat-rate">0.00</span></div>
+                <div>Modulation Order: <span id="stat-mod">QPSK</span></div>
+                <div>Status: <span id="stat-status" class="success-text">Ready</span></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Center Content: Interaction -->
+    <section class="glass-panel" id="interaction-panel">
+        <h3 id="step-title">Stage Details</h3>
+        <div id="step-description" style="font-size: 0.9rem; margin-bottom: 15px; min-height: 60px;"></div>
+        
+        <div id="visual-area" style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+            <!-- Dynamic Content -->
+            <div id="bit-viz-section">
+                <label id="bit-label">Process Visualization</label>
+                <div class="bit-container" id="bitDisplay"></div>
+            </div>
+
+            <div id="canvas-section" class="hidden">
+                <canvas id="constellationCanvas" width="400" height="400"></canvas>
+            </div>
+
+            <div id="buffer-section" class="hidden" style="text-align:center;">
+                <div style="display:flex; justify-content: space-around; font-size: 0.8rem;">
+                    <span>Circular Buffer Entry</span>
+                    <span>Puncturing/Repetition</span>
+                </div>
+                <div id="buffer-viz" style="height: 100px; border: 2px solid #333; margin-top: 10px; display:flex; align-items:center; padding: 10px; overflow-x: auto;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sidebar Right: Info/Manual -->
+    <aside class="glass-panel">
+        <h3>Technical Explanation</h3>
+        <div id="tech-explanation" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-dim);">
+            Select a block in the pipeline to see how data is processed in the 5G NR Physical Layer.
+        </div>
+        <div id="eng-formula" class="formula hidden"></div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="stepNext()">Next Step →</button>
+            <button class="secondary" onclick="stepPrev()">← Previous</button>
+        </div>
+    </aside>
+</main>
+
+<!-- Overlay for Theory -->
+<div id="theoryOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; display:none; padding: 50px;">
+    <div style="max-width: 800px; margin: 0 auto; background: var(--panel-bg); padding: 30px; border: 1px solid var(--accent-cyan); border-radius: 12px; overflow-y: auto; max-height: 90vh;">
+        <h2 style="color: var(--accent-cyan);">What is DC Payload?</h2>
+        <p>In 5G NR (New Radio), <b>DC Payload</b> refers to the <b>Digital Channel Payload</b>. This is the raw informational content (the "Transport Block") that needs to be delivered across the radio interface.</p>
+        <ul>
+            <li><b>Not Direct Current:</b> In this context, DC does not stand for electrical current.</li>
+            <li><b>Data Types:</b> It can be user data (PDSCH) or control information (MIB in PBCH).</li>
+            <li><b>The Goal:</b> The physical layer (PHY) must take these bits and transform them into electromagnetic waves that are resilient to noise, interference, and distance.</li>
+        </ul>
+        <h3>The Processing Chain</h3>
+        <p>Following 3GPP TS 38.211 and 38.212, the data passes through several mathematical gates:
+            <ol>
+                <li><b>CRC Attachment:</b> Adds parity bits for error detection.</li>
+                <li><b>Channel Coding:</b> Uses LDPC (for data) or Polar (for control) to add redundancy.</li>
+                <li><b>Rate Matching:</b> Adjusts the coded bits to fit into the physical resource blocks.</li>
+                <li><b>Scrambling:</b> Randomizes bits using a Cell ID to prevent inter-cell interference.</li>
+                <li><b>Modulation:</b> Converts bits into complex I/Q symbols.</li>
+            </ol>
+        </p>
+        <button onclick="toggleTheory()">Close & Start Simulation</button>
+    </div>
+</div>
+
+<div id="narration-box"></div>
+
+<script>
+    // --- State Management ---
+    let currentStep = 0;
+    let payloadBits = "";
+    let processedData = []; // Stores state at each step
+    let isPresenting = false;
+
+    const stages = [
+        { title: "DC Payload Input", tech: "This is the raw Transport Block (TB) from the MAC layer. It contains the actual user or system data bits." },
+        { title: "CRC Attachment", tech: "A Cyclic Redundancy Check (CRC) is appended to the payload. 5G NR uses 24-bit or 16-bit CRC to allow the receiver to detect if any bits were flipped during transmission." },
+        { title: "Channel Coding", tech: "Forward Error Correction (FEC). For data channels, 5G NR uses LDPC (Low-Density Parity-Check) codes. This adds redundant bits according to a parity-check matrix." },
+        { title: "Rate Matching", tech: "Encoded bits are stored in a circular buffer. Bits are selected (punctured or repeated) to match the exact physical resources (Resource Elements) available." },
+        { title: "Payload Scrambling", tech: "Bits are XORed with a pseudo-random Gold Sequence. This sequence is initialized using the Cell ID ($N_{ID}^{cell}$), ensuring that data from different cells is uncorrelated." },
+        { title: "Modulation Mapping", tech: "Bits are grouped and mapped to complex constellation points. E.g., QPSK maps 2 bits to one of 4 phases." },
+        { title: "Receiver Side", tech: "The receiver performs the inverse operations: Demodulation, Descrambling, De-rate matching, and LDPC Decoding to recover the original bits." }
+    ];
+
+    // --- Core Logic ---
+
+    function updatePayload() {
+        const input = document.getElementById('payloadInput').value;
+        const cellId = document.getElementById('cellId').value;
+        document.getElementById('cellIdVal').innerText = cellId;
+        
+        // Convert to Bits
+        let bits = "";
+        if(/^[0-9A-Fa-f]+$/.test(input)) {
+            bits = input.split('').map(hex => parseInt(hex, 16).toString(2).padStart(4, '0')).join('');
+        } else {
+            bits = input.replace(/[^01]/g, "");
+        }
+        
+        if(!bits) bits = "10101010";
+        payloadBits = bits;
+        
+        runProcessingChain();
+        renderCurrentStep();
+    }
+
+    function runProcessingChain() {
+        processedData = [];
+        
+        // Step 0: Original
+        processedData[0] = payloadBits;
+
+        // Step 1: CRC (Simulate by adding a fixed 8-bit checksum for visualization)
+        processedData[1] = payloadBits + "11010011";
+
+        // Step 2: Coding (Simplified: double the bits for visualization)
+        let coded = "";
+        for(let b of processedData[1]) coded += b + (b === '1' ? '0' : '1');
+        processedData[2] = coded;
+
+        // Step 3: Rate Matching (Circular Buffer simulation)
+        const rv = parseInt(document.getElementById('rvVal').value);
+        const len = processedData[2].length;
+        const start = Math.floor((rv * len) / 4);
+        processedData[3] = (processedData[2] + processedData[2]).substring(start, start + Math.floor(len * 0.8));
+
+        // Step 4: Scrambling
+        const cellId = parseInt(document.getElementById('cellId').value);
+        let scrambled = "";
+        for(let i=0; i<processedData[3].length; i++) {
+            const scrambleBit = ( (cellId + i) % 2 ).toString();
+            scrambled += (parseInt(processedData[3][i]) ^ parseInt(scrambleBit)).toString();
+        }
+        processedData[4] = scrambled;
+
+        // Step 5: Modulation (Symbols)
+        processedData[5] = mapToSymbols(processedData[4]);
+
+        // Step 6: Receiver (Reverse Scrambling)
+        processedData[6] = payloadBits; // Perfect recovery simulation
+
+        updateStats();
+    }
+
+    function mapToSymbols(bits) {
+        const type = document.getElementById('modType').value;
+        let step = type === 'qpsk' ? 2 : (type === '16qam' ? 4 : 6);
+        let symbols = [];
+        for(let i=0; i<bits.length; i+=step) {
+            symbols.push(bits.substring(i, i+step));
+        }
+        return symbols;
+    }
+
+    // --- UI Rendering ---
+
+    function renderCurrentStep() {
+        const step = currentStep;
+        const mode = document.getElementById('modeToggle').value;
+        const title = document.getElementById('step-title');
+        const desc = document.getElementById('step-description');
+        const tech = document.getElementById('tech-explanation');
+        const formula = document.getElementById('eng-formula');
+        const bitViz = document.getElementById('bitDisplay');
+
+        // Update Nodes
+        document.querySelectorAll('.step-node').forEach((n, i) => {
+            n.classList.toggle('active', i === step);
+        });
+        document.querySelectorAll('.connector').forEach((c, i) => {
+            c.classList.toggle('active', i < step);
+        });
+
+        title.innerText = stages[step].title;
+        tech.innerHTML = stages[step].tech;
+        
+        // Mode Specific
+        if(mode === 'student') {
+            desc.innerHTML = getStudentDesc(step);
+            formula.classList.add('hidden');
+        } else {
+            desc.innerHTML = `Technical processing of data sequence at PHY layer index ${step}.`;
+            formula.classList.remove('hidden');
+            formula.innerText = getFormula(step);
+        }
+
+        // Visuals
+        document.getElementById('canvas-section').classList.toggle('hidden', step !== 5);
+        document.getElementById('buffer-section').classList.toggle('hidden', step !== 3);
+        document.getElementById('bit-viz-section').classList.toggle('hidden', step === 5);
+
+        if(step === 5) {
+            drawConstellation();
+        } else if(step === 3) {
+            drawBuffer();
+        } else {
+            renderBits();
+        }
+
+        if(isPresenting) updateNarration();
+    }
+
+    function renderBits() {
+        const data = processedData[currentStep];
+        const prevData = currentStep > 0 ? processedData[currentStep - 1] : "";
+        const bitViz = document.getElementById('bitDisplay');
+        
+        if (typeof data === 'string') {
+            bitViz.innerHTML = data.split('').map((bit, i) => {
+                const changed = prevData && prevData[i] !== bit;
+                return `<span class="${changed ? 'bit-diff' : ''}">${bit}</span>`;
+            }).join('');
+        }
+    }
+
+    function drawBuffer() {
+        const container = document.getElementById('buffer-viz');
+        container.innerHTML = "";
+        const data = processedData[2]; // Raw coded bits
+        const rv = parseInt(document.getElementById('rvVal').value);
+        const start = Math.floor((rv * data.length) / 4);
+        const end = start + Math.floor(data.length * 0.8);
+
+        data.split('').forEach((bit, i) => {
+            const el = document.createElement('div');
+            el.style.width = "10px";
+            el.style.height = "30px";
+            el.style.margin = "1px";
+            el.style.fontSize = "8px";
+            el.style.background = (i >= start && i < end) ? "var(--accent-cyan)" : "#222";
+            el.innerText = bit;
+            container.appendChild(el);
+        });
+    }
+
+    function drawConstellation() {
+        const canvas = document.getElementById('constellationCanvas');
+        const ctx = canvas.getContext('2d');
+        const type = document.getElementById('modType').value;
+        const symbols = processedData[5];
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Axis
+        ctx.strokeStyle = "#333";
+        ctx.beginPath(); ctx.moveTo(200, 0); ctx.lineTo(200, 400); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, 200); ctx.lineTo(400, 200); ctx.stroke();
+
+        ctx.fillStyle = "var(--accent-cyan)";
+        symbols.forEach(s => {
+            // Simplified mapping for visual
+            let x = 200, y = 200;
+            if(s.startsWith('00')) { x = 100; y = 100; }
+            else if(s.startsWith('01')) { x = 300; y = 100; }
+            else if(s.startsWith('10')) { x = 100; y = 300; }
+            else if(s.startsWith('11')) { x = 300; y = 300; }
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "var(--accent-cyan)";
+        });
+    }
+
+    function getStudentDesc(step) {
+        const scripts = [
+            "This is your raw data. Think of it as the message you want to send.",
+            "We add a special 'check-sum' at the end so the receiver can tell if the message got messed up.",
+            "We add extra bits as backup. If some parts of the wave are lost, these help fix it.",
+            "We cut or repeat bits to fit the data into the exact size of the radio channel.",
+            "We scramble the bits into a random-looking pattern so other phones nearby don't interfere with yours.",
+            "We turn groups of bits into dots on a map (symbols). Each dot represents a wave shape.",
+            "The receiver undoes everything! If the math matches, your original message is recovered perfectly."
+        ];
+        return scripts[step];
+    }
+
+    function getFormula(step) {
+        const formulas = [
+            "TB_{Size} = L \cdot R \cdot Q_m \cdot v",
+            "p_0, p_1, ..., p_{L-1} \text{ where } L \in \{16, 24\}",
+            "H \cdot c^T = 0 \pmod 2 \text{ (LDPC Matrix)}",
+            "e_k = w_{(k+k_0) \pmod{N_{cb}}}",
+            "b'(i) = (b(i) + c(i)) \pmod 2",
+            "d(i) = \frac{1}{\sqrt{2}}(1-2b(2i)) + j\frac{1}{\sqrt{2}}(1-2b(2i+1))",
+            "\hat{s} = \text{argmin} || y - Hs ||^2"
+        ];
+        return formulas[step];
+    }
+
+    // --- Presentation Controls ---
+
+    function startPresentation() {
+        isPresenting = true;
+        currentStep = 0;
+        document.getElementById('narration-box').style.display = 'block';
+        document.getElementById('btnPresent').innerText = "Stop Demo";
+        document.getElementById('btnPresent').onclick = stopPresentation;
+        renderCurrentStep();
+    }
+
+    function stopPresentation() {
+        isPresenting = false;
+        document.getElementById('narration-box').style.display = 'none';
+        document.getElementById('btnPresent').innerText = "Start Presentation";
+        document.getElementById('btnPresent').onclick = startPresentation;
+    }
+
+    function updateNarration() {
+        const box = document.getElementById('narration-box');
+        const text = [
+            "Presenter: 'Here we start with the DC Payload. It's the raw bits from the user application...'",
+            "Presenter: 'Now notice the CRC bits being attached at the end. This is our first line of defense against errors.'",
+            "Presenter: 'The LDPC encoder adds parity bits. Notice the bitstream growing in size.'",
+            "Presenter: 'Rate matching handles the circular buffer. Watch the highlighted bits shift as we change the Redundancy Version.'",
+            "Presenter: 'Scrambling is crucial. By XORing with a Cell-ID sequence, we ensure unique signal signatures.'",
+            "Presenter: 'Finally, we map to the constellation. Each point represents a set of bits in the I/Q plane.'",
+            "Presenter: 'At the receiver, the process reverses. We descramble and decode to reach a successful CRC check!'"
+        ];
+        box.innerText = text[currentStep];
+    }
+
+    function stepNext() { if(currentStep < 6) { currentStep++; renderCurrentStep(); } }
+    function stepPrev() { if(currentStep > 0) { currentStep--; renderCurrentStep(); } }
+    function jumpToStep(n) { currentStep = n; renderCurrentStep(); }
+    function toggleTheory() { const el = document.getElementById('theoryOverlay'); el.style.display = (el.style.display === 'none' ? 'block' : 'none'); }
+    function randomPayload() { document.getElementById('payloadInput').value = Math.random().toString(16).substr(2, 8).toUpperCase(); updatePayload(); }
+    function updateUI() { renderCurrentStep(); }
+
+    function updateStats() {
+        document.getElementById('stat-bits').innerText = payloadBits.length;
+        document.getElementById('stat-rate').innerText = (payloadBits.length / processedData[3].length).toFixed(2);
+        document.getElementById('stat-mod').innerText = document.getElementById('modType').value.toUpperCase();
+        if(currentStep === 6) {
+            document.getElementById('stat-status').innerText = "Payload Verified!";
+            document.getElementById('stat-status').className = "success-text";
+        } else {
+            document.getElementById('stat-status').innerText = "Processing...";
+            document.getElementById('stat-status').className = "";
+        }
+    }
+
+    // Initial load
+    window.onload = () => {
+        updatePayload();
+    };
+</script>
+</body>
+</html>

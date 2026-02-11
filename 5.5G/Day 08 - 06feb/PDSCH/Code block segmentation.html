@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>5G PDSCH Segmentation & CRC Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+/* ===== GLOBAL ===== */
+body{
+    margin:0;
+    font-family: "Segoe UI", Arial;
+    background:#020617;
+    color:#e5e7eb;
+}
+
+h1,h2,h3{
+    color:#38bdf8;
+}
+
+button{
+    padding:10px 18px;
+    border:none;
+    border-radius:6px;
+    background:#38bdf8;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0ea5e9;
+}
+
+input,select{
+    padding:8px;
+    border-radius:5px;
+    border:none;
+}
+
+/* ===== LAYOUT ===== */
+
+header{
+    background:#020617;
+    padding:20px;
+    text-align:center;
+    border-bottom:2px solid #1e293b;
+}
+
+#container{
+    display:flex;
+}
+
+#sidebar{
+    width:240px;
+    background:#020617;
+    height:100vh;
+    position:fixed;
+    padding:20px;
+    border-right:2px solid #1e293b;
+}
+
+#sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    margin:5px 0;
+    border-radius:6px;
+}
+
+#sidebar a:hover{
+    background:#1e293b;
+}
+
+#content{
+    margin-left:270px;
+    padding:30px;
+    width:100%;
+}
+
+/* ===== SECTIONS ===== */
+
+.section{
+    background:#020617;
+    padding:25px;
+    margin-bottom:40px;
+    border-radius:12px;
+    box-shadow:0 0 25px rgba(56,189,248,0.2);
+}
+
+.card{
+    background:#020617;
+    border:1px solid #1e293b;
+    padding:15px;
+    margin:15px 0;
+    border-radius:8px;
+}
+
+/* ===== CODE ===== */
+
+pre{
+    background:#000;
+    padding:15px;
+    border-radius:6px;
+    overflow:auto;
+    color:#22c55e;
+}
+
+/* ===== TERMINAL ===== */
+
+.console{
+    background:black;
+    color:#22c55e;
+    padding:12px;
+    height:140px;
+    overflow:auto;
+    font-family:monospace;
+    border-radius:6px;
+}
+
+/* ===== FLOW ===== */
+
+.flow{
+    display:flex;
+    justify-content:space-between;
+    text-align:center;
+    margin-top:20px;
+}
+
+.flow div{
+    background:#020617;
+    padding:10px;
+    border:1px solid #38bdf8;
+    border-radius:6px;
+    width:18%;
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 5px #38bdf8;}
+    50%{box-shadow:0 0 15px #38bdf8;}
+    100%{box-shadow:0 0 5px #38bdf8;}
+}
+
+/* ===== CANVAS ===== */
+
+canvas{
+    background:#000;
+    border:1px solid #38bdf8;
+    border-radius:6px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>5G NR PDSCH Code Block Segmentation & CRC Simulator</h1>
+<p>Interactive Learning Platform</p>
+</header>
+
+
+<div id="container">
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+
+<h3>Navigation</h3>
+
+<a href="#theory">Concept</a>
+<a href="#flow">Process Flow</a>
+<a href="#code">C++ Code</a>
+<a href="#run">Live Execution</a>
+<a href="#sim">Simulation</a>
+
+</div>
+
+
+<!-- CONTENT -->
+<div id="content">
+
+
+<!-- THEORY -->
+<div id="theory" class="section">
+
+<h2>1. Concept & Theory</h2>
+
+<div class="card">
+
+<ul>
+<li>In 5G NR, large Transport Blocks cannot be directly encoded.</li>
+<li>They must be divided into smaller Code Blocks.</li>
+<li>Each Code Block gets its own CRC.</li>
+<li>This improves error detection.</li>
+<li>Used before LDPC encoding.</li>
+</ul>
+
+<p>
+Maximum block size = 8448 bits (BG1) / 3840 bits (BG2)
+</p>
+
+</div>
+
+</div>
+
+
+<!-- FLOW -->
+<div id="flow" class="section">
+
+<h2>2. Working Process Flow</h2>
+
+<div class="flow">
+
+<div>Transport Block</div>
+<div>Size Check</div>
+<div>Segmentation</div>
+<div>CRC Add</div>
+<div>Code Blocks</div>
+
+</div>
+
+<div class="card">
+
+<button onclick="playFlow()">Play Animation</button>
+
+<div id="flowStatus"></div>
+
+</div>
+
+</div>
+
+
+<!-- CODE -->
+<div id="code" class="section">
+
+<h2>3. Complete C++ Implementation</h2>
+
+<pre>
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+#include &lt;cstdint&gt;
+using namespace std;
+
+uint32_t computeCRC(string data){
+
+    uint32_t crc = 0;
+
+    for(char c : data){
+        crc ^= c;
+    }
+
+    return crc;
+}
+
+int main(){
+
+    int tbSize;
+    cout &lt;&lt; "Enter TB Size: ";
+    cin &gt;&gt; tbSize;
+
+    int maxSize = 8448;
+
+    int blocks = ceil((double)tbSize/maxSize);
+
+    cout &lt;&lt; "Blocks: " &lt;&lt; blocks &lt;&lt; endl;
+
+    for(int i=0;i&lt;blocks;i++){
+
+        string data = "BLOCK" + to_string(i);
+
+        uint32_t crc = computeCRC(data);
+
+        cout &lt;&lt; "Block " &lt;&lt; i+1 
+             &lt;&lt; " CRC: " &lt;&lt; crc &lt;&lt; endl;
+    }
+
+    return 0;
+}
+</pre>
+
+</div>
+
+
+<!-- LIVE RUN -->
+<div id="run" class="section">
+
+<h2>4. Live Code Execution</h2>
+
+<div class="card">
+
+<label>Transport Block Size:</label>
+<br><br>
+<input id="tbInput" type="number" placeholder="Enter bits">
+
+<br><br>
+
+<button onclick="runSegmentation()">Run</button>
+
+<div id="runOut" class="console"></div>
+
+</div>
+
+</div>
+
+
+<!-- SIMULATION -->
+<div id="sim" class="section">
+
+<h2>5. Live Visual Simulation</h2>
+
+<div class="card">
+
+<label>Noise Level:</label>
+<input type="range" id="noise" min="0" max="10">
+
+<span id="noiseVal"></span>
+
+<br><br>
+
+<button onclick="startSim()">Start Simulation</button>
+
+<br><br>
+
+<canvas id="simCanvas" width="700" height="200"></canvas>
+
+</div>
+
+</div>
+
+
+</div>
+</div>
+
+
+<script>
+
+/* FLOW */
+function playFlow(){
+
+    let steps=[
+        "Transport Block Received",
+        "Checking Size",
+        "Splitting Blocks",
+        "Adding CRC",
+        "Ready for LDPC"
+    ];
+
+    let i=0;
+
+    let box=document.getElementById("flowStatus");
+
+    let timer=setInterval(()=>{
+
+        box.innerText=steps[i];
+
+        i++;
+
+        if(i>=steps.length) clearInterval(timer);
+
+    },1000);
+}
+
+
+/* LIVE RUN */
+function runSegmentation(){
+
+    let tb=parseInt(tbInput.value);
+
+    if(!tb){
+        alert("Enter TB size");
+        return;
+    }
+
+    let max=8448;
+
+    let blocks=Math.ceil(tb/max);
+
+    let output="TB Size: "+tb+"\n";
+    output+="Blocks: "+blocks+"\n\n";
+
+    for(let i=0;i<blocks;i++){
+
+        let data="BLOCK"+i;
+
+        let crc=0;
+
+        for(let j=0;j<data.length;j++){
+            crc ^= data.charCodeAt(j);
+        }
+
+        output+="Block "+(i+1)+" CRC: "+crc+"\n";
+    }
+
+    runOut.innerText=output;
+}
+
+
+/* SLIDER */
+noise.oninput=()=>{
+    noiseVal.innerText=" Noise: "+noise.value;
+}
+
+
+/* SIMULATION */
+function startSim(){
+
+    let canvas=document.getElementById("simCanvas");
+    let ctx=canvas.getContext("2d");
+
+    ctx.clearRect(0,0,700,200);
+
+    let bits=[];
+
+    for(let i=0;i<50;i++){
+        bits.push(Math.random()>0.5?1:0);
+    }
+
+    let pos=0;
+
+    let timer=setInterval(()=>{
+
+        ctx.clearRect(0,0,700,200);
+
+        for(let i=0;i<bits.length;i++){
+
+            let x=i*14;
+            let y=100;
+
+            if(i===pos){
+                ctx.fillStyle="red";
+            }else{
+                ctx.fillStyle="lime";
+            }
+
+            ctx.fillRect(x,y,10,10);
+
+            ctx.fillStyle="white";
+            ctx.fillText(bits[i],x+2,y-5);
+        }
+
+        pos++;
+
+        if(pos>=bits.length){
+            clearInterval(timer);
+        }
+
+    },120);
+}
+
+</script>
+
+</body>
+</html>

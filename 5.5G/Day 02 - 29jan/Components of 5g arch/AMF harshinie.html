@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete 5G Architecture - AMF Deep Dive</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --panel: #161b22;
+            --amf: #2188ff;
+            --highlight: #39d353;
+            --text: #c9d1d9;
+            --faded: #484f58;
+            --sba-bus: #30363d;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Credits Style */
+        .credits {
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            font-size: 14px;
+            color: var(--highlight);
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        /* Main Workspace */
+        #workspace {
+            flex-grow: 1;
+            position: relative;
+            background: radial-gradient(circle, #1c2128 1px, transparent 1px);
+            background-size: 25px 25px;
+        }
+
+        .header {
+            padding: 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* SVG and Connection Styling */
+        svg { width: 100%; height: 100%; }
+
+        .node { cursor: pointer; transition: 0.3s; }
+        .node rect { fill: #21262d; stroke: var(--faded); stroke-width: 2; rx: 5; }
+        .node text { fill: #fff; font-size: 12px; font-weight: bold; text-anchor: middle; pointer-events: none; }
+        
+        .amf-center rect { stroke: var(--amf); stroke-width: 3; fill: #102a43; }
+
+        /* Interface Lines */
+        .interface { 
+            stroke: var(--faded); 
+            stroke-width: 2; 
+            fill: none; 
+            transition: stroke 0.4s, stroke-width 0.4s;
+            stroke-dasharray: 4;
+        }
+
+        .label { font-size: 10px; fill: var(--faded); font-family: monospace; transition: 0.3s; }
+
+        /* Highlight States */
+        .active-amf .interface.amf-link { 
+            stroke: var(--amf); 
+            stroke-width: 3; 
+            stroke-dasharray: 0;
+            filter: drop-shadow(0 0 3px var(--amf));
+        }
+        .active-amf .label.amf-label { fill: var(--amf); font-weight: bold; font-size: 12px; }
+        .active-amf .node-linked rect { stroke: var(--amf); }
+
+        /* Sidebar Panel */
+        #details-panel {
+            width: 450px;
+            background: var(--panel);
+            border-left: 2px solid var(--sba-bus);
+            padding: 25px;
+            transform: translateX(100%);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        }
+
+        #details-panel.open { transform: translateX(0); }
+
+        .close-btn { 
+            float: right; cursor: pointer; background: #30363d; color: #fff; border: none; padding: 5px 12px; border-radius: 4px; 
+        }
+
+        h2 { color: var(--amf); border-bottom: 1px solid var(--faded); padding-bottom: 10px; }
+        .interface-grid { display: grid; grid-template-columns: 60px 1fr; gap: 10px; margin-top: 15px; }
+        .if-tag { background: #0d1117; color: var(--highlight); padding: 2px 6px; border-radius: 4px; font-weight: bold; text-align: center; }
+        
+        .box { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .box strong { color: var(--highlight); display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="workspace">
+    <div class="header">
+        <h1 style="margin:0; font-size: 22px;">5G Service-Based Architecture (SBA)</h1>
+        <p style="color:var(--faded); font-size: 14px;">Interactive Interface Map</p>
+    </div>
+
+    <div class="credits">Made by Harshinie M</div>
+
+    <svg viewBox="0 0 1000 700">
+        <!-- Service Based Bus -->
+        <line x1="100" y1="100" x2="900" y2="100" stroke="#30363d" stroke-width="6" stroke-linecap="round"/>
+        <text x="500" y="85" fill="#484f58" font-size="12" text-anchor="middle">SERVICE-BASED INTERFACE BUS (SBA)</text>
+
+        <!-- Global Interfaces (Reference Points) -->
+        <!-- N1/N2 -->
+        <path class="interface amf-link" d="M100 450 L350 450" id="path-n1" />
+        <path class="interface amf-link" d="M220 550 L350 450" id="path-n2" />
+        
+        <!-- N3/N4/N6 -->
+        <path class="interface" d="M220 550 L600 550" /> <!-- N3 -->
+        <path class="interface" d="M450 480 L600 550" /> <!-- N4 -->
+        <path class="interface" d="M700 550 L850 550" /> <!-- N6 -->
+
+        <!-- AMF Connections to SBA Functions -->
+        <path class="interface amf-link" d="M400 400 L200 100" /> <!-- N22 (NSSF) -->
+        <path class="interface amf-link" d="M400 400 L400 100" /> <!-- N15 (PCF) -->
+        <path class="interface amf-link" d="M400 400 L600 100" /> <!-- N8 (UDM) -->
+        <path class="interface amf-link" d="M400 400 L750 100" /> <!-- N12 (AUSF) -->
+        <path class="interface amf-link" d="M400 450 L450 450" /> <!-- N11 (SMF) -->
+        <path class="interface amf-link" d="M400 400 L400 250 Q 350 250 350 300" /> <!-- N14 -->
+
+        <!-- Interface Labels -->
+        <text x="180" y="440" class="label amf-label">N1 (NAS)</text>
+        <text x="280" y="520" class="label amf-label">N2 (NGAP)</text>
+        <text x="400" y="540" class="label">N3</text>
+        <text x="530" y="510" class="label">N4</text>
+        <text x="780" y="540" class="label">N6</text>
+        <text x="410" y="480" class="label amf-label">N11</text>
+        <text x="210" y="250" class="label amf-label">N22</text>
+        <text x="375" y="200" class="label amf-label">N15</text>
+        <text x="580" y="250" class="label amf-label">N8</text>
+        <text x="730" y="250" class="label amf-label">N12</text>
+        <text x="320" y="240" class="label amf-label">N14</text>
+
+        <!-- Nodes: Top SBA Level -->
+        <g class="node node-linked" id="nssf"><rect x="150" y="100" width="80" height="40"/><text x="190" y="125">NSSF</text></g>
+        <g class="node"><rect x="250" y="100" width="80" height="40"/><text x="290" y="125">NEF</text></g>
+        <g class="node"><rect x="350" y="100" width="80" height="40"/><text x="390" y="125">NRF</text></g>
+        <g class="node node-linked" id="pcf"><rect x="450" y="100" width="80" height="40"/><text x="490" y="125">PCF</text></g>
+        <g class="node node-linked" id="udm"><rect x="550" y="100" width="80" height="40"/><text x="590" y="125">UDM</text></g>
+        <g class="node node-linked" id="ausf"><rect x="650" y="100" width="80" height="40"/><text x="690" y="125">AUSF</text></g>
+        <g class="node"><rect x="750" y="100" width="80" height="40"/><text x="790" y="125">AF</text></g>
+
+        <!-- Middle Level -->
+        <g class="node amf-center" onclick="toggleAMF()">
+            <rect x="350" y="400" width="100" height="80"/>
+            <text x="400" y="445">AMF</text>
+        </g>
+
+        <g class="node node-linked" id="smf">
+            <rect x="450" y="430" width="80" height="50"/>
+            <text x="490" y="460">SMF</text>
+        </g>
+
+        <!-- Bottom Level (User Plane) -->
+        <g class="node node-linked" id="ue"><rect x="50" y="425" width="80" height="50"/><text x="90" y="455">UE</text></g>
+        <g class="node node-linked" id="ran"><rect x="180" y="525" width="80" height="50"/><text x="220" y="555">gNB</text></g>
+        <g class="node"><rect x="600" y="525" width="100" height="60"/><text x="650" y="560">UPF</text></g>
+        <g class="node"><rect x="850" y="525" width="80" height="50"/><text x="890" y="555">DN</text></g>
+        
+        <!-- Re-allocation Target -->
+        <g class="node node-linked" id="amf-other"><rect x="300" y="300" width="80" height="30" style="stroke-dasharray:2;"/><text x="340" y="320" style="font-size:10px;">AMF (Other)</text></g>
+    </svg>
+</div>
+
+<div id="details-panel">
+    <button class="close-btn" onclick="toggleAMF()">Close ×</button>
+    <h2>AMF Technical Profile</h2>
+    
+    <p>The <strong>Access and Mobility Management Function (AMF)</strong> is the "Front Door" of the 5G Core. It terminates the control plane for the UE and the RAN.</p>
+
+    <div class="box">
+        <strong>Major Responsibilities</strong>
+        <ul>
+            <li>NAS Ciphering & Integrity Protection</li>
+            <li>Registration & Connection Management</li>
+            <li>Mobility Management (Handovers)</li>
+            <li>Access Authentication via AUSF</li>
+            <li>Reachability Management</li>
+        </ul>
+    </div>
+
+    <h3>Interface Map (Reference Points)</h3>
+    <div class="interface-grid">
+        <div class="if-tag">N1</div> <div><strong>NAS Interface</strong> (UE ↔ AMF). Transparent transport for Session Management messages.</div>
+        <div class="if-tag">N2</div> <div><strong>NGAP Interface</strong> (gNB ↔ AMF). Carries mobility and session control signals.</div>
+        <div class="if-tag">N8</div> <div><strong>Subscriber Data</strong> (AMF ↔ UDM). Retrieval of profiles and subscription info.</div>
+        <div class="if-tag">N11</div> <div><strong>Session Link</strong> (AMF ↔ SMF). Notifies SMF to handle PDU sessions.</div>
+        <div class="if-tag">N12</div> <div><strong>Authentication</strong> (AMF ↔ AUSF). Triggers the 5G AKA process.</div>
+        <div class="if-tag">N14</div> <div><strong>Inter-AMF</strong>. Context transfer during handovers between different AMFs.</div>
+        <div class="if-tag">N15</div> <div><strong>Policy Control</strong> (AMF ↔ PCF). Fetching mobility policies.</div>
+        <div class="if-tag">N22</div> <div><strong>Slicing</strong> (AMF ↔ NSSF). Selection of the correct Network Slice.</div>
+    </div>
+
+    <div class="box">
+        <strong>Key Use Case: Registration</strong>
+        <p>When Harshinie's UE connects, the AMF receives a NAS Registration Request (N1). It talks to AUSF (N12) to verify her identity, UDM (N8) to get her profile, and NSSF (N22) to assign her to a High-Speed slice.</p>
+    </div>
+</div>
+
+<script>
+    function toggleAMF() {
+        const workspace = document.getElementById('workspace');
+        const panel = document.getElementById('details-panel');
+        
+        workspace.classList.toggle('active-amf');
+        panel.classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

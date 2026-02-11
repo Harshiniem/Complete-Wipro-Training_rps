@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR PBCH Payload Scrambling</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: #f0f2f5;
+            color: #2c3e50;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background: #34495e;
+            color: white;
+            padding: 20px 30px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 25px 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #fafbfc;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+
+        .section h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section h3 {
+            color: #2c3e50;
+            margin: 15px 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .formula-box {
+            background: #fff;
+            border: 2px solid #3498db;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .info-box li {
+            margin: 8px 0;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #34495e;
+            font-size: 0.9em;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            padding: 8px;
+            font-size: 0.95em;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-warning {
+            background: #e67e22;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d35400;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Bit Display - Compact Horizontal */
+        .bit-display {
+            margin: 15px 0;
+        }
+
+        .bit-label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.95em;
+        }
+
+        .bit-row {
+            display: flex;
+            gap: 3px;
+            overflow-x: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .bit {
+            min-width: 26px;
+            width: 26px;
+            height: 26px;
+            border: 1.5px solid #3498db;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .bit.zero {
+            background: #d6eaf8;
+            color: #1f618d;
+        }
+
+        .bit.one {
+            background: #fadbd8;
+            color: #943126;
+        }
+
+        .bit.highlight {
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.8);
+            z-index: 10;
+            border-color: #e74c3c;
+            border-width: 2px;
+        }
+
+        .bit.unknown {
+            background: #ecf0f1;
+            color: #95a5a6;
+        }
+
+        /* Status Display */
+        .status-bar {
+            background: #34495e;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: 600;
+            text-align: center;
+            font-size: 1.05em;
+        }
+
+        .status-bar.processing {
+            background: #e67e22;
+        }
+
+        .status-bar.complete {
+            background: #27ae60;
+        }
+
+        /* XOR Table - Fixed Height with Auto Scroll */
+        .xor-table-container {
+            max-height: 350px;
+            overflow-y: auto;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .xor-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            background: white;
+        }
+
+        .xor-table thead {
+            background: #34495e;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .xor-table th,
+        .xor-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .xor-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .xor-table tbody tr:hover {
+            background: #e8f4f8;
+        }
+
+        .xor-table .current-row {
+            background: #fff3cd !important;
+            font-weight: bold;
+            border-left: 4px solid #e67e22;
+        }
+
+        /* Output Console - Terminal Style */
+        .console-output {
+            background: #0c0c0c;
+            color: #cccccc;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 500px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre;
+            line-height: 1.5;
+            border: 2px solid #34495e;
+        }
+
+        .console-output .output-green {
+            color: #0dbc79;
+        }
+
+        .console-output .output-cyan {
+            color: #3a96dd;
+        }
+
+        .console-output .output-yellow {
+            color: #e5c07b;
+        }
+
+        .console-output .output-white {
+            color: #ffffff;
+        }
+
+        .console-header {
+            background: #2d2d2d;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px 5px 0 0;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #27ae60;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .copy-btn:hover {
+            background: #229954;
+        }
+
+        /* Verification Box */
+        .verification-box {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .verification-box.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .verification-box .icon {
+            font-size: 1.5em;
+            margin-right: 8px;
+        }
+
+        .verification-box .message {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #155724;
+        }
+
+        .verification-box.error .message {
+            color: #721c24;
+        }
+
+        /* Code Container */
+        .code-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 0.85em;
+            line-height: 1.5;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .code-container pre {
+            margin: 0;
+        }
+
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .function { color: #dcdcaa; }
+        .number { color: #b5cea8; }
+
+        /* Output section - hidden by default */
+        .output {
+            display: none;
+            background: #0c0c0c;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            border: 2px solid #34495e;
+        }
+
+        .output.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-row {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>5G NR PBCH Payload Scrambling</h1>
+            <p>Interactive Simulation - Payload XOR Scrambling Sequence</p>
+        </header>
+
+        <div class="content">
+            <!-- What is Scrambling -->
+            <div class="section">
+                <h2>What is PBCH Payload Scrambling?</h2>
+                <p>In 5G NR, the <strong>PBCH (Physical Broadcast Channel)</strong> carries the MIB (Master Information Block) which contains critical system information. Before transmission, the payload bits undergo a <strong>scrambling process</strong>.</p>
+                
+                <h3>Why Do We Need Scrambling?</h3>
+                <div class="info-box">
+                    <ul>
+                        <li><strong>Randomization:</strong> Converts predictable bit patterns into pseudo-random sequences</li>
+                        <li><strong>Cell Identification:</strong> Each cell uses a unique scrambling sequence based on its Physical Cell ID (N<sub>ID</sub><sup>cell</sup>)</li>
+                        <li><strong>Interference Reduction:</strong> Helps distinguish signals from different cells</li>
+                        <li><strong>Energy Distribution:</strong> Provides more uniform spectral characteristics</li>
+                    </ul>
+                </div>
+
+                <h3>How Does Scrambling Work?</h3>
+                <p>Scrambling uses a simple but powerful operation called <strong>XOR (Exclusive OR)</strong>:</p>
+                
+                <div class="formula-box">ā(j) = a(j) ⊕ s(j)</div>
+                
+                <p style="margin-top: 15px;">Where:</p>
+                <div class="info-box">
+                    <ul>
+                        <li><strong>a(j)</strong> = Original payload bit at position j</li>
+                        <li><strong>s(j)</strong> = Scrambling sequence bit at position j (cell-specific)</li>
+                        <li><strong>ā(j)</strong> = Scrambled payload bit at position j</li>
+                        <li><strong>j</strong> = Bit index (0 to 31 for 32-bit PBCH payload)</li>
+                        <li><strong>⊕</strong> = XOR operation</li>
+                    </ul>
+                </div>
+
+                <h3>XOR Operation Truth Table</h3>
+                <div class="info-box">
+                    <table style="margin: 10px auto; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #34495e; color: white;">
+                                <th style="padding: 10px; border: 1px solid #ddd;">a(j)</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">s(j)</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">a(j) ⊕ s(j)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0</td>
+                            </tr>
+                            <tr style="background: #f8f9fa;">
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1</td>
+                            </tr>
+                            <tr style="background: #f8f9fa;">
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 10px;"><strong>Key Property:</strong> XOR is reversible! Applying the same scrambling sequence again recovers the original data: ā(j) ⊕ s(j) = a(j)</p>
+                </div>
+
+                <h3>Scrambling Process Steps</h3>
+                <div class="info-box">
+                    <ol style="margin-left: 20px;">
+                        <li><strong>Step 1:</strong> Generate a cell-specific scrambling sequence s(j) using the Physical Cell ID as a seed</li>
+                        <li><strong>Step 2:</strong> For each bit position j from 0 to 31, perform XOR between a(j) and s(j)</li>
+                        <li><strong>Step 3:</strong> The resulting scrambled bits ā(j) are ready for transmission</li>
+                        <li><strong>Step 4:</strong> At the receiver, the UE applies the same sequence to descramble and recover the original payload</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Configuration Panel -->
+            <div class="section">
+                <h2>Configuration</h2>
+                <div class="control-panel">
+                    <div class="control-group">
+                        <label>Cell ID (N_ID^cell): [0-1007]</label>
+                        <input type="number" id="cellId" value="276" min="0" max="1007">
+                    </div>
+                    <div class="control-group">
+                        <label>Animation Speed:</label>
+                        <select id="speedControl">
+                            <option value="300">Slow (300ms)</option>
+                            <option value="150" selected>Medium (150ms)</option>
+                            <option value="80">Fast (80ms)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Payload Input (32 bits):</label>
+                        <input type="text" id="payloadInput" placeholder="00001010101010100100000010100000" maxlength="32" style="width: 100%;">
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button class="btn-success" onclick="loadPayload()">Load Payload</button>
+                    <button class="btn-warning" onclick="generateRandomPayload()">Random Payload</button>
+                    <button class="btn-secondary" onclick="resetToDefault()">Reset to Default</button>
+                </div>
+            </div>
+
+            <!-- Animation Controls -->
+            <div class="section">
+                <h2>Animation Controls</h2>
+                <div class="button-row">
+                    <button class="btn-primary" id="autoPlayBtn" onclick="autoPlay()">Auto Play</button>
+                    <button class="btn-primary" id="nextBitBtn" onclick="nextBit()">Next Bit</button>
+                    <button class="btn-danger" onclick="instantResult()">Instant Result</button>
+                    <button class="btn-secondary" onclick="resetAnimation()">Reset</button>
+                </div>
+                <div class="status-bar" id="statusBar">Ready - Click Auto Play or Next Bit to start</div>
+            </div>
+
+            <!-- Bit Display -->
+            <div class="section">
+                <h2>Bit Sequences</h2>
+                <div class="bit-display">
+                    <span class="bit-label">Original Payload a(j):</span>
+                    <div class="bit-row" id="payloadBits"></div>
+                </div>
+                <div class="bit-display">
+                    <span class="bit-label">Scrambling Sequence s(j):</span>
+                    <div class="bit-row" id="scramblingBits"></div>
+                </div>
+                <div class="bit-display">
+                    <span class="bit-label">Scrambled Payload ā(j):</span>
+                    <div class="bit-row" id="scrambledBits"></div>
+                </div>
+            </div>
+
+            <!-- XOR Operation Table with Fixed Viewport -->
+            <div class="section">
+                <h2>Live Scrambling Animation - XOR Operation Details</h2>
+                <p style="margin-bottom: 10px; color: #7f8c8d; font-size: 0.9em;">
+                    The table automatically scrolls to show the current operation. No need to scroll manually.
+                </p>
+                <div class="xor-table-container" id="xorTableContainer">
+                    <table class="xor-table" id="xorTable">
+                        <thead>
+                            <tr>
+                                <th>j</th>
+                                <th>a(j)</th>
+                                <th>s(j)</th>
+                                <th>XOR</th>
+                                <th>ā(j)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="xorTableBody">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Descrambling Verification -->
+            <div class="section">
+                <h2>Descrambling Verification</h2>
+                <p>Applying the same scrambling sequence to the scrambled payload recovers the original:</p>
+                <div class="button-row">
+                    <button class="btn-success" onclick="verifyDescrambling()">Verify Descrambling</button>
+                </div>
+                <div id="verificationResult"></div>
+                <div class="bit-display" id="descrambledDisplay" style="display: none;">
+                    <span class="bit-label">Recovered Payload (ā(j) ⊕ s(j)):</span>
+                    <div class="bit-row" id="descrambledBits"></div>
+                </div>
+            </div>
+
+            <!-- C++ Code -->
+            <div class="section">
+                <h2>C++ Implementation</h2>
+                <div class="button-row">
+                    <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+                </div>
+                <div class="code-container">
+                    <pre id="codeContent"><span class="comment">// 5G NR PBCH Payload Scrambling Implementation</span>
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;vector&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;bitset&gt;</span>
+<span class="keyword">using namespace</span> std;
+
+<span class="comment">// Generate Gold sequence for scrambling (simplified)</span>
+vector&lt;<span class="keyword">int</span>&gt; <span class="function">generateScramblingSequence</span>(<span class="keyword">int</span> cellId) {
+    vector&lt;<span class="keyword">int</span>&gt; sequence(<span class="number">32</span>);
+    <span class="keyword">int</span> x1 = <span class="number">1</span>; <span class="comment">// Initial state</span>
+    <span class="keyword">int</span> x2 = cellId + <span class="number">1</span>;
+    
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) {
+        sequence[i] = x1 ^ x2;
+        <span class="keyword">int</span> next_x1 = ((x1 &gt;&gt; <span class="number">3</span>) ^ x1) & <span class="number">1</span>;
+        <span class="keyword">int</span> next_x2 = ((x2 &gt;&gt; <span class="number">3</span>) ^ (x2 &gt;&gt; <span class="number">2</span>) ^ (x2 &gt;&gt; <span class="number">1</span>) ^ x2) & <span class="number">1</span>;
+        x1 = (x1 &gt;&gt; <span class="number">1</span>) | (next_x1 &lt;&lt; <span class="number">30</span>);
+        x2 = (x2 &gt;&gt; <span class="number">1</span>) | (next_x2 &lt;&lt; <span class="number">30</span>);
+    }
+    <span class="keyword">return</span> sequence;
+}
+
+<span class="comment">// Scramble PBCH payload</span>
+vector&lt;<span class="keyword">int</span>&gt; <span class="function">scramblePayload</span>(vector&lt;<span class="keyword">int</span>&gt; payload, vector&lt;<span class="keyword">int</span>&gt; scramblingSeq) {
+    vector&lt;<span class="keyword">int</span>&gt; scrambled(<span class="number">32</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) {
+        scrambled[i] = payload[i] ^ scramblingSeq[i];
+    }
+    <span class="keyword">return</span> scrambled;
+}
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    <span class="comment">// Example payload (32 bits)</span>
+    vector&lt;<span class="keyword">int</span>&gt; payload = {
+        <span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,
+        <span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>
+    };
+    
+    <span class="keyword">int</span> cellId = <span class="number">276</span>;
+    
+    <span class="comment">// Generate scrambling sequence</span>
+    vector&lt;<span class="keyword">int</span>&gt; scramblingSeq = <span class="function">generateScramblingSequence</span>(cellId);
+    
+    <span class="comment">// Perform scrambling</span>
+    vector&lt;<span class="keyword">int</span>&gt; scrambled = <span class="function">scramblePayload</span>(payload, scramblingSeq);
+    
+    <span class="comment">// Display results</span>
+    cout &lt;&lt; <span class="string">"===== 5G NR PBCH Payload Scrambling (Simulation) ====="</span> &lt;&lt; endl &lt;&lt; endl;
+    
+    cout &lt;&lt; <span class="string">"Original Payload a(j) (32 bits): "</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> bit : payload) cout &lt;&lt; bit;
+    cout &lt;&lt; endl;
+    
+    cout &lt;&lt; <span class="string">"Scrambling Sequence s(j) (32 bits): "</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> bit : scramblingSeq) cout &lt;&lt; bit;
+    cout &lt;&lt; endl;
+    
+    cout &lt;&lt; <span class="string">"Scrambled Payload ā(j) (32 bits): "</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> bit : scrambled) cout &lt;&lt; bit;
+    cout &lt;&lt; endl &lt;&lt; endl;
+    
+    cout &lt;&lt; <span class="string">"--- XOR Verification (First 8 bits) ---"</span> &lt;&lt; endl;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">8</span>; i++) {
+        cout &lt;&lt; <span class="string">"ā("</span> &lt;&lt; i &lt;&lt; <span class="string">") = a("</span> &lt;&lt; i &lt;&lt; <span class="string">") XOR s("</span> &lt;&lt; i &lt;&lt; <span class="string">") = "</span>
+             &lt;&lt; payload[i] &lt;&lt; <span class="string">" XOR "</span> &lt;&lt; scramblingSeq[i] 
+             &lt;&lt; <span class="string">" = "</span> &lt;&lt; scrambled[i] &lt;&lt; endl;
+    }
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+                </div>
+                
+                <div class="button-row" style="margin-top: 15px;">
+                    <button class="btn-primary" onclick="runCode()">Run Code</button>
+                </div>
+                
+                <div class="output" id="output"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default payload
+        const DEFAULT_PAYLOAD = [1,0,1,1,0,0,1,0,1,1,0,0,1,0,1,0,0,1,1,0,0,1,1,0,1,0,1,1,0,0,1,0];
+        
+        let payload = [...DEFAULT_PAYLOAD];
+        let scramblingSeq = [];
+        let scrambledOutput = [];
+        let currentBit = 0;
+        let animationInterval = null;
+        let isPlaying = false;
+
+        // Initialize
+        function init() {
+            document.getElementById('payloadInput').value = DEFAULT_PAYLOAD.join('');
+            generateScramblingSequence();
+            displayAllBits();
+            initXORTable();
+        }
+
+        // Deterministic scrambling sequence generator (matches C++ code)
+        function generateScramblingSequence() {
+            const seed = parseInt(document.getElementById('cellId').value) || 276;
+            scramblingSeq = [];
+            let rng = seed;
+            
+            for (let i = 0; i < 32; i++) {
+                rng = (rng * 1103515245 + 12345) & 0x7fffffff;
+                scramblingSeq.push((rng >>> 16) & 1);
+            }
+        }
+
+        // Display bits
+        function displayBits(elementId, bits, showUnknown = false) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            bits.forEach((bit, index) => {
+                const bitDiv = document.createElement('div');
+                bitDiv.className = 'bit';
+                
+                if (showUnknown && bit === '?') {
+                    bitDiv.classList.add('unknown');
+                    bitDiv.textContent = '?';
+                } else {
+                    bitDiv.classList.add(bit === 1 ? 'one' : 'zero');
+                    bitDiv.textContent = bit;
+                }
+                
+                bitDiv.id = `${elementId}_${index}`;
+                container.appendChild(bitDiv);
+            });
+        }
+
+        function displayAllBits() {
+            displayBits('payloadBits', payload);
+            displayBits('scramblingBits', scramblingSeq);
+            scrambledOutput = new Array(32).fill('?');
+            displayBits('scrambledBits', scrambledOutput, true);
+        }
+
+        // Initialize XOR table
+        function initXORTable() {
+            const tbody = document.getElementById('xorTableBody');
+            tbody.innerHTML = '';
+            
+            for (let i = 0; i < 32; i++) {
+                const row = tbody.insertRow();
+                row.id = `xor-row-${i}`;
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                `;
+            }
+        }
+
+        // Update XOR table row with auto-scroll
+        function updateXORRow(index) {
+            const row = document.getElementById(`xor-row-${index}`);
+            const a = payload[index];
+            const s = scramblingSeq[index];
+            const result = a ^ s;
+            
+            row.innerHTML = `
+                <td>${index}</td>
+                <td>${a}</td>
+                <td>${s}</td>
+                <td>${a} ⊕ ${s}</td>
+                <td>${result}</td>
+            `;
+            row.classList.add('current-row');
+            
+            // Remove highlight from previous row
+            if (index > 0) {
+                const prevRow = document.getElementById(`xor-row-${index - 1}`);
+                if (prevRow) prevRow.classList.remove('current-row');
+            }
+            
+            // Auto-scroll to current row
+            const container = document.getElementById('xorTableContainer');
+            const rowHeight = row.offsetHeight;
+            const containerHeight = container.clientHeight;
+            const scrollTop = row.offsetTop - (containerHeight / 2) + (rowHeight / 2);
+            container.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
+            });
+        }
+
+        // Highlight bit
+        function highlightBit(elementId, index) {
+            // Remove previous highlights
+            document.querySelectorAll(`#${elementId} .bit`).forEach(b => b.classList.remove('highlight'));
+            // Add new highlight
+            const bit = document.getElementById(`${elementId}_${index}`);
+            if (bit) bit.classList.add('highlight');
+        }
+
+        // Process single bit
+        function processBit(index) {
+            if (index >= 32) return false;
+            
+            // Highlight current bits
+            highlightBit('payloadBits', index);
+            highlightBit('scramblingBits', index);
+            
+            // Perform XOR
+            const result = payload[index] ^ scramblingSeq[index];
+            scrambledOutput[index] = result;
+            
+            // Update display
+            displayBits('scrambledBits', scrambledOutput, true);
+            highlightBit('scrambledBits', index);
+            
+            // Update XOR table with auto-scroll
+            updateXORRow(index);
+            
+            // Update status
+            document.getElementById('statusBar').textContent = `Processing bit j = ${index}`;
+            document.getElementById('statusBar').className = 'status-bar processing';
+            
+            return true;
+        }
+
+        // Auto play animation
+        function autoPlay() {
+            if (isPlaying) {
+                stopAnimation();
+                return;
+            }
+            
+            if (currentBit >= 32) {
+                resetAnimation();
+            }
+            
+            isPlaying = true;
+            document.getElementById('autoPlayBtn').textContent = 'Pause';
+            document.getElementById('nextBitBtn').disabled = true;
+            
+            const speed = parseInt(document.getElementById('speedControl').value);
+            
+            animationInterval = setInterval(() => {
+                if (currentBit >= 32) {
+                    stopAnimation();
+                    document.getElementById('statusBar').textContent = 'Scrambling Complete';
+                    document.getElementById('statusBar').className = 'status-bar complete';
+                    return;
+                }
+                
+                processBit(currentBit);
+                currentBit++;
+            }, speed);
+        }
+
+        // Stop animation
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+            isPlaying = false;
+            document.getElementById('autoPlayBtn').textContent = 'Auto Play';
+            document.getElementById('nextBitBtn').disabled = false;
+        }
+
+        // Next bit (manual step)
+        function nextBit() {
+            if (currentBit >= 32) {
+                alert('Animation complete. Click Reset to start over.');
+                return;
+            }
+            
+            processBit(currentBit);
+            currentBit++;
+            
+            if (currentBit >= 32) {
+                document.getElementById('statusBar').textContent = 'Scrambling Complete';
+                document.getElementById('statusBar').className = 'status-bar complete';
+            }
+        }
+
+        // Instant result
+        function instantResult() {
+            stopAnimation();
+            
+            for (let i = currentBit; i < 32; i++) {
+                scrambledOutput[i] = payload[i] ^ scramblingSeq[i];
+                updateXORRow(i);
+            }
+            
+            currentBit = 32;
+            displayBits('scrambledBits', scrambledOutput);
+            document.getElementById('statusBar').textContent = 'Scrambling Complete (Instant)';
+            document.getElementById('statusBar').className = 'status-bar complete';
+            
+            // Scroll to bottom of table
+            const container = document.getElementById('xorTableContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Reset animation
+        function resetAnimation() {
+            stopAnimation();
+            currentBit = 0;
+            generateScramblingSequence();
+            displayAllBits();
+            initXORTable();
+            document.getElementById('statusBar').textContent = 'Ready - Click Auto Play or Next Bit to start';
+            document.getElementById('statusBar').className = 'status-bar';
+            document.getElementById('verificationResult').innerHTML = '';
+            document.getElementById('descrambledDisplay').style.display = 'none';
+            
+            // Scroll table to top
+            document.getElementById('xorTableContainer').scrollTop = 0;
+        }
+
+        // Load payload from input
+        function loadPayload() {
+            const input = document.getElementById('payloadInput').value.trim();
+            
+            if (input.length !== 32) {
+                alert('❌ Please enter exactly 32 bits (0s and 1s)');
+                return;
+            }
+            
+            if (!/^[01]+$/.test(input)) {
+                alert('❌ Payload must contain only 0s and 1s');
+                return;
+            }
+            
+            payload = input.split('').map(b => parseInt(b));
+            resetAnimation();
+            alert('✅ Payload loaded successfully!');
+        }
+
+        // Generate random payload
+        function generateRandomPayload() {
+            payload = Array.from({length: 32}, () => Math.random() > 0.5 ? 1 : 0);
+            document.getElementById('payloadInput').value = payload.join('');
+            resetAnimation();
+        }
+
+        // Reset to default
+        function resetToDefault() {
+            payload = [...DEFAULT_PAYLOAD];
+            document.getElementById('payloadInput').value = DEFAULT_PAYLOAD.join('');
+            document.getElementById('cellId').value = 276;
+            resetAnimation();
+        }
+
+        // Verify descrambling
+        function verifyDescrambling() {
+            if (currentBit < 32) {
+                alert('Please complete scrambling first (use Instant Result or Auto Play)');
+                return;
+            }
+            
+            // Descramble: scrambled XOR sequence
+            const descrambled = scrambledOutput.map((bit, i) => bit ^ scramblingSeq[i]);
+            
+            // Check if matches original
+            const matches = descrambled.every((bit, i) => bit === payload[i]);
+            
+            // Display result
+            const resultDiv = document.getElementById('verificationResult');
+            if (matches) {
+                resultDiv.innerHTML = `
+                    <div class="verification-box">
+                        <span class="icon">✅</span>
+                        <span class="message">Recovered payload matches original payload!</span>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="verification-box error">
+                        <span class="icon">❌</span>
+                        <span class="message">Verification failed - mismatch detected</span>
+                    </div>
+                `;
+            }
+            
+            // Show descrambled bits
+            document.getElementById('descrambledDisplay').style.display = 'block';
+            displayBits('descrambledBits', descrambled);
+        }
+
+        // Run simulation output - Terminal style
+        function runSimulation() {
+            if (currentBit < 32) {
+                instantResult();
+            }
+            
+            let output = '$ ./pbch_scrambling\n\n';
+            output += '===== 5G NR PBCH Payload Scrambling (Simulation) =====\n\n';
+            output += `Original Payload a(j) (32 bits): ${payload.join('')}\n`;
+            output += `Scrambling Sequence s(j) (32 bits): ${scramblingSeq.join('')}\n`;
+            output += `Scrambled Payload ā(j) (32 bits): ${scrambledOutput.join('')}\n\n`;
+            output += '--- XOR Verification (First 8 bits) ---\n';
+            
+            for (let i = 0; i < 8; i++) {
+                output += `ā(${i}) = a(${i}) XOR s(${i}) = ${payload[i]} XOR ${scramblingSeq[i]} = ${scrambledOutput[i]}\n`;
+            }
+            
+            output += '\n$ ';
+            
+            document.getElementById('consoleOutput').textContent = output;
+        }
+
+        // Copy console output
+        function copyConsole() {
+            const text = document.getElementById('consoleOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Console output copied to clipboard!');
+            });
+        }
+
+        // Run C++ code simulation
+        function runCode() {
+            // Make sure scrambling is complete
+            if (currentBit < 32) {
+                instantResult();
+            }
+            
+            const cellId = parseInt(document.getElementById('cellId').value);
+            
+            let output = `===== 5G NR PBCH Payload Scrambling (Simulation) =====
+
+Original Payload a(j) (32 bits): ${payload.join('')}
+Scrambling Sequence s(j) (32 bits): ${scramblingSeq.join('')}
+Scrambled Payload ā(j) (32 bits): ${scrambledOutput.join('')}
+
+--- XOR Verification (First 8 bits) ---
+`;
+            
+            for (let i = 0; i < 8; i++) {
+                output += `ā(${i}) = a(${i}) XOR s(${i}) = ${payload[i]} XOR ${scramblingSeq[i]} = ${scrambledOutput[i]}\n`;
+            }
+            
+            const outputDiv = document.getElementById('output');
+            outputDiv.textContent = output;
+            outputDiv.classList.add('show');
+        }
+
+        // Copy C++ code
+        function copyCode() {
+            const code = document.getElementById('codeContent').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Code copied to clipboard!');
+            });
+        }
+
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>

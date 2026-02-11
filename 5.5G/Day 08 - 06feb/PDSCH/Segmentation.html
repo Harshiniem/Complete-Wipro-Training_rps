@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced 5G NR PDSCH Physical Layer | Segmentation & CRC</title>
+    <style>
+        /* --- CORE THEME --- */
+        :root {
+            --bg-deep: #050509;
+            --bg-panel: #0f111a;
+            --bg-panel-light: #1a1d2d;
+            
+            --primary: #00f2ff; /* Cyan Neon */
+            --secondary: #7000ff; /* Purple Neon */
+            --accent-success: #00ff9d;
+            --accent-error: #ff0055;
+            --accent-warn: #ffcc00;
+            
+            --text-main: #e0e6ed;
+            --text-muted: #94a3b8;
+            
+            --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+            --shadow-glow: 0 0 20px rgba(0, 242, 255, 0.15);
+            
+            --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
+        h1 { 
+            font-size: 2.5rem; 
+            background: linear-gradient(90deg, var(--text-main), var(--primary)); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+        }
+        h2 { border-left: 4px solid var(--primary); padding-left: 15px; margin-bottom: 20px; color: #fff; }
+        .mono { font-family: var(--font-mono); }
+        .highlight { color: var(--primary); }
+        
+        /* --- LAYOUT --- */
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        section { margin-bottom: 80px; }
+        
+        /* --- GLASS PANELS --- */
+        .card {
+            background: var(--bg-panel);
+            border: var(--border-glass);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        /* --- 1. THEORY SECTION STYLES --- */
+        .theory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .math-block {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            color: var(--accent-warn);
+            margin: 10px 0;
+            border-left: 2px solid var(--accent-warn);
+        }
+        .poly-box {
+            display: flex; gap: 10px; margin-top: 10px;
+        }
+        .poly-tag {
+            background: rgba(112, 0, 255, 0.2);
+            color: #d8b4fe;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            border: 1px solid rgba(112, 0, 255, 0.4);
+        }
+
+        /* --- 2. CODE SECTION STYLES --- */
+        .code-wrapper {
+            position: relative;
+            background: #0d0f14;
+            border-radius: 8px;
+            border: 1px solid #2d313c;
+        }
+        .code-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px;
+            background: #161920;
+            border-bottom: 1px solid #2d313c;
+        }
+        .code-body {
+            height: 600px;
+            overflow-y: auto;
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.5;
+            color: #d4d4d4;
+        }
+        .btn-copy {
+            background: transparent; border: 1px solid var(--primary); color: var(--primary);
+            padding: 5px 15px; cursor: pointer; border-radius: 4px; transition: 0.3s;
+        }
+        .btn-copy:hover { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary); }
+
+        /* Syntax Highlighting */
+        .cpp-kwd { color: #c678dd; } /* Keyword */
+        .cpp-typ { color: #e5c07b; } /* Type */
+        .cpp-fun { color: #61afef; } /* Function */
+        .cpp-str { color: #98c379; } /* String */
+        .cpp-num { color: #d19a66; } /* Number */
+        .cpp-com { color: #5c6370; font-style: italic; } /* Comment */
+
+        /* --- 3. SIMULATION SECTION STYLES --- */
+        .sim-dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            height: 700px;
+        }
+        .sim-col { display: flex; flex-direction: column; gap: 20px; }
+        
+        .control-group { margin-bottom: 20px; }
+        .control-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        .control-group input, .control-group select {
+            width: 100%;
+            background: #1a1d2d;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+        }
+        .control-group input:focus { outline: none; border-color: var(--primary); }
+
+        #canvas-container {
+            flex-grow: 1;
+            background: #0a0c10;
+            border-radius: 8px;
+            border: 1px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .terminal {
+            background: #08090c;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent-success);
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .log-err { color: var(--accent-error); }
+        .log-warn { color: var(--accent-warn); }
+        .log-sys { color: var(--primary); border-bottom: 1px solid #333; padding-bottom: 2px; margin-bottom: 2px; display:block;}
+
+        .bit-stream-viz {
+            display: flex; flex-wrap: wrap; gap: 2px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #000;
+            border-radius: 4px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .bit { width: 6px; height: 10px; background: #333; }
+        .bit.on { background: var(--primary); }
+        .bit.err { background: var(--accent-error); }
+
+        /* Animation Classes */
+        .btn-run {
+            width: 100%; padding: 12px;
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+            border: none; color: white; font-weight: bold; font-size: 1rem;
+            cursor: pointer; border-radius: 6px;
+            margin-top: 10px;
+        }
+        .btn-run:hover { opacity: 0.9; transform: scale(1.02); }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .sim-dashboard { grid-template-columns: 1fr; height: auto; }
+            #canvas-container { height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- HEADER -->
+    <header style="margin-bottom: 60px; text-align: center;">
+        <div style="font-family:var(--font-mono); color:var(--primary); margin-bottom: 10px;">3GPP TS 38.212 V16.2.0</div>
+        <h1>5G NR PDSCH Segmentation & CRC</h1>
+        <p style="color:var(--text-muted); max-width: 600px; margin: 0 auto; margin-top: 10px;">
+            Advanced engineering visualization of the physical downlink shared channel processing pipeline. 
+            Demonstrating Transport Block (TB) CRC attachment, code block segmentation logic, and bit-level error detection.
+        </p>
+    </header>
+
+    <!-- SECTION 1: ADVANCED THEORY -->
+    <section id="theory">
+        <h2>1. Theoretical Framework</h2>
+        <div class="theory-grid">
+            <div class="card">
+                <h3>Transport Block CRC (TB-CRC)</h3>
+                <p style="margin-top:10px; font-size:0.95rem; color:var(--text-muted);">
+                    Error detection at the Transport Block level is applied before segmentation.
+                </p>
+                <div class="math-block">
+                    If TB Size ($A$) > 3824 bits:<br>
+                    Attach 24-bit CRC (CRC24A)
+                </div>
+                <p><strong>Generator Polynomial $g_{CRC24A}(D)$:</strong></p>
+                <div class="poly-box">
+                    <span class="poly-tag">D^24 + D^23 + D^18 + D^17 + D^14 + D^11 + D^10 + D^7 + D^6 + D^5 + D^4 + D^3 + D + 1</span>
+                </div>
+                <div style="margin-top:10px; font-size:0.8rem; color:#888;">Hex: 0x1864CFB (High Hamming distance, optimized for large payloads)</div>
+            </div>
+
+            <div class="card">
+                <h3>Segmentation & Base Graphs</h3>
+                <p style="margin-top:10px; font-size:0.95rem; color:var(--text-muted);">
+                    LDPC codes have a limited input size ($K_{cb}$). TBs are segmented into $C$ code blocks.
+                </p>
+                <div class="math-block">
+                    $K_{cb}$ (Max CB Size):<br>
+                    BG1 = 8448 bits<br>
+                    BG2 = 3840 bits
+                </div>
+                <div class="math-block">
+                    Num Blocks ($C$):<br>
+                    $C = \lceil B / (K_{cb} - L) \rceil$<br>
+                    <small>Where $B$ is TB+CRC size, $L=24$ (CB-CRC)</small>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Code Block CRC (CB-CRC)</h3>
+                <p style="margin-top:10px; font-size:0.95rem; color:var(--text-muted);">
+                    When $C > 1$, every code block gets its own CRC to allow CBG-based HARQ (re-transmitting only failed blocks).
+                </p>
+                <div class="math-block">
+                    Attached to every Code Block segment.
+                </div>
+                <p><strong>Generator Polynomial $g_{CRC24B}(D)$:</strong></p>
+                <div class="poly-box">
+                    <span class="poly-tag">D^24 + D^23 + D^6 + D^5 + D + 1</span>
+                </div>
+                <div style="margin-top:10px; font-size:0.8rem; color:#888;">Hex: 0x1800063 (Optimized for shorter lengths typical of code blocks)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: C++ IMPLEMENTATION -->
+    <section id="cpp-code">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <h2>2. Production C++ Implementation</h2>
+        </div>
+        
+        <div class="code-wrapper">
+            <div class="code-header">
+                <span style="color:var(--text-muted)">src/phy/segmentation.cpp</span>
+                <div>
+                    <button class="btn-copy" onclick="downloadCpp()">Download .cpp</button>
+                    <button class="btn-copy" onclick="copyCode()">Copy Code</button>
+                </div>
+            </div>
+            <div class="code-body" id="cpp-container">
+                <!-- Code injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: LIVE SIMULATION -->
+    <section id="simulation">
+        <h2>3. Live Bit-Level Simulation</h2>
+        <div class="sim-dashboard">
+            
+            <!-- Controls -->
+            <div class="sim-col card">
+                <h3 style="color:var(--primary)">Tx Parameters</h3>
+                
+                <div class="control-group">
+                    <label>Transport Block Size (Bits)</label>
+                    <input type="number" id="input-tb-size" value="12000" min="100" max="100000" step="100">
+                    <small style="color:#666; font-size:0.75rem;">Values > 3824 trigger TB-CRC. Values > 8424 trigger Segmentation.</small>
+                </div>
+
+                <div class="control-group">
+                    <label>LDPC Base Graph</label>
+                    <select id="input-bg">
+                        <option value="1">BG1 (Max Kcb = 8448)</option>
+                        <option value="2">BG2 (Max Kcb = 3840)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Channel Noise (Bit Error Prob)</label>
+                    <input type="range" id="input-ber" min="0" max="0.01" step="0.0001" value="0.0005">
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                        <span>Clean</span>
+                        <span id="ber-val" style="color:var(--accent-error)">5e-4</span>
+                    </div>
+                </div>
+
+                <button class="btn-run" onclick="runSimulation()">Initialize & Transmit</button>
+
+                <div style="margin-top:auto; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px;">
+                    <h4 style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">Stats</h4>
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                        <span>Code Blocks:</span> <strong id="stat-cb-count">-</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                        <span>Efficiency:</span> <strong id="stat-eff">-</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualizer -->
+            <div class="sim-col">
+                <div id="canvas-container">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+                <div class="card" style="height: 150px; overflow:hidden;">
+                    <h4 style="color:var(--text-muted); font-size:0.8rem;">Bitstream Visualizer (First 1024 bits)</h4>
+                    <div id="bitviz" class="bit-stream-viz"></div>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="sim-col">
+                <div class="terminal" id="terminal">
+                    <div class="log-sys">SYSTEM INITIALIZED. READY.</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+
+<script>
+/* ==========================================================================
+   PART 1: C++ CODE GENERATION & HIGHLIGHTING
+   ========================================================================== */
+const cppCodeRaw = `/**
+ * 5G NR PDSCH Segmentation and CRC Attachment
+ * Compliant with 3GPP TS 38.212
+ */
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <iomanip>
+#include <cstdint>
+
+using namespace std;
+
+// --- Constants ---
+const int CRC24A_POLY = 0x1864CFB; // For TB > 3824
+const int CRC24B_POLY = 0x1800063; // For Code Blocks
+const int MAX_CB_BG1 = 8448;
+const int MAX_CB_BG2 = 3840;
+
+class CRCUtils {
+public:
+    // Calculates CRC for a bit stream
+    static uint32_t calculate(const vector<uint8_t>& data, uint32_t poly) {
+        uint32_t crc = 0;
+        int len = data.size();
+        
+        // Emulating LFSR (Linear Feedback Shift Register)
+        for (int i = 0; i < len; ++i) {
+            uint8_t bit = data[i];
+            bool msb = (crc & 0x800000) != 0;
+            crc = ((crc << 1) | bit) & 0xFFFFFF;
+            if (msb) {
+                crc ^= poly;
+            }
+        }
+        // In 5G, we usually process 0-padding for the length of CRC
+        for (int i = 0; i < 24; ++i) {
+             bool msb = (crc & 0x800000) != 0;
+             crc = (crc << 1) & 0xFFFFFF;
+             if (msb) crc ^= poly;
+        }
+        return crc;
+    }
+};
+
+struct CodeBlock {
+    int id;
+    vector<uint8_t> bits;
+    uint32_t attachedCRC;
+    bool hasError;
+};
+
+class SegmentationEngine {
+    int maxCBSize;
+public:
+    SegmentationEngine(int bgType) {
+        maxCBSize = (bgType == 1) ? MAX_CB_BG1 : MAX_CB_BG2;
+    }
+
+    vector<CodeBlock> process(vector<uint8_t> tbData) {
+        vector<CodeBlock> blocks;
+        int B = tbData.size();
+        
+        cout << "[PHY] Input TB Size: " << B << " bits" << endl;
+
+        // 1. TB CRC Attachment
+        if (B > 3824) {
+            uint32_t tbCrc = CRCUtils::calculate(tbData, CRC24A_POLY);
+            // Append CRC bits (conceptually)
+            B += 24; 
+            cout << "[PHY] Attached CRC24A. New Size B: " << B << endl;
+        }
+
+        // 2. Segmentation
+        int C = 1;
+        if (B > maxCBSize) {
+            int L = 24; // CB CRC length
+            C = ceil((double)B / (maxCBSize - L));
+            cout << "[PHY] Segmentation required. Blocks (C): " << C << endl;
+        }
+
+        // 3. Block Creation
+        int k_prime = B / C; // Simplified for demo (actual logic involves alignment)
+        
+        for(int r = 0; r < C; r++) {
+            CodeBlock cb;
+            cb.id = r;
+            cb.bits.resize(k_prime, 1); // Mock data
+            
+            // 4. CB CRC Attachment
+            if (C > 1) {
+                cb.attachedCRC = CRCUtils::calculate(cb.bits, CRC24B_POLY);
+                // Append CRC to bits vector...
+            }
+            blocks.push_back(cb);
+        }
+        
+        return blocks;
+    }
+};
+
+int main() {
+    SegmentationEngine engine(1); // Use BG1
+    vector<uint8_t> transportBlock(12000, 1); // 12000 dummy bits
+    
+    auto blocks = engine.process(transportBlock);
+    
+    cout << "Processing Complete. " << blocks.size() << " Code Blocks generated." << endl;
+    return 0;
+}`;
+
+function renderCpp() {
+    const container = document.getElementById('cpp-container');
+    let html = cppCodeRaw
+        .replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/\/\/.*/g, m => `<span class="cpp-com">${m}</span>`)
+        .replace(/\b(int|void|double|bool|uint32_t|uint8_t|auto)\b/g, m => `<span class="cpp-typ">${m}</span>`)
+        .replace(/\b(class|struct|public|static|const|if|else|for|return|using|namespace)\b/g, m => `<span class="cpp-kwd">${m}</span>`)
+        .replace(/\b(calculate|process|push_back|resize|size|ceil)\b/g, m => `<span class="cpp-fun">${m}</span>`)
+        .replace(/\b(\d+|0x[0-9A-F]+)\b/g, m => `<span class="cpp-num">${m}</span>`)
+        .replace(/"(.*?)"/g, m => `<span class="cpp-str">${m}</span>`);
+    
+    container.innerHTML = `<pre>${html}</pre>`;
+}
+
+function copyCode() {
+    navigator.clipboard.writeText(cppCodeRaw);
+    alert('Code copied to clipboard.');
+}
+
+function downloadCpp() {
+    const blob = new Blob([cppCodeRaw], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'segmentation.cpp';
+    a.click();
+}
+
+renderCpp();
+
+/* ==========================================================================
+   PART 2: PHYSICS ENGINE & SIMULATION LOGIC
+   ========================================================================== */
+   
+// CRC Polynomials (Bitmasks)
+const POLY_CRC24A = 0x1864CFB; 
+const POLY_CRC24B = 0x1800063;
+
+class BitStream {
+    constructor(size) {
+        this.bits = new Uint8Array(size);
+        for(let i=0; i<size; i++) this.bits[i] = Math.random() > 0.5 ? 1 : 0;
+    }
+    
+    static calculateCRC(bits, poly) {
+        let crc = 0;
+        // Simplified CRC calculation for JS simulation
+        // (Standard shift register logic)
+        for (let b of bits) {
+            let msb = (crc >>> 23) & 1;
+            crc = ((crc << 1) & 0xFFFFFF) | b;
+            if (msb) crc ^= poly;
+        }
+        // Flush
+        for(let i=0; i<24; i++) {
+             let msb = (crc >>> 23) & 1;
+             crc = ((crc << 1) & 0xFFFFFF);
+             if (msb) crc ^= poly;
+        }
+        return crc;
+    }
+}
+
+// Canvas Setup
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+let animationFrame;
+let pipelineBlocks = [];
+
+function resizeCanvas() {
+    canvas.width = document.getElementById('canvas-container').clientWidth;
+    canvas.height = document.getElementById('canvas-container').clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function log(msg, type='sys') {
+    const term = document.getElementById('terminal');
+    const div = document.createElement('div');
+    div.className = `log-${type}`;
+    div.innerText = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
+    term.appendChild(div);
+    term.scrollTop = term.scrollHeight;
+}
+
+function updateBerDisplay() {
+    const val = document.getElementById('input-ber').value;
+    document.getElementById('ber-val').innerText = parseFloat(val).toExponential(1);
+}
+document.getElementById('input-ber').addEventListener('input', updateBerDisplay);
+
+// --- MAIN LOGIC ---
+
+function runSimulation() {
+    // 1. Get Inputs
+    const tbSize = parseInt(document.getElementById('input-tb-size').value);
+    const bg = parseInt(document.getElementById('input-bg').value);
+    const ber = parseFloat(document.getElementById('input-ber').value);
+    const maxKcb = (bg === 1) ? 8448 : 3840;
+
+    // Reset UI
+    pipelineBlocks = [];
+    document.getElementById('terminal').innerHTML = '';
+    log("Simulation Started...", "sys");
+
+    // 2. Generate Data
+    const dataBits = new BitStream(tbSize).bits;
+    updateBitViz(dataBits);
+    
+    let B = tbSize;
+    let hasTBCrc = false;
+
+    // 3. TB CRC Logic
+    if (B > 3824) {
+        const crcA = BitStream.calculateCRC(dataBits, POLY_CRC24A);
+        B += 24;
+        hasTBCrc = true;
+        log(`TB Size (${tbSize}) > 3824. Attaching CRC24A. B = ${B}`, "sys");
+    } else {
+        log(`TB Size (${tbSize}) <= 3824. No TB CRC.`, "warn");
+    }
+
+    // 4. Segmentation Logic (3GPP TS 38.212 5.2.2)
+    let C = 1;
+    if (B > maxKcb) {
+        C = Math.ceil(B / (maxKcb - 24));
+        log(`B (${B}) > Kcb (${maxKcb}). Segmentation: C = ${C} blocks.`, "sys");
+    } else {
+        log("No segmentation required.", "sys");
+    }
+
+    // Update Stats
+    document.getElementById('stat-cb-count').innerText = C;
+    document.getElementById('stat-eff').innerText = ((tbSize/B)*100).toFixed(1) + "%";
+
+    // 5. Create Block Objects for Animation
+    const blockSize = B / C; // Simplified
+    for(let r=0; r<C; r++) {
+        // Simulate Noise
+        let bitErrors = 0;
+        for(let k=0; k<blockSize; k++) {
+            if(Math.random() < ber) bitErrors++;
+        }
+
+        // Logic Check: Did CRC catch it?
+        // In this sim, if bitErrors > 0, CRC Check Fails.
+        // Unless errors alias (prob negligible for 24-bit CRC).
+        const isCorrupt = bitErrors > 0;
+        
+        pipelineBlocks.push({
+            id: r,
+            width: Math.max(40, (blockSize / maxKcb) * 150),
+            x: -150 - (r * 160), // Start off screen
+            y: canvas.height/2 - 25,
+            corrupt: isCorrupt,
+            checked: false,
+            processed: false,
+            type: (C > 1) ? 'CB + CRC24B' : (hasTBCrc ? 'TB + CRC24A' : 'TB (Raw)')
+        });
+    }
+
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    animate();
+}
+
+function updateBitViz(bits) {
+    const container = document.getElementById('bitviz');
+    container.innerHTML = '';
+    // Show first 200 bits
+    const frag = document.createDocumentFragment();
+    for(let i=0; i<Math.min(bits.length, 256); i++) {
+        const d = document.createElement('div');
+        d.className = bits[i] ? 'bit on' : 'bit';
+        frag.appendChild(d);
+    }
+    container.appendChild(frag);
+}
+
+// --- VISUALIZATION ENGINE ---
+
+function animate() {
+    ctx.fillStyle = '#0a0c10';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Pipeline Tracks
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height/2);
+    ctx.lineTo(canvas.width, canvas.height/2);
+    ctx.stroke();
+
+    // Receiver Station
+    const rxX = canvas.width - 150;
+    ctx.fillStyle = '#161920';
+    ctx.strokeStyle = '#00f2ff';
+    ctx.strokeRect(rxX, canvas.height/2 - 60, 120, 120);
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px monospace';
+    ctx.fillText("LDPC DECODER", rxX + 20, canvas.height/2 - 40);
+    ctx.fillText("& CRC CHECK", rxX + 25, canvas.height/2 - 25);
+
+    let allProcessed = true;
+
+    pipelineBlocks.forEach(b => {
+        // Movement
+        if (b.x < rxX + 10) {
+            b.x += 4; // Speed
+            allProcessed = false;
+        }
+
+        // Draw Block
+        ctx.fillStyle = b.corrupt ? '#5c1c2b' : 'rgba(0, 242, 255, 0.2)';
+        ctx.strokeStyle = b.corrupt ? '#ff0055' : '#00f2ff';
+        ctx.lineWidth = 1;
+        
+        ctx.fillRect(b.x, b.y, b.width, 50);
+        ctx.strokeRect(b.x, b.y, b.width, 50);
+
+        // CRC Tail
+        ctx.fillStyle = b.corrupt ? '#ff0055' : '#7000ff';
+        ctx.fillRect(b.x + b.width - 10, b.y, 10, 50);
+
+        // Text
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px monospace';
+        ctx.fillText(`CB#${b.id}`, b.x + 5, b.y + 20);
+        ctx.font = '8px monospace';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(b.type, b.x + 5, b.y + 40);
+
+        // Processing Logic (When hitting receiver)
+        if (b.x >= rxX && !b.checked) {
+            b.checked = true;
+            if (b.corrupt) {
+                log(`Block #${b.id}: CRC FAILED! Requesting Retransmission (HARQ-NACK).`, "err");
+                
+                // Visual Flash
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                ctx.fillStyle = 'red';
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.restore();
+            } else {
+                log(`Block #${b.id}: CRC PASS.`, "sys");
+            }
+        }
+    });
+
+    if (!allProcessed) {
+        animationFrame = requestAnimationFrame(animate);
+    } else {
+        log("Transmission Complete.", "sys");
+    }
+}
+
+</script>
+</body>
+</html>

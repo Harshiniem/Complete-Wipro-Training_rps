@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive 5G PDCP Architecture</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid #334155;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .pdcp-box {
+            border: 3px dashed var(--primary);
+            padding: 20px;
+            border-radius: 15px;
+            position: relative;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .layer-label {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 15px 0;
+            color: #fbbf24;
+        }
+
+        .flow-line {
+            width: 4px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            margin: 0 auto;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .component {
+            background: #334155;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .component:hover {
+            background: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .info-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 10px;
+            border-left: 5px solid var(--secondary);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+        }
+
+        footer {
+            margin-top: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0px rgba(99, 102, 241, 0.4); }
+            100% { box-shadow: 0 0 0 20px rgba(99, 102, 241, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>5G PDCP Entity</h1>
+        <p class="subtitle">The Brain of Packet Data Convergence</p>
+
+        <div class="layer-label">Upper Layer (SDAP / RRC)</div>
+        <div class="flow-line"></div>
+
+        <div class="pdcp-box">
+            <div style="margin-bottom: 15px; font-weight: bold; color: var(--primary)">PDCP LAYER</div>
+            
+            <div class="component-grid">
+                <div class="component" onclick="showInfo('sn')">Sequence Numbering</div>
+                <div class="component" onclick="showInfo('rohc')">Header Compression (ROHC)</div>
+                <div class="component" onclick="showInfo('sec')">Integrity & Ciphering</div>
+                <div class="component" onclick="showInfo('dup')">Duplicate Detection</div>
+                <div class="component" onclick="showInfo('rout')">Routing & Duplication</div>
+                <div class="component" onclick="showInfo('reord')">Reordering</div>
+            </div>
+        </div>
+
+        <div class="flow-line"></div>
+        <div class="layer-label">Lower Layer (RLC)</div>
+
+        <div id="info-box" class="info-panel">
+            Click a component above to explore its function in 5G!
+        </div>
+
+        <footer>Made by Harshinie M</footer>
+    </div>
+
+    <script>
+        const details = {
+            sn: "<strong>Sequence Numbering:</strong> Assigns a unique ID to every packet so the receiver knows the correct order and doesn't miss anything.",
+            rohc: "<strong>ROHC (Robust Header Compression):</strong> Shrinks the massive IPv6 headers. This is vital for voice calls (VoNR) to save radio resources.",
+            sec: "<strong>Security:</strong> Applies AES or Snow3G algorithms to encrypt your data and adds a Message Authentication Code (MAC-I) for integrity.",
+            dup: "<strong>Duplicate Detection:</strong> Identifies and discards identical packets that might have been received via different radio paths.",
+            rout: "<strong>Routing & Duplication:</strong> In Split Bearer mode, PDCP decides which radio path to take. It can also send the same packet twice for ultra-reliability (URLLC).",
+            reord: "<strong>Reordering:</strong> If packets arrive late, PDCP buffers them and waits until it can deliver them in the exact right order to the upper layers."
+        };
+
+        function showInfo(key) {
+            const box = document.getElementById('info-box');
+            box.innerHTML = details[key];
+            box.style.borderLeftColor = "#6366f1";
+            box.classList.remove('pulse');
+            void box.offsetWidth; // Trigger reflow
+            box.classList.add('pulse');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G Code Block Concatenation | Premium Learning Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(88, 86, 214, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: backgroundMove 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundMove {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Premium Header */
+        .header {
+            text-align: center;
+            padding: 80px 20px;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+            filter: blur(60px);
+            z-index: -1;
+        }
+
+        .header h1 {
+            font-size: 5em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f857a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+            text-shadow: 0 0 80px rgba(139, 92, 246, 0.5);
+        }
+
+        .header .subtitle {
+            font-size: 1.6em;
+            color: #a5b4fc;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header .tagline {
+            font-size: 1.2em;
+            color: #818cf8;
+            margin-top: 15px;
+            font-weight: 400;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 32px 0 rgba(0, 0, 0, 0.37),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.5s;
+        }
+
+        .glass-card:hover::before {
+            left: 100%;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 
+                0 20px 60px 0 rgba(139, 92, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 2.5em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card-title .icon {
+            font-size: 1.2em;
+            filter: drop-shadow(0 0 20px rgba(248, 87, 166, 0.6));
+        }
+
+        /* Premium Pipeline */
+        .pipeline-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 30px 0;
+        }
+
+        .pipeline-step {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2));
+            backdrop-filter: blur(10px);
+            padding: 20px 35px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.1em;
+            border: 2px solid rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pipeline-step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(248, 87, 166, 0.3));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pipeline-step:hover::before {
+            opacity: 1;
+        }
+
+        .pipeline-step:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .pipeline-step.active {
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            border-color: #f857a6;
+            animation: glow 2s infinite;
+            box-shadow: 0 0 30px rgba(248, 87, 166, 0.6);
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(248, 87, 166, 0.6); }
+            50% { box-shadow: 0 0 50px rgba(248, 87, 166, 0.9); }
+        }
+
+        .pipeline-arrow {
+            font-size: 2em;
+            color: #8b5cf6;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+        }
+
+        /* Premium Controls */
+        .control-panel {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(248, 87, 166, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 30px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #c4b5fd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #f857a6;
+            text-shadow: 0 0 10px rgba(248, 87, 166, 0.5);
+        }
+
+        /* Custom Slider */
+        .slider-container {
+            position: relative;
+            padding: 10px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), rgba(248, 87, 166, 0.3));
+            outline: none;
+            -webkit-appearance: none;
+            position: relative;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(248, 87, 166, 0.8);
+            transition: all 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 30px rgba(248, 87, 166, 1);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 20px rgba(248, 87, 166, 0.8);
+        }
+
+        /* Premium Buttons */
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 20px 50px;
+            font-size: 1.2em;
+            font-weight: 700;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            box-shadow: 0 10px 30px rgba(248, 87, 166, 0.4);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(248, 87, 166, 0.6);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Animation Stage */
+        .animation-stage {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 25px;
+            padding: 50px;
+            margin: 40px 0;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            position: relative;
+            min-height: 600px;
+        }
+
+        .blocks-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        /* Premium Code Block */
+        .code-block-item {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+            backdrop-filter: blur(10px);
+            padding: 25px 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-block-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.2), transparent);
+            transition: left 0.8s;
+        }
+
+        .code-block-item.animating::before {
+            left: 100%;
+        }
+
+        .code-block-item.animating {
+            border-color: #f857a6;
+            box-shadow: 0 10px 40px rgba(248, 87, 166, 0.5);
+            transform: scale(1.02);
+        }
+
+        .block-label {
+            font-size: 1.4em;
+            font-weight: 700;
+            min-width: 120px;
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .bits-container {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Premium Bit Design */
+        .bit {
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 800;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bit::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+        }
+
+        .bit:hover::before {
+            width: 100px;
+            height: 100px;
+        }
+
+        .bit-0 {
+            background: linear-gradient(135deg, #ffd93d, #ffb800);
+            color: #2d3436;
+            box-shadow: 0 8px 25px rgba(255, 184, 0, 0.4);
+            border: 2px solid rgba(255, 184, 0, 0.6);
+        }
+
+        .bit-1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border: 2px solid rgba(102, 126, 234, 0.6);
+        }
+
+        .bit:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+        }
+
+        .bit.flying {
+            animation: flyToBelt 1s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        @keyframes flyToBelt {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-50px) scale(1.3) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(0) scale(1) rotate(360deg);
+                opacity: 1;
+            }
+        }
+
+        /* Output Belt */
+        .output-belt {
+            background: linear-gradient(135deg, rgba(248, 87, 166, 0.2), rgba(255, 88, 88, 0.2));
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(248, 87, 166, 0.5);
+            border-radius: 20px;
+            padding: 35px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .output-belt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: scanning 3s infinite;
+        }
+
+        @keyframes scanning {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .output-title {
+            font-size: 1.8em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .output-bits {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            min-height: 80px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .bit.appearing {
+            animation: bitAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bitAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(-180deg) translateY(-50px);
+            }
+            60% {
+                transform: scale(1.2) rotate(10deg) translateY(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg) translateY(0);
+            }
+        }
+
+        /* Premium Progress Bar */
+        .progress-section {
+            margin: 40px 0;
+        }
+
+        .progress-label {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #c4b5fd;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-track {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f857a6);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            box-shadow: 0 0 20px rgba(248, 87, 166, 0.8);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Stats Dashboard */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(248, 87, 166, 0.1));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            animation: rotateGradient 10s linear infinite;
+        }
+
+        @keyframes rotateGradient {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            border-color: #f857a6;
+            box-shadow: 0 15px 40px rgba(248, 87, 166, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.6));
+        }
+
+        .stat-value {
+            font-size: 3em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: #a5b4fc;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* C++ Code Section */
+        .code-section {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .code-filename {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #4facfe;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-code-btn {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .copy-code-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.5);
+        }
+
+        .code-display {
+            background: #0d1117;
+            padding: 35px;
+            border-radius: 15px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            line-height: 1.8;
+            box-shadow: inset 0 2px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .code-display pre {
+            margin: 0;
+            color: #c9d1d9;
+        }
+
+        /* Syntax highlighting */
+        .kw { color: #ff7b72; font-weight: bold; }
+        .typ { color: #79c0ff; }
+        .func { color: #d2a8ff; }
+        .str { color: #a5d6ff; }
+        .num { color: #79c0ff; }
+        .cmt { color: #8b949e; font-style: italic; }
+        .op { color: #ff7b72; }
+
+        /* Info Boxes */
+        .info-panel {
+            background: linear-gradient(135deg, rgba(255, 217, 61, 0.1), rgba(255, 184, 0, 0.1));
+            border-left: 5px solid #ffd93d;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            font-size: 1.15em;
+            line-height: 1.8;
+        }
+
+        .info-panel strong {
+            color: #ffd93d;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .header h1 { font-size: 4em; }
+            .container { padding: 30px 15px; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5em; }
+            .header .subtitle { font-size: 1.2em; }
+            .card-title { font-size: 1.8em; }
+            .bit { width: 45px; height: 45px; font-size: 1.2em; }
+            .btn { padding: 15px 30px; font-size: 1em; }
+            .glass-card { padding: 30px 20px; }
+            .animation-stage { padding: 30px 20px; }
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(139, 92, 246, 0.3);
+            border-top-color: #f857a6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Premium Header -->
+        <div class="header">
+            <h1>5G CODE BLOCK CONCATENATION</h1>
+            <div class="subtitle">Next-Generation Learning Experience</div>
+            <div class="tagline">Master the Art of Bit Stream Assembly</div>
+        </div>
+
+        <!-- Concept Overview -->
+        <div class="glass-card">
+            <div class="card-title">
+                <span class="icon">🎯</span>
+                <span>What is Concatenation?</span>
+            </div>
+            
+            <p style="font-size: 1.3em; line-height: 2; color: #c4b5fd; margin-bottom: 30px;">
+                <strong style="color: #f857a6;">Code Block Concatenation</strong> is the process of <strong style="color: #4facfe;">joining multiple code blocks end-to-end</strong> to create one continuous stream of bits ready for modulation and transmission.
+            </p>
+
+            <div class="info-panel">
+                <strong>💡 Real-World Analogy:</strong> Think of it like assembling train cars. Each car (code block) carries passengers (bits). Concatenation connects all cars together to form one complete train (output stream) ready to depart!
+            </div>
+
+            <div class="pipeline-container">
+                <div class="pipeline">
+                    <div class="pipeline-step">CRC Attach</div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">Segmentation</div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">LDPC Encode</div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">Rate Matching</div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step active">Concatenation</div>
+                    <div class="pipeline-arrow">→</div>
+                    <div class="pipeline-step">Modulation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Simulator -->
+        <div class="glass-card">
+            <div class="card-title">
+                <span class="icon">🎮</span>
+                <span>Interactive Simulator</span>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="control-grid">
+                    <div class="control-item">
+                        <div class="control-label">
+                            <span>🧩 Number of Blocks</span>
+                            <span class="control-value" id="numBlocksDisplay">3</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="numBlocksSlider" min="2" max="6" value="3">
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <div class="control-label">
+                            <span>📊 Bits per Block</span>
+                            <span class="control-value" id="bitsPerBlockDisplay">6</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="bitsPerBlockSlider" min="4" max="10" value="6">
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <div class="control-label">
+                            <span>⚡ Animation Speed</span>
+                            <span class="control-value" id="speedDisplay">Normal</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="speedSlider" min="1" max="3" value="2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="generateBtn">
+                        <span>🎲 Generate Random</span>
+                    </button>
+                    <button class="btn btn-primary" id="startBtn">
+                        <span>▶️ Start Concatenation</span>
+                    </button>
+                    <button class="btn btn-accent" id="resetBtn">
+                        <span>🔄 Reset</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Animation Stage -->
+            <div class="animation-stage">
+                <div class="blocks-grid" id="blocksGrid"></div>
+
+                <!-- Progress Bar -->
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>⏳ Progress</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- Output Belt -->
+                <div class="output-belt">
+                    <div class="output-header">
+                        <div class="output-title">
+                            <span>📤</span>
+                            <span>Concatenated Output Stream</span>
+                        </div>
+                    </div>
+                    <div class="output-bits" id="outputBits">
+                        <div style="color: #8b949e; font-size: 1.2em; margin: auto;">
+                            Output stream will appear here...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Dashboard -->
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-icon">🧩</div>
+                    <div class="stat-value" id="statBlocks">3</div>
+                    <div class="stat-label">Total Blocks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="statBits">0</div>
+                    <div class="stat-label">Total Bits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="statProcessed">0</div>
+                    <div class="stat-label">Processed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value" id="statSpeed">0ms</div>
+                    <div class="stat-label">Avg Speed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- C++ Implementation -->
+        <div class="glass-card">
+            <div class="card-title">
+                <span class="icon">💻</span>
+                <span>C++ Implementation</span>
+            </div>
+
+            <div class="code-section">
+                <div class="code-header">
+                    <div class="code-filename">
+                        <span>📄</span>
+                        <span>concatenation.cpp</span>
+                    </div>
+                    <button class="copy-code-btn" id="copyCodeBtn">
+                        📋 Copy Code
+                    </button>
+                </div>
+
+                <div class="code-display">
+                    <pre id="cppCode"><span class="cmt">// ============================================
+// 5G NR Code Block Concatenation
+// Physical Downlink Shared Channel (PDSCH)
+// ============================================</span>
+
+<span class="kw">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;chrono&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cmt">/**
+ * @brief Concatenate multiple code blocks into a single stream
+ * @param blocks Vector of code blocks (each block is a vector of bits)
+ * @return Final concatenated bit stream
+ * @complexity O(n) where n = total number of bits
+ */</span>
+<span class="typ">vector</span>&lt;<span class="typ">int</span>&gt; <span class="func">concatenateCodeBlocks</span>(<span class="kw">const</span> <span class="typ">vector</span>&lt;<span class="typ">vector</span>&lt;<span class="typ">int</span>&gt;&gt;<span class="op">&</span> blocks) {
+    <span class="typ">vector</span>&lt;<span class="typ">int</span>&gt; finalStream;
+    
+    <span class="cmt">// Pre-allocate memory for efficiency</span>
+    <span class="typ">size_t</span> totalSize <span class="op">=</span> <span class="num">0</span>;
+    <span class="kw">for</span>(<span class="kw">const auto</span><span class="op">&</span> block : blocks) {
+        totalSize <span class="op">+=</span> block.size();
+    }
+    finalStream.reserve(totalSize);
+    
+    <span class="cmt">// Concatenate each block sequentially</span>
+    <span class="kw">for</span>(<span class="kw">const auto</span><span class="op">&</span> block : blocks) {
+        finalStream.insert(finalStream.end(), block.begin(), block.end());
+    }
+    
+    <span class="kw">return</span> finalStream;
+}
+
+<span class="cmt">/**
+ * @brief Display code blocks and final stream
+ */</span>
+<span class="typ">void</span> <span class="func">displayResults</span>(<span class="kw">const</span> <span class="typ">vector</span>&lt;<span class="typ">vector</span>&lt;<span class="typ">int</span>&gt;&gt;<span class="op">&</span> blocks, 
+                      <span class="kw">const</span> <span class="typ">vector</span>&lt;<span class="typ">int</span>&gt;<span class="op">&</span> finalStream) {
+    cout <span class="op">&lt;&lt;</span> <span class="str">"\n╔════════════════════════════════════╗\n"</span>;
+    cout <span class="op">&lt;&lt;</span> <span class="str">"║    CODE BLOCK CONCATENATION    ║\n"</span>;
+    cout <span class="op">&lt;&lt;</span> <span class="str">"╚════════════════════════════════════╝\n\n"</span>;
+    
+    cout <span class="op">&lt;&lt;</span> <span class="str">"Input Code Blocks:\n"</span>;
+    <span class="kw">for</span>(<span class="typ">size_t</span> i <span class="op">=</span> <span class="num">0</span>; i <span class="op">&lt;</span> blocks.size(); i<span class="op">++</span>) {
+        cout <span class="op">&lt;&lt;</span> <span class="str">"  Block "</span> <span class="op">&lt;&lt;</span> (i<span class="op">+</span><span class="num">1</span>) <span class="op">&lt;&lt;</span> <span class="str">": [ "</span>;
+        <span class="kw">for</span>(<span class="typ">int</span> bit : blocks[i])
+            cout <span class="op">&lt;&lt;</span> bit <span class="op">&lt;&lt;</span> <span class="str">" "</span>;
+        cout <span class="op">&lt;&lt;</span> <span class="str">"]  Length: "</span> <span class="op">&lt;&lt;</span> blocks[i].size() <span class="op">&lt;&lt;</span> <span class="str">" bits\n"</span>;
+    }
+    
+    cout <span class="op">&lt;&lt;</span> <span class="str">"\n═══════════════════════════════════════\n\n"</span>;
+    cout <span class="op">&lt;&lt;</span> <span class="str">"Concatenated Output Stream:\n  "</span>;
+    <span class="kw">for</span>(<span class="typ">int</span> bit : finalStream)
+        cout <span class="op">&lt;&lt;</span> bit;
+    cout <span class="op">&lt;&lt;</span> <span class="str">"\n\nTotal Length: "</span> <span class="op">&lt;&lt;</span> finalStream.size() <span class="op">&lt;&lt;</span> <span class="str">" bits\n"</span>;
+    cout <span class="op">&lt;&lt;</span> <span class="str">"Status: ✓ Ready for Modulation\n\n"</span>;
+}
+
+<span class="typ">int</span> <span class="func">main</span>() {
+    <span class="cmt">// Example: Code blocks from Rate Matching stage</span>
+    <span class="typ">vector</span>&lt;<span class="typ">vector</span>&lt;<span class="typ">int</span>&gt;&gt; codeBlocks <span class="op">=</span> {
+        {<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>},  <span class="cmt">// Block 1</span>
+        {<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>},  <span class="cmt">// Block 2</span>
+        {<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>}   <span class="cmt">// Block 3</span>
+    };
+    
+    <span class="cmt">// Measure execution time</span>
+    <span class="kw">auto</span> start <span class="op">=</span> chrono<span class="op">::</span>high_resolution_clock<span class="op">::</span>now();
+    
+    <span class="cmt">// Perform concatenation</span>
+    <span class="typ">vector</span>&lt;<span class="typ">int</span>&gt; finalBits <span class="op">=</span> concatenateCodeBlocks(codeBlocks);
+    
+    <span class="kw">auto</span> end <span class="op">=</span> chrono<span class="op">::</span>high_resolution_clock<span class="op">::</span>now();
+    <span class="kw">auto</span> duration <span class="op">=</span> chrono<span class="op">::</span>duration_cast<span class="op">&lt;</span>chrono<span class="op">::</span>microseconds<span class="op">&gt;</span>(end <span class="op">-</span> start);
+    
+    <span class="cmt">// Display results</span>
+    displayResults(codeBlocks, finalBits);
+    
+    cout <span class="op">&lt;&lt;</span> <span class="str">"Execution Time: "</span> <span class="op">&lt;&lt;</span> duration.count() <span class="op">&lt;&lt;</span> <span class="str">" μs\n\n"</span>;
+    
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Takeaways -->
+        <div class="glass-card">
+            <div class="card-title">
+                <span class="icon">🎓</span>
+                <span>Key Concepts</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px;">
+                <div class="info-panel" style="border-left-color: #667eea; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));">
+                    <strong style="color: #667eea;">📥 INPUT:</strong> Multiple code blocks from Rate Matching stage, each containing bits (0s and 1s)
+                </div>
+                <div class="info-panel" style="border-left-color: #f857a6; background: linear-gradient(135deg, rgba(248, 87, 166, 0.1), rgba(255, 88, 88, 0.1));">
+                    <strong style="color: #f857a6;">⚙️ PROCESS:</strong> Join blocks sequentially, end-to-end, preserving order and bit sequence
+                </div>
+                <div class="info-panel" style="border-left-color: #4facfe; background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));">
+                    <strong style="color: #4facfe;">📤 OUTPUT:</strong> Single continuous bit stream ready for modulation (QPSK, 16-QAM, 64-QAM, etc.)
+                </div>
+            </div>
+
+            <div class="info-panel" style="margin-top: 30px; border-left-color: #00f2fe; background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(79, 172, 254, 0.1));">
+                <strong style="color: #00f2fe;">⚡ COMPLEXITY:</strong> O(n) where n = total number of bits<br>
+                <strong style="color: #00f2fe;">🎯 PURPOSE:</strong> Prepare data for modulation by creating unified transmission stream<br>
+                <strong style="color: #00f2fe;">📍 POSITION:</strong> Between Rate Matching and Modulation in PDSCH pipeline
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== STATE MANAGEMENT ====================
+        let state = {
+            blocks: [],
+            isAnimating: false,
+            animationStartTime: 0
+        };
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeParticles();
+            setupEventListeners();
+            generateBlocks();
+            updateAllStats();
+        });
+
+        // ==================== PARTICLES ====================
+        function initializeParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        function setupEventListeners() {
+            // Sliders
+            document.getElementById('numBlocksSlider').addEventListener('input', (e) => {
+                document.getElementById('numBlocksDisplay').textContent = e.target.value;
+                if (!state.isAnimating) generateBlocks();
+            });
+
+            document.getElementById('bitsPerBlockSlider').addEventListener('input', (e) => {
+                document.getElementById('bitsPerBlockDisplay').textContent = e.target.value;
+                if (!state.isAnimating) generateBlocks();
+            });
+
+            document.getElementById('speedSlider').addEventListener('input', (e) => {
+                const speeds = ['Slow', 'Normal', 'Fast'];
+                document.getElementById('speedDisplay').textContent = speeds[e.target.value - 1];
+            });
+
+            // Buttons
+            document.getElementById('generateBtn').addEventListener('click', () => {
+                if (!state.isAnimating) generateBlocks();
+            });
+
+            document.getElementById('startBtn').addEventListener('click', startConcatenation);
+            document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+            document.getElementById('copyCodeBtn').addEventListener('click', copyCode);
+        }
+
+        // ==================== BLOCK GENERATION ====================
+        function generateBlocks() {
+            const numBlocks = parseInt(document.getElementById('numBlocksSlider').value);
+            const bitsPerBlock = parseInt(document.getElementById('bitsPerBlockSlider').value);
+
+            state.blocks = [];
+            const container = document.getElementById('blocksGrid');
+            container.innerHTML = '';
+
+            for (let i = 0; i < numBlocks; i++) {
+                const bits = Array.from({ length: bitsPerBlock }, () => Math.random() > 0.5 ? 1 : 0);
+                state.blocks.push(bits);
+
+                const blockDiv = document.createElement('div');
+                blockDiv.className = 'code-block-item';
+                blockDiv.id = `block-${i}`;
+
+                const label = document.createElement('div');
+                label.className = 'block-label';
+                label.textContent = `Block ${i + 1}`;
+
+                const bitsContainer = document.createElement('div');
+                bitsContainer.className = 'bits-container';
+
+                bits.forEach((bit, idx) => {
+                    const bitDiv = document.createElement('div');
+                    bitDiv.className = `bit bit-${bit}`;
+                    bitDiv.textContent = bit;
+                    bitDiv.style.animationDelay = `${idx * 0.05}s`;
+                    bitsContainer.appendChild(bitDiv);
+                });
+
+                blockDiv.appendChild(label);
+                blockDiv.appendChild(bitsContainer);
+                container.appendChild(blockDiv);
+            }
+
+            // Clear output
+            document.getElementById('outputBits').innerHTML = '<div style="color: #8b949e; font-size: 1.2em; margin: auto;">Output stream will appear here...</div>';
+            resetProgress();
+            updateAllStats();
+        }
+
+        // ==================== CONCATENATION ANIMATION ====================
+        async function startConcatenation() {
+            if (state.isAnimating) return;
+
+            state.isAnimating = true;
+            state.animationStartTime = Date.now();
+
+            // Disable controls
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('generateBtn').disabled = true;
+
+            const speeds = [2000, 1200, 700];
+            const speedIndex = parseInt(document.getElementById('speedSlider').value) - 1;
+            const baseDelay = speeds[speedIndex];
+
+            const outputContainer = document.getElementById('outputBits');
+            outputContainer.innerHTML = '';
+
+            let allBits = [];
+            let processedBlocks = 0;
+
+            for (let i = 0; i < state.blocks.length; i++) {
+                // Highlight current block
+                const blockElement = document.getElementById(`block-${i}`);
+                blockElement.classList.add('animating');
+
+                await sleep(baseDelay / 4);
+
+                // Add bits one by one
+                const blockBits = state.blocks[i];
+                for (let j = 0; j < blockBits.length; j++) {
+                    const bit = blockBits[j];
+                    allBits.push(bit);
+
+                    const bitDiv = document.createElement('div');
+                    bitDiv.className = `bit bit-${bit} appearing`;
+                    bitDiv.textContent = bit;
+                    bitDiv.style.animationDelay = '0s';
+                    outputContainer.appendChild(bitDiv);
+
+                    await sleep(baseDelay / (blockBits.length * 1.5));
+                }
+
+                blockElement.classList.remove('animating');
+                processedBlocks++;
+
+                // Update progress
+                const progress = Math.round(((i + 1) / state.blocks.length) * 100);
+                updateProgress(progress);
+                updateStat('statProcessed', processedBlocks);
+                updateStat('statBits', allBits.length);
+
+                await sleep(baseDelay / 3);
+            }
+
+            // Complete
+            updateProgress(100);
+            const totalTime = Date.now() - state.animationStartTime;
+            const avgSpeed = Math.round(totalTime / state.blocks.length);
+            updateStat('statSpeed', avgSpeed + 'ms');
+
+            // Re-enable controls
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('generateBtn').disabled = false;
+            state.isAnimating = false;
+        }
+
+        // ==================== RESET ====================
+        function resetSimulation() {
+            if (state.isAnimating) return;
+
+            document.getElementById('outputBits').innerHTML = '<div style="color: #8b949e; font-size: 1.2em; margin: auto;">Output stream will appear here...</div>';
+            resetProgress();
+            updateStat('statProcessed', 0);
+            updateStat('statBits', 0);
+            updateStat('statSpeed', '0ms');
+
+            // Remove animation classes
+            document.querySelectorAll('.code-block-item').forEach(block => {
+                block.classList.remove('animating');
+            });
+
+            generateBlocks();
+        }
+
+        // ==================== UTILITIES ====================
+        function updateProgress(percent) {
+            const fill = document.getElementById('progressFill');
+            const text = document.getElementById('progressText');
+            fill.style.width = percent + '%';
+            text.textContent = percent + '%';
+        }
+
+        function resetProgress() {
+            updateProgress(0);
+        }
+
+        function updateStat(id, value) {
+            document.getElementById(id).textContent = value;
+        }
+
+        function updateAllStats() {
+            const numBlocks = state.blocks.length;
+            const totalBits = state.blocks.reduce((sum, block) => sum + block.length, 0);
+
+            updateStat('statBlocks', numBlocks);
+            updateStat('statBits', totalBits);
+            updateStat('statProcessed', 0);
+            updateStat('statSpeed', '0ms');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // ==================== COPY CODE ====================
+        function copyCode() {
+            const code = document.getElementById('cppCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyCodeBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.background = 'linear-gradient(135deg, #00f2fe, #4facfe)';
+
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }).catch(() => {
+                alert('Failed to copy code. Please try manually.');
+            });
+        }
+    </script>
+</body>
+</html>

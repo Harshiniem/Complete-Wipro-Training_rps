@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 5G Rate Matching for Kids!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            color: #7e22ce;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .card p {
+            line-height: 1.8;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .icon {
+            font-size: 1.2em;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #2a529820 0%, #7e22ce20 100%);
+            border-left: 4px solid #2a5298;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .simulation-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .bit-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            min-height: 60px;
+            max-height: 200px;
+            overflow-y: auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bit {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            border-radius: 8px;
+            color: white;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .bit-0 {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+        }
+
+        .bit-1 {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+        }
+
+        .bit-highlighted {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        .bit-removed {
+            opacity: 0.3;
+            transform: scale(0.8);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2a5298;
+            cursor: pointer;
+        }
+
+        select {
+            padding: 12px;
+            border: 2px solid #2a5298;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, #2a5298, #7e22ce);
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-secondary {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+        }
+
+        .button-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .stage-label {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #7e22ce;
+            margin: 15px 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .code-block code {
+            color: #d4d4d4;
+        }
+
+        .terminal-output {
+            background: #0c0c0c;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-output .prompt {
+            color: #00ffff;
+        }
+
+        .terminal-output .error {
+            color: #ff6b6b;
+        }
+
+        .terminal-output .success {
+            color: #51cf66;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .arrow-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+            height: 30px;
+        }
+
+        .animated-arrow {
+            font-size: 2em;
+            color: #7e22ce;
+            animation: arrowPulse 1.5s infinite;
+            opacity: 0.3;
+        }
+
+        .animated-arrow.active {
+            opacity: 1;
+            animation: arrowFlow 0.8s ease-in-out;
+        }
+
+        @keyframes arrowPulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+        }
+
+        @keyframes arrowFlow {
+            0% { transform: translateX(-20px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .circular-ring {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ring-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ring-track {
+            fill: none;
+            stroke: #e5e7eb;
+            stroke-width: 3;
+        }
+
+        .ring-highlight {
+            fill: none;
+            stroke: #fbbf24;
+            stroke-width: 5;
+            stroke-dasharray: 20;
+            stroke-dashoffset: 0;
+            filter: drop-shadow(0 0 10px #fbbf24);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .ring-highlight.active {
+            opacity: 1;
+            animation: rotateHighlight 2s linear infinite;
+        }
+
+        @keyframes rotateHighlight {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: 1256; }
+        }
+
+        .ring-bits {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ring-bit {
+            position: absolute;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1em;
+            border-radius: 50%;
+            color: white;
+            transition: all 0.5s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes bitDrop {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(50px) scale(0.5); opacity: 0; }
+        }
+
+        @keyframes bitBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .bit-dropping {
+            animation: bitDrop 0.6s ease-in forwards;
+        }
+
+        .bit-bouncing {
+            animation: bitBounce 0.5s ease-in-out;
+        }
+
+        .copy-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fbbf24;
+            color: #1e1e1e;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            opacity: 0;
+            animation: labelFadeIn 0.5s ease-in-out forwards;
+        }
+
+        @keyframes labelFadeIn {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .pipeline-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+            animation: pipelineGlowPulse 2s infinite;
+        }
+
+        @keyframes pipelineGlowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
+            50% { box-shadow: 0 0 35px rgba(139, 92, 246, 0.9); }
+        }
+
+        @keyframes shuffle {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+
+        .shuffling {
+            animation: shuffle 0.5s ease-in-out;
+        }
+
+        @keyframes highlight-scroll {
+            0% { box-shadow: 0 0 0 rgba(255, 215, 0, 0); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 1); }
+            100% { box-shadow: 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 3px solid #fdcb6e;
+        }
+
+        .analogy-box h4 {
+            color: #d63031;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: linear-gradient(135deg, #a8e6cf, #88d8b0);
+            border-radius: 10px;
+            margin: 8px 0;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            .bit {
+                width: 40px;
+                height: 40px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 5G Rate Matching Adventure! 🚀</h1>
+            <p>Learn how 5G organizes bits like a magical sorting game!</p>
+        </div>
+
+        <!-- What is Rate Matching? -->
+        <div class="card">
+            <h2><span class="icon">🎯</span> What is Rate Matching?</h2>
+            <p>Imagine you have a basket of colorful marbles (bits), and you need to fit them into a smaller or bigger box for shipping. Rate Matching is like a smart helper that takes your marbles and arranges them perfectly to fit the box size you need!</p>
+            
+            <div class="analogy-box">
+                <h4>🎪 Fun Analogy: The Bit Train!</h4>
+                <p>Think of your bits as train cars. Sometimes the track is short (small box), so we skip some cars (puncturing). Sometimes the track is long (big box), so we add extra cars (repetition). Rate Matching is the train conductor making sure everything fits perfectly!</p>
+            </div>
+
+            <p><strong>In 5G language:</strong> Rate Matching takes the encoded bits from LDPC encoder and adjusts them to match the exact number of bits that can be sent over the radio channel.</p>
+        </div>
+
+        <!-- Why Rate Matching is Needed? -->
+        <div class="card">
+            <h2><span class="icon">🤔</span> Why Do We Need Rate Matching?</h2>
+            <p>Great question! Here's why Rate Matching is super important:</p>
+            
+            <div class="info-box">
+                <p><strong>📦 Problem:</strong> The LDPC encoder always produces the same number of bits (let's say 100 bits). But the radio channel can carry different amounts depending on conditions!</p>
+            </div>
+
+            <p><strong>✨ Solutions Rate Matching provides:</strong></p>
+            <ul style="margin-left: 30px; line-height: 2;">
+                <li><strong>🎨 Flexibility:</strong> Adjust bit count to match available space</li>
+                <li><strong>🛡️ Error Protection:</strong> Add redundancy when channel is bad</li>
+                <li><strong>⚡ Speed:</strong> Remove bits when channel is good (save time!)</li>
+                <li><strong>🔄 Smart Retry:</strong> Use different starting points (RV) for retransmissions</li>
+            </ul>
+        </div>
+
+        <!-- Inputs and Outputs -->
+        <div class="card">
+            <h2><span class="icon">📥📤</span> Inputs and Outputs</h2>
+            
+            <h3>📥 What Goes In (Input):</h3>
+            <div class="info-box">
+                <p><strong>🎲 Input Bits (N):</strong> Encoded bits from LDPC (example: 12 bits)</p>
+                <p><strong>📊 Desired Output Size (E):</strong> How many bits we want at the end</p>
+                <p><strong>🔢 Redundancy Version (RV):</strong> Starting position (0, 1, 2, or 3)</p>
+            </div>
+
+            <h3>📤 What Comes Out (Output):</h3>
+            <div class="info-box">
+                <p><strong>✅ Output Bits (E bits):</strong> Exactly E bits, ready to be sent over 5G radio!</p>
+            </div>
+        </div>
+
+        <!-- What Happens Inside -->
+        <div class="card">
+            <h2><span class="icon">🔧</span> What Happens Inside Rate Matching?</h2>
+            
+            <h3>Step 1: 🎲 Bit Interleaving (Shuffle the Bits)</h3>
+            <div class="analogy-box">
+                <h4>🃏 Like Shuffling Cards!</h4>
+                <p>We shuffle the bits in a special pattern. This spreads out errors - if some bits get lost, they're not all next to each other!</p>
+            </div>
+            <p>The bits are rearranged using a special formula to mix them up nicely.</p>
+
+            <h3>Step 2: 🎡 Circular Buffer (The Magic Basket)</h3>
+            <div class="analogy-box">
+                <h4>🎠 The Merry-Go-Round!</h4>
+                <p>Imagine bits sitting on a carousel. We can start reading from any position and go around in circles as many times as needed!</p>
+            </div>
+            <p>All shuffled bits are placed in a circular buffer. We can read them over and over (repetition) or skip some (puncturing).</p>
+
+            <h3>Step 3: 🗡️ Puncturing (Skip Some Bits)</h3>
+            <p>When E < N (output smaller than input), we skip some bits. Don't worry - the receiver is smart enough to figure them out!</p>
+
+            <h3>Step 4: 🔄 Repetition (Copy Some Bits)</h3>
+            <p>When E > N (output bigger than input), we go around the circular buffer again and copy bits. More copies = stronger signal!</p>
+
+            <h3>Step 5: 🎯 Redundancy Version (RV - Different Starting Points)</h3>
+            <div class="info-box">
+                <p><strong>RV = 0, 1, 2, 3:</strong> Different starting positions in the circular buffer</p>
+                <p><strong>Why?</strong> If first transmission fails, retry with different RV to send different bits!</p>
+            </div>
+        </div>
+
+        <!-- Live Workflow Simulation -->
+        <div class="card">
+            <h2><span class="icon">🎮</span> Live Workflow Simulation</h2>
+            <p>Watch the bits flow through Rate Matching in real-time! Adjust settings and see the magic happen!</p>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Output Size (E): <span id="e-value">8</span> bits</label>
+                    <input type="range" id="e-slider" min="4" max="24" value="8" step="1">
+                </div>
+
+                <div class="control-group">
+                    <label>Redundancy Version (RV):</label>
+                    <select id="rv-select">
+                        <option value="0">RV 0 (Start at beginning)</option>
+                        <option value="1">RV 1 (Start at 1/4)</option>
+                        <option value="2">RV 2 (Start at 1/2)</option>
+                        <option value="3">RV 3 (Start at 3/4)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Animation Speed:</label>
+                    <select id="speed-select">
+                        <option value="slow">🐢 Slow</option>
+                        <option value="medium" selected>⚡ Medium</option>
+                        <option value="fast">🚀 Fast</option>
+                    </select>
+                </div>
+
+                <button class="button button-primary" onclick="startSimulation()">▶️ Start Simulation</button>
+                <button class="button button-secondary" onclick="resetSimulation()">🔄 Reset</button>
+            </div>
+
+            <div class="simulation-area">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar">0%</div>
+                </div>
+
+                <div class="step-indicator" id="step-indicator" style="display: none;">
+                    ⚡ <span id="step-text"></span>
+                </div>
+
+                <div class="stage-label">📥 Input Bits (LDPC Encoded)</div>
+                <div class="bit-container" id="input-bits"></div>
+
+                <div class="arrow-container">
+                    <div class="animated-arrow" id="arrow-1">⬇</div>
+                </div>
+
+                <div class="stage-label">🎲 After Interleaving (Shuffled)</div>
+                <div class="bit-container" id="interleaved-bits"></div>
+
+                <div class="arrow-container">
+                    <div class="animated-arrow" id="arrow-2">⬇</div>
+                </div>
+
+                <div class="stage-label">🎡 Circular Buffer (Ring Wheel)</div>
+                <div class="circular-ring" id="circular-ring-container">
+                    <svg class="ring-svg" viewBox="0 0 400 400">
+                        <circle class="ring-track" cx="200" cy="200" r="150"/>
+                        <circle class="ring-highlight" id="ring-highlight" cx="200" cy="200" r="150"/>
+                    </svg>
+                    <div class="ring-bits" id="ring-bits"></div>
+                </div>
+
+                <div class="arrow-container">
+                    <div class="animated-arrow" id="arrow-3">⬇</div>
+                </div>
+
+                <div class="stage-label">📤 Output Bits (E bits)</div>
+                <div class="bit-container" id="output-bits"></div>
+            </div>
+        </div>
+
+        <!-- C++ Rate Matching Simulator -->
+        <div class="card">
+            <h2><span class="icon">💻</span> C++ Rate Matching Simulator</h2>
+            <p>Here's real C++ code that implements Rate Matching! Click "Copy Code" to copy it, or "Run Code" to see it in action!</p>
+
+            <div style="position: relative;">
+                <button class="button button-secondary" onclick="copyCppCode()" style="position: absolute; top: 10px; right: 10px; padding: 8px 16px; font-size: 0.9em; z-index: 10;">
+                    📋 Copy C++ Code
+                </button>
+                <pre class="code-block"><code id="cpp-code-text">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+// Simple interleaver (dummy example)
+vector&lt;int&gt; interleaveBits(const vector&lt;int&gt;& input) {
+    vector&lt;int&gt; output(input.size());
+    int N = input.size();
+    
+    for(int i = 0; i &lt; N; i++) {
+        output[i] = input[(i * 3) % N];
+        // basic permutation
+    }
+    
+    return output;
+}
+
+// Rate Matching with RV (Redundancy Version)
+vector&lt;int&gt; rateMatching(const vector&lt;int&gt;& ldpcEncoded, 
+                         int E, 
+                         int RV) {
+    
+    int N = ldpcEncoded.size();
+    vector&lt;int&gt; output;
+    
+    // Step 1: Interleaving
+    vector&lt;int&gt; interleaved = interleaveBits(ldpcEncoded);
+    
+    // Step 2: Starting point depends on RV
+    int startIndex = (RV * (N / 4)) % N;
+    
+    // Step 3: Fill output bits (puncturing or repetition)
+    for(int i = 0; i &lt; E; i++) {
+        output.push_back(interleaved[(startIndex + i) % N]);
+    }
+    
+    return output;
+}
+
+int main() {
+    
+    // Example encoded bits
+    vector&lt;int&gt; ldpcBits = {
+        1,0,1,1,0,0,1,0,1,0,0,1
+    };
+    
+    int E = 20;
+    // required output size
+    
+    int RV = 2;
+    // redundancy version (0,1,2,3)
+    
+    vector&lt;int&gt; rmBits = rateMatching(ldpcBits, E, RV);
+    
+    cout &lt;&lt; "Rate Matched Output Bits: ";
+    
+    for(int b : rmBits) 
+        cout &lt;&lt; b;
+    
+    cout &lt;&lt; endl;
+    
+    return 0;
+}</code></pre>
+            </div>
+
+            <button class="button button-primary" onclick="runCppSimulator()">▶️ Run Code</button>
+
+            <div class="terminal-output" id="terminal-output">
+<span class="prompt">user@5g-learning:~$</span> Waiting for code execution...
+Click "Run Code" to see the magic! ✨
+            </div>
+        </div>
+
+        <!-- Example Section -->
+        <div class="card">
+            <h2><span class="icon">📝</span> Step-by-Step Example</h2>
+            
+            <div class="info-box">
+                <p><strong>📥 Input bits:</strong> 101100101001 (12 bits)</p>
+                <p><strong>🎯 Want output E = 8 bits</strong></p>
+                <p><strong>🔢 RV = 0</strong></p>
+            </div>
+
+            <h3>Process:</h3>
+            <ol style="margin-left: 30px; line-height: 2.5;">
+                <li><strong>Interleaving:</strong> Shuffle to → 110011001010 (example)</li>
+                <li><strong>Start Index:</strong> RV=0 means start at position 0</li>
+                <li><strong>Circular Read:</strong> Read 8 bits from position 0 → 11001100</li>
+                <li><strong>Result:</strong> Output = 11001100 (8 bits) ✅</li>
+            </ol>
+
+            <div class="analogy-box">
+                <h4>🎯 Real Magic!</h4>
+                <p>We started with 12 bits and wanted only 8. Rate Matching punctured (removed) 4 bits intelligently, keeping the most important ones for the receiver to decode successfully!</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Default input bits
+        let inputBits = [1,0,1,1,0,0,1,0,1,0,0,1];
+        let interleavedBits = [];
+        let outputBits = [];
+        let animationSpeed = {
+            slow: 2,
+            medium: 1,
+            fast: 0.5
+        };
+
+        // Copy C++ code function
+        function copyCppCode() {
+            const codeText = document.getElementById('cpp-code-text').textContent;
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert('✅ C++ code copied to clipboard!');
+            }).catch(() => {
+                alert('❌ Failed to copy code. Please copy manually.');
+            });
+        }
+
+        // Get current speed multiplier
+        function getSpeedMultiplier() {
+            const speed = document.getElementById('speed-select').value;
+            return animationSpeed[speed];
+        }
+
+        // Update progress bar
+        function updateProgress(percent, label) {
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = label;
+        }
+
+        // Activate arrow animation
+        function activateArrow(arrowId) {
+            const arrow = document.getElementById(arrowId);
+            arrow.classList.add('active');
+            setTimeout(() => {
+                arrow.classList.remove('active');
+            }, 800);
+        }
+
+        // Initialize the simulation display
+        function initSimulation() {
+            displayBits('input-bits', inputBits, false);
+        }
+
+        // Display bits in a container
+        function displayBits(containerId, bits, highlight = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            bits.forEach((bit, index) => {
+                const bitDiv = document.createElement('div');
+                bitDiv.className = `bit bit-${bit}`;
+                bitDiv.textContent = bit;
+                if (highlight) {
+                    bitDiv.classList.add('bit-highlighted');
+                }
+                container.appendChild(bitDiv);
+            });
+        }
+
+        // Display bits in circular ring
+        function displayRingBits(bits) {
+            const container = document.getElementById('ring-bits');
+            container.innerHTML = '';
+            const N = bits.length;
+            const radius = 150;
+            const centerX = 175;
+            const centerY = 175;
+
+            bits.forEach((bit, index) => {
+                const angle = (index / N) * 2 * Math.PI - Math.PI / 2;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                const bitDiv = document.createElement('div');
+                bitDiv.className = `ring-bit bit-${bit}`;
+                bitDiv.textContent = bit;
+                bitDiv.style.left = `${x}px`;
+                bitDiv.style.top = `${y}px`;
+                bitDiv.style.transform = 'translate(-50%, -50%)';
+                bitDiv.id = `ring-bit-${index}`;
+                
+                container.appendChild(bitDiv);
+            });
+        }
+
+        // Interleaving function (same logic as C++)
+        function interleave(input) {
+            const N = input.length;
+            const output = new Array(N);
+            for (let i = 0; i < N; i++) {
+                output[i] = input[(i * 3) % N]; // basic permutation
+            }
+            return output;
+        }
+
+        // Get RV start index (same logic as C++)
+        function getRVStartIndex(N, RV) {
+            return (RV * Math.floor(N / 4)) % N;
+        }
+
+        // Animate interleaving
+        async function animateInterleaving() {
+            const speedMult = getSpeedMultiplier();
+            updateProgress(25, 'Interleaving...');
+            activateArrow('arrow-1');
+            
+            showStepIndicator('🎲 Shuffling bits...');
+            
+            const inputContainer = document.getElementById('input-bits');
+            inputContainer.classList.add('pipeline-glow');
+            const bits = inputContainer.querySelectorAll('.bit');
+            bits.forEach(bit => bit.classList.add('shuffling'));
+            
+            await sleep(600 * speedMult);
+            
+            inputContainer.classList.remove('pipeline-glow');
+            interleavedBits = interleave(inputBits);
+            displayBits('interleaved-bits', interleavedBits, false);
+            
+            const interleavedContainer = document.getElementById('interleaved-bits');
+            interleavedContainer.classList.add('pipeline-glow');
+            
+            await sleep(300 * speedMult);
+            interleavedContainer.classList.remove('pipeline-glow');
+        }
+
+        // Animate circular buffer
+        async function animateCircularBuffer() {
+            const speedMult = getSpeedMultiplier();
+            updateProgress(50, 'Creating Circular Buffer...');
+            activateArrow('arrow-2');
+            
+            showStepIndicator('🎡 Placing bits in circular buffer...');
+            displayRingBits(interleavedBits);
+            
+            document.getElementById('ring-highlight').classList.add('active');
+            
+            await sleep(500 * speedMult);
+        }
+
+        // Animate rate matching output
+        async function animateRateMatching() {
+            const speedMult = getSpeedMultiplier();
+            const E = parseInt(document.getElementById('e-slider').value);
+            const RV = parseInt(document.getElementById('rv-select').value);
+            const N = interleavedBits.length;
+            const startIndex = getRVStartIndex(N, RV);
+            
+            updateProgress(75, 'Rate Matching...');
+            activateArrow('arrow-3');
+            
+            if (E < N) {
+                showStepIndicator(`🗡️ Puncturing: Removing ${N - E} bits...`);
+            } else if (E > N) {
+                showStepIndicator(`🔄 Repetition: Adding ${E - N} extra bits...`);
+            } else {
+                showStepIndicator('✅ Perfect match: E = N');
+            }
+            
+            outputBits = [];
+            const usedIndices = new Set();
+            
+            for (let i = 0; i < E; i++) {
+                const circularIndex = (startIndex + i) % N;
+                outputBits.push(interleavedBits[circularIndex]);
+                
+                const ringBit = document.getElementById(`ring-bit-${circularIndex}`);
+                if (ringBit) {
+                    ringBit.classList.add('bit-highlighted');
+                    
+                    // Check if this is a repetition
+                    if (usedIndices.has(circularIndex)) {
+                        ringBit.classList.add('bit-bouncing');
+                        const label = document.createElement('div');
+                        label.className = 'copy-label';
+                        label.textContent = 'COPY';
+                        ringBit.style.position = 'relative';
+                        ringBit.appendChild(label);
+                        
+                        setTimeout(() => {
+                            ringBit.classList.remove('bit-bouncing');
+                            if (label.parentNode) label.remove();
+                        }, 500);
+                    }
+                    
+                    usedIndices.add(circularIndex);
+                }
+                
+                displayBits('output-bits', outputBits, false);
+                const outputContainer = document.getElementById('output-bits');
+                outputContainer.classList.add('pipeline-glow');
+                
+                await sleep(200 * speedMult);
+                
+                if (ringBit) ringBit.classList.remove('bit-highlighted');
+                outputContainer.classList.remove('pipeline-glow');
+            }
+            
+            // Handle puncturing - fade out unused bits
+            if (E < N) {
+                for (let i = 0; i < N; i++) {
+                    if (!usedIndices.has(i)) {
+                        const ringBit = document.getElementById(`ring-bit-${i}`);
+                        if (ringBit) {
+                            ringBit.classList.add('bit-dropping');
+                        }
+                    }
+                }
+            }
+            
+            document.getElementById('ring-highlight').classList.remove('active');
+            
+            updateProgress(100, '✅ Complete!');
+            showStepIndicator('✅ Rate Matching Complete!');
+            await sleep(800 * speedMult);
+            hideStepIndicator();
+        }
+
+        // Main simulation function
+        async function startSimulation() {
+            // Scroll to simulation area smoothly
+            document.querySelector('.simulation-area').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+            });
+            
+            await sleep(300);
+            
+            // Reset first
+            resetSimulation();
+            await sleep(300);
+            
+            updateProgress(0, 'Starting...');
+            
+            // Run animations
+            await animateInterleaving();
+            await animateCircularBuffer();
+            await animateRateMatching();
+        }
+
+        // Reset simulation
+        function resetSimulation() {
+            document.getElementById('interleaved-bits').innerHTML = '';
+            document.getElementById('ring-bits').innerHTML = '';
+            document.getElementById('output-bits').innerHTML = '';
+            document.getElementById('ring-highlight').classList.remove('active');
+            hideStepIndicator();
+            updateProgress(0, '0%');
+            displayBits('input-bits', inputBits, false);
+            
+            // Reset all arrows
+            ['arrow-1', 'arrow-2', 'arrow-3'].forEach(id => {
+                document.getElementById(id).classList.remove('active');
+            });
+        }
+
+        // Helper functions
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function showStepIndicator(text) {
+            const indicator = document.getElementById('step-indicator');
+            indicator.style.display = 'flex';
+            document.getElementById('step-text').textContent = text;
+        }
+
+        function hideStepIndicator() {
+            document.getElementById('step-indicator').style.display = 'none';
+        }
+
+        // Update E value display
+        document.getElementById('e-slider').addEventListener('input', function() {
+            document.getElementById('e-value').textContent = this.value;
+        });
+
+        // C++ Simulator
+        function runCppSimulator() {
+            const E = parseInt(document.getElementById('e-slider').value);
+            const RV = parseInt(document.getElementById('rv-select').value);
+            const terminal = document.getElementById('terminal-output');
+            
+            let output = '<span class="prompt">user@5g-learning:~$</span> ./rate_matching_simulator\n\n';
+            output += `Input LDPC Bits: ${inputBits.join('')}\n`;
+            output += `N (Input size): ${inputBits.length}\n`;
+            output += `E (Output size): ${E}\n`;
+            output += `RV (Redundancy Version): ${RV}\n\n`;
+            
+            // Perform interleaving
+            const interleaved = interleave(inputBits);
+            output += '<span class="success">Step 1: Interleaving complete!</span>\n';
+            output += `Interleaved bits: ${interleaved.join('')}\n\n`;
+            
+            // Get start index
+            const N = inputBits.length;
+            const startIndex = getRVStartIndex(N, RV);
+            output += `<span class="success">Step 2: Starting point depends on RV</span>\n`;
+            output += `Start Index = (RV * (N/4)) % N = (${RV} * ${Math.floor(N/4)}) % ${N} = ${startIndex}\n\n`;
+            
+            // Generate output
+            const outBits = [];
+            for (let i = 0; i < E; i++) {
+                const circularIndex = (startIndex + i) % N;
+                outBits.push(interleaved[circularIndex]);
+            }
+            
+            output += '<span class="success">Step 3: Fill output bits (puncturing or repetition)</span>\n';
+            if (E < N) {
+                output += `<span style="color: #fbbf24;">Puncturing: E &lt; N, removing ${N - E} bits</span>\n`;
+            } else if (E > N) {
+                output += `<span style="color: #a78bfa;">Repetition: E &gt; N, repeating ${E - N} bits</span>\n`;
+            } else {
+                output += `<span style="color: #34d399;">Exact match: E = N</span>\n`;
+            }
+            output += '\n';
+            
+            output += '<span class="success">===== OUTPUT =====</span>\n';
+            output += `Rate Matched Output Bits: ${outBits.join('')}\n`;
+            output += `Output size: ${outBits.length} bits\n\n`;
+            output += '<span class="prompt">user@5g-learning:~$</span> <span class="success">✅ Execution completed!</span>\n';
+            
+            terminal.innerHTML = output;
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initSimulation();
+        };
+    </script>
+</body>
+</html>
