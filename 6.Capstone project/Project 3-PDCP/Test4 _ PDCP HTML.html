@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NR PDCP Security & Header Compression | TS 38.323</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050a14;
+            --bg-panel: #0a1124;
+            --neon-blue: #00f3ff;
+            --neon-green: #00ff9d;
+            --neon-purple: #bc13fe;
+            --text-main: #e0e6ed;
+            --text-muted: #94a3b8;
+            --glass: rgba(16, 24, 45, 0.7);
+            --border-glow: 0 0 10px rgba(0, 243, 255, 0.3);
+            --font-main: 'Inter', sans-serif;
+            --font-code: 'Roboto Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+        }
+
+        /* --- Canvas Background --- */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        /* --- UI Components --- */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 243, 255, 0.15);
+            border-color: rgba(0, 243, 255, 0.3);
+        }
+
+        .btn-neon {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px 24px;
+            font-family: var(--font-code);
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-neon:hover {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #fff, var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { color: var(--neon-green); font-family: var(--font-code); margin-bottom: 2rem; display: block; }
+
+        section {
+            min-height: 100vh;
+            padding: 6rem 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* --- Navigation --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            background: rgba(5, 10, 20, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        nav h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
+        
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--neon-blue); }
+
+        /* --- Section 1: Intro (Grid) --- */
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .stack-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .layer {
+            width: 250px;
+            padding: 15px;
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-family: var(--font-code);
+            font-weight: 700;
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .layer.pdcp {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .layer-popup {
+            position: absolute;
+            left: 270px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            background: var(--bg-panel);
+            border: 1px solid var(--neon-green);
+            padding: 10px;
+            font-size: 0.8rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 10;
+        }
+
+        .layer:hover .layer-popup { opacity: 1; visibility: visible; }
+
+        .packet-anim {
+            width: 20px;
+            height: 20px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: dropPacket 3s infinite ease-in-out;
+        }
+
+        @keyframes dropPacket {
+            0% { top: -40px; opacity: 0; }
+            20% { opacity: 1; }
+            45% { top: 18%; box-shadow: 0 0 15px var(--neon-green); } /* PDCP Hit */
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* --- Section 2: Security --- */
+        .security-dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .param-group { margin-bottom: 1.5rem; }
+        .param-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+        .param-display {
+            font-family: var(--font-code);
+            background: #000;
+            padding: 10px;
+            border: 1px solid #333;
+            color: var(--neon-blue);
+            border-radius: 4px;
+        }
+
+        .flow-diagram {
+            position: relative;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .flow-step {
+            text-align: center;
+            width: 120px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--text-muted);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: 0.5s;
+        }
+
+        .flow-step.active {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 157, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+        }
+
+        .arrow { font-size: 1.5rem; color: var(--text-muted); }
+
+        .count-visualizer {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            font-family: var(--font-code);
+        }
+        .bit { width: 20px; height: 30px; background: #222; display: grid; place-items: center; font-size: 0.8rem; border-bottom: 2px solid #555; }
+        .bit.one { color: var(--neon-blue); border-color: var(--neon-blue); }
+
+        /* --- Section 3: ROHC --- */
+        .rohc-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .packet-visual {
+            display: flex;
+            margin-bottom: 2rem;
+        }
+        .header-part {
+            padding: 15px;
+            background: var(--neon-purple);
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: grid;
+            place-items: center;
+            transition: width 1s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .payload-part {
+            flex-grow: 1;
+            padding: 15px;
+            background: #333;
+            color: #aaa;
+            border-left: 2px solid #000;
+            display: grid;
+            place-items: center;
+        }
+
+        .state-machine {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+        }
+        .state-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid #444;
+            display: grid;
+            place-items: center;
+            font-weight: bold;
+            color: #666;
+            transition: 0.5s;
+        }
+        .state-circle.active {
+            border-color: var(--neon-blue);
+            color: #fff;
+            box-shadow: 0 0 20px var(--neon-blue);
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        /* --- Section 4: Pipeline --- */
+        .pipeline-track {
+            position: relative;
+            height: 150px;
+            background: repeating-linear-gradient(90deg, #111 0px, #111 49px, #222 50px);
+            border-top: 2px solid #333;
+            border-bottom: 2px solid #333;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+        
+        .p-packet {
+            position: absolute;
+            top: 40px;
+            width: 40px;
+            height: 40px;
+            background: var(--neon-blue);
+            color: #000;
+            font-weight: bold;
+            display: grid;
+            place-items: center;
+            border-radius: 4px;
+            font-family: var(--font-code);
+            transition: top 0.3s;
+        }
+        .p-packet.dropped { background: #ff4444; opacity: 0; transform: scale(0.5); transition: 0.5s; }
+
+        .buffer-box {
+            height: 60px;
+            border: 2px dashed var(--text-muted);
+            display: flex;
+            gap: 5px;
+            padding: 5px;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+        }
+
+        /* --- Section 5: Live Sim --- */
+        .chat-sim {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .sim-console {
+            background: #000;
+            border: 1px solid #333;
+            padding: 1rem;
+            height: 300px;
+            overflow-y: auto;
+            font-family: var(--font-code);
+            font-size: 0.85rem;
+            color: var(--neon-green);
+        }
+        .log-entry { margin-bottom: 8px; border-bottom: 1px solid #111; padding-bottom: 4px; }
+        .log-entry span { color: var(--neon-blue); }
+
+        .status-check {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .check-item {
+            font-size: 0.8rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .check-item.pass { color: var(--neon-green); }
+
+        footer {
+            padding: 2rem 10%;
+            background: #02040a;
+            color: #555;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="particles"></canvas>
+
+    <nav>
+        <h1>5G NR PDCP <span style="color:var(--neon-blue)">VISUALIZED</span></h1>
+        <div class="nav-links">
+            <a href="#intro">Stack</a>
+            <a href="#security">Security (SRB)</a>
+            <a href="#rohc">ROHC (DRB)</a>
+            <a href="#pipeline">Pipeline</a>
+            <a href="#simulation">Live Sim</a>
+        </div>
+    </nav>
+
+    <!-- SECTION 1: INTRO -->
+    <section id="intro">
+        <div class="intro-grid">
+            <article>
+                <span class="subtitle">3GPP TS 38.323 • PROTOCOL OVERVIEW</span>
+                <h2 class="section-title">The Security & Efficiency Layer</h2>
+                <p style="line-height: 1.6; margin-bottom: 1.5rem; color: #ccc;">
+                    The <strong>Packet Data Convergence Protocol (PDCP)</strong> sits at the heart of the 5G radio stack. It is responsible for protecting user data (Ciphering/Integrity) and optimizing air interface usage (Header Compression).
+                </p>
+                <div class="glass-card">
+                    <h4 style="color:var(--neon-blue); margin-bottom:10px;">The "Secure Envelope" Analogy</h4>
+                    <p style="font-size: 0.9rem;">Think of a WhatsApp message. PDCP puts it in a steel envelope (Ciphering), stamps it with a wax seal (Integrity), and removes unnecessary address details to save weight (Header Compression) before handing it to the postman (RLC).</p>
+                </div>
+            </article>
+
+            <div class="stack-container">
+                <div class="packet-anim"></div>
+                <div class="layer">RRC / SDAP
+                    <div class="layer-popup">Upper Layers generate control or user data.</div>
+                </div>
+                <div class="layer pdcp">
+                    PDCP
+                    <div class="layer-popup">
+                        <strong>Functions:</strong><br>
+                        • Sequence Numbering<br>
+                        • Header Compression (ROHC)<br>
+                        • Ciphering & Integrity<br>
+                        • Reordering & Duplicate Detection
+                    </div>
+                </div>
+                <div class="layer">RLC
+                    <div class="layer-popup">Segmentation, ARQ, and transfer to MAC.</div>
+                </div>
+                <div class="layer">MAC</div>
+                <div class="layer">PHY</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: SECURITY -->
+    <section id="security">
+        <span class="subtitle">SRB PROTECTION • INTEGRITY & CIPHERING</span>
+        <h2 class="section-title">PDCP Security Processing</h2>
+        
+        <div class="security-dashboard glass-card">
+            <!-- Left Panel: Parameters -->
+            <div>
+                <h3 style="margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">Security Context</h3>
+                
+                <div class="param-group">
+                    <label>HYPER FRAME NUMBER (HFN)</label>
+                    <div class="param-display" id="disp-hfn">0000</div>
+                </div>
+                <div class="param-group">
+                    <label>SEQUENCE NUMBER (SN)</label>
+                    <div class="param-display" id="disp-sn">0</div>
+                </div>
+                <div class="param-group">
+                    <label>COUNT VALUE (32-bit)</label>
+                    <div class="count-visualizer" id="count-bits">
+                        <!-- Bits generated by JS -->
+                    </div>
+                    <div style="margin-top:5px; font-size:0.7rem; color:var(--text-muted)">COUNT = (HFN << SN_bits) | SN</div>
+                </div>
+                
+                <button class="btn-neon" onclick="incrementSN()">Transmit PDU</button>
+            </div>
+
+            <!-- Right Panel: Visualization -->
+            <div>
+                <div class="flow-diagram">
+                    <div class="flow-step" id="step-mac">1. Compute MAC-I<br><span style="font-size:0.7rem">(Integrity)</span></div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step" id="step-cipher">2. Cipher Data<br><span style="font-size:0.7rem">(AES-CTR)</span></div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step" id="step-header">3. Add Header<br><span style="font-size:0.7rem">(PDU Const.)</span></div>
+                </div>
+                
+                <div style="margin-top: 2rem; padding: 1rem; background: #000; border-radius: 8px;">
+                    <p style="font-family: var(--font-code); font-size: 0.9rem;">
+                        <span style="color:var(--text-muted)">KEYSTREAM BLOCK:</span> <span style="color:var(--neon-purple)" id="keystream-disp">WAITING...</span><br>
+                        <span style="color:var(--text-muted)">CIPHER TEXT:</span> <span style="color:var(--neon-blue)" id="ciphertext-disp">---</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: ROHC -->
+    <section id="rohc">
+        <span class="subtitle">DRB EFFICIENCY • ROBUST HEADER COMPRESSION</span>
+        <h2 class="section-title">Bandwidth Optimization</h2>
+
+        <div class="rohc-container">
+            <div class="glass-card">
+                <h3>Packet Visualization</h3>
+                <p style="font-size:0.8rem; margin-bottom:1rem; color:#aaa;">Voice over NR (VoNR) Example</p>
+
+                <label>Uncompressed (40/60 bytes header)</label>
+                <div class="packet-visual" id="pkt-orig">
+                    <div class="header-part" style="width: 200px; background: #555;">IP / UDP / RTP</div>
+                    <div class="payload-part">Voice Payload</div>
+                </div>
+
+                <label>Compressed (ROHC)</label>
+                <div class="packet-visual" id="pkt-rohc">
+                    <div class="header-part" id="rohc-header" style="width: 200px;">Full Header</div>
+                    <div class="payload-part">Voice Payload</div>
+                </div>
+
+                <div class="state-machine">
+                    <div class="state-circle active" id="state-ir">IR</div>
+                    <div class="state-circle" id="state-fo">FO</div>
+                    <div class="state-circle" id="state-so">SO</div>
+                </div>
+                <div style="text-align:center; font-size:0.8rem; margin-top:10px; color:#888;">Initialization Refresh → First Order → Second Order</div>
+            </div>
+
+            <div class="glass-card" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <h3>Compression Efficiency</h3>
+                <h1 style="font-size:4rem; color:var(--neon-green);" id="compression-stat">0%</h1>
+                <p>Header Size Reduction</p>
+                
+                <div style="margin-top: 2rem; display: flex; gap: 10px;">
+                    <button class="btn-neon" onclick="setROHCState('IR')">Simulate IR</button>
+                    <button class="btn-neon" onclick="setROHCState('FO')">Simulate FO</button>
+                    <button class="btn-neon" onclick="setROHCState('SO')">Simulate SO</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: PIPELINE -->
+    <section id="pipeline">
+        <span class="subtitle">END-TO-END FLOW • REORDERING & DUPLICATES</span>
+        <h2 class="section-title">PDCP Pipeline Simulation</h2>
+        
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                <div>
+                    <strong>Transmitter (gNB)</strong>
+                </div>
+                <div>
+                    <strong>Receiver (UE)</strong>
+                </div>
+            </div>
+
+            <div class="pipeline-track" id="track">
+                <!-- Packets injected via JS -->
+            </div>
+
+            <div style="display: flex; gap: 2rem; margin-top: 1rem;">
+                <div style="flex:1">
+                    <h4 style="color:var(--neon-blue)">Reordering Buffer</h4>
+                    <div class="buffer-box" id="rx-buffer"></div>
+                </div>
+                <div style="flex:1">
+                    <h4 style="color:var(--neon-green)">Delivered to Upper Layer</h4>
+                    <div class="buffer-box" id="delivered-buffer" style="border-style:solid;"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 10px; justify-content: center;">
+                <button class="btn-neon" onclick="pipeline.addPacket()">Send Packet</button>
+                <button class="btn-neon" style="border-color:#ff4444; color:#ff4444;" onclick="pipeline.toggleChaos()">Toggle Chaos Mode (Loss/Order)</button>
+            </div>
+            <p id="chaos-status" style="text-align: center; margin-top: 10px; color: #ff4444; visibility: hidden;">⚠ CHAOS MODE ACTIVE: Packets may drop or arrive out of order</p>
+        </div>
+    </section>
+
+    <!-- SECTION 5: LIVE SIM -->
+    <section id="simulation">
+        <span class="subtitle">INTERACTIVE DEMO</span>
+        <h2 class="section-title">Live Message Security</h2>
+
+        <div class="chat-sim">
+            <div class="glass-card">
+                <h3>Sender (Alice)</h3>
+                <input type="text" id="msg-input" placeholder="Type secret message..." value="Attack at dawn" 
+                       style="width:100%; padding:10px; background:#111; border:1px solid #333; color:#fff; margin: 1rem 0;">
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn-neon" onclick="sim.process()">Generate & Send</button>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h4 style="font-size:0.8rem; color:#888;">TRANSMISSION LOG</h4>
+                    <div class="sim-console" id="tx-log"></div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3>Receiver (Bob)</h3>
+                <div style="margin-top: 5.5rem;">
+                    <h4 style="font-size:0.8rem; color:#888;">RECEPTION LOG</h4>
+                    <div class="sim-console" id="rx-log"></div>
+                </div>
+                
+                <div class="status-check">
+                    <div class="check-item" id="chk-int">Integrity ⚪</div>
+                    <div class="check-item" id="chk-ciph">Decipher ⚪</div>
+                    <div class="check-item" id="chk-seq">Sequence ⚪</div>
+                </div>
+                
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,255,157,0.1); border: 1px solid var(--neon-green);">
+                    <span style="font-size:0.8rem; color:var(--neon-green)">DECODED MESSAGE:</span>
+                    <h3 id="final-msg" style="color:#fff">---</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Designed for Educational Purposes based on 3GPP TS 38.323 Release 16</p>
+        <p>&copy; 2026 Advanced Telecom Visualization</p>
+    </footer>
+
+    <script>
+        // --- PARTICLE BACKGROUND ---
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if(this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                if(this.y > canvas.height || this.y < 0) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = '#00f3ff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for(let i=0; i<50; i++) particlesArray.push(new Particle());
+        }
+        function animateParticles() {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            particlesArray.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles();
+        animateParticles();
+
+        // --- SECTION 2: SECURITY LOGIC ---
+        let sn = 0;
+        let hfn = 0;
+        const snBits = 12;
+
+        function updateBits() {
+            const count = (hfn << snBits) | sn;
+            const bitStr = count.toString(2).padStart(32, '0');
+            const container = document.getElementById('count-bits');
+            container.innerHTML = '';
+            // Display last 16 bits for space
+            for(let i=16; i<32; i++) {
+                const b = document.createElement('div');
+                b.className = bitStr[i] === '1' ? 'bit one' : 'bit';
+                b.innerText = bitStr[i];
+                container.appendChild(b);
+            }
+        }
+
+        function incrementSN() {
+            // Animation Trigger
+            const step1 = document.getElementById('step-mac');
+            const step2 = document.getElementById('step-cipher');
+            const step3 = document.getElementById('step-header');
+            
+            step1.classList.add('active');
+            setTimeout(() => step2.classList.add('active'), 500);
+            setTimeout(() => step3.classList.add('active'), 1000);
+            
+            // Logic
+            sn++;
+            if(sn >= (1 << snBits)) {
+                sn = 0;
+                hfn++;
+                document.getElementById('disp-hfn').innerText = hfn.toString().padStart(4,'0');
+            }
+            document.getElementById('disp-sn').innerText = sn;
+            updateBits();
+
+            // Pseudo Cipher Output
+            const randomHex = Math.floor(Math.random()*16777215).toString(16).toUpperCase();
+            const keyHex = Math.floor(Math.random()*16777215).toString(16).toUpperCase();
+            
+            setTimeout(() => {
+                document.getElementById('keystream-disp').innerText = keyHex.padStart(6, '0');
+                document.getElementById('ciphertext-disp').innerText = randomHex.padStart(6, '0');
+                
+                // Reset Anim
+                setTimeout(() => {
+                    step1.classList.remove('active');
+                    step2.classList.remove('active');
+                    step3.classList.remove('active');
+                }, 1000);
+            }, 1000);
+        }
+        updateBits(); // Init
+
+        // --- SECTION 3: ROHC LOGIC ---
+        function setROHCState(state) {
+            const headerVis = document.getElementById('rohc-header');
+            const ir = document.getElementById('state-ir');
+            const fo = document.getElementById('state-fo');
+            const so = document.getElementById('state-so');
+            const stat = document.getElementById('compression-stat');
+
+            // Reset
+            ir.classList.remove('active');
+            fo.classList.remove('active');
+            so.classList.remove('active');
+
+            if(state === 'IR') {
+                ir.classList.add('active');
+                headerVis.style.width = '200px';
+                headerVis.innerText = "Full Header (40B)";
+                headerVis.style.background = "#bc13fe";
+                stat.innerText = "0%";
+            } else if (state === 'FO') {
+                fo.classList.add('active');
+                headerVis.style.width = '100px';
+                headerVis.innerText = "Dynamic (15B)";
+                headerVis.style.background = "#9c27b0";
+                stat.innerText = "62%";
+            } else if (state === 'SO') {
+                so.classList.add('active');
+                headerVis.style.width = '40px';
+                headerVis.innerText = "SO (3B)";
+                headerVis.style.background = "#00ff9d";
+                headerVis.style.color = "#000";
+                stat.innerText = "92%";
+            }
+        }
+
+        // --- SECTION 4: PIPELINE LOGIC ---
+        const pipeline = {
+            chaos: false,
+            seq: 0,
+            track: document.getElementById('track'),
+            rxBuffer: [],
+            nextExpected: 0,
+
+            toggleChaos: function() {
+                this.chaos = !this.chaos;
+                document.getElementById('chaos-status').style.visibility = this.chaos ? 'visible' : 'hidden';
+            },
+
+            addPacket: function() {
+                const sn = this.seq++;
+                const el = document.createElement('div');
+                el.className = 'p-packet';
+                el.innerText = sn;
+                el.style.left = '0px';
+                this.track.appendChild(el);
+
+                let progress = 0;
+                let speed = 2; // px per frame
+                let dropped = false;
+
+                // Chaos: Drop packet simulation
+                if(this.chaos && Math.random() > 0.7) {
+                    dropped = true;
+                }
+
+                // Chaos: Vary speed to simulate out-of-order
+                if(this.chaos) speed = Math.random() * 3 + 1;
+
+                const anim = setInterval(() => {
+                    progress += speed;
+                    el.style.left = progress + 'px';
+
+                    if(dropped && progress > 150) {
+                        el.classList.add('dropped');
+                        clearInterval(anim);
+                        setTimeout(() => el.remove(), 1000);
+                        return;
+                    }
+
+                    // Arrive at Receiver (approx 80% width)
+                    if(progress > this.track.offsetWidth - 50) {
+                        clearInterval(anim);
+                        el.remove();
+                        this.receivePacket(sn);
+                    }
+                }, 16);
+            },
+
+            receivePacket: function(sn) {
+                const rxDiv = document.getElementById('rx-buffer');
+                
+                // Visualize in RX Buffer
+                const item = document.createElement('div');
+                item.style.padding = '5px 10px';
+                item.style.background = 'var(--neon-blue)';
+                item.style.color = '#000';
+                item.style.fontWeight = 'bold';
+                item.style.marginRight = '5px';
+                item.innerText = sn;
+                rxDiv.appendChild(item);
+
+                this.rxBuffer.push({sn: sn, el: item});
+                this.processReordering();
+            },
+
+            processReordering: function() {
+                // Sort buffer
+                this.rxBuffer.sort((a,b) => a.sn - b.sn);
+
+                // Check for deliverable packets
+                while(this.rxBuffer.length > 0 && this.rxBuffer[0].sn === this.nextExpected) {
+                    const pkt = this.rxBuffer.shift();
+                    this.nextExpected++;
+                    
+                    // Move visual to Delivered
+                    pkt.el.remove();
+                    const delDiv = document.getElementById('delivered-buffer');
+                    const dItem = document.createElement('div');
+                    dItem.style.padding = '5px 10px';
+                    dItem.style.background = 'var(--neon-green)';
+                    dItem.style.color = '#000';
+                    dItem.style.fontWeight = 'bold';
+                    dItem.style.marginRight = '5px';
+                    dItem.innerText = pkt.sn;
+                    delDiv.appendChild(dItem);
+                }
+            }
+        };
+
+        // --- SECTION 5: LIVE SIM LOGIC ---
+        const sim = {
+            stringToHex: (str) => {
+                let hex = '';
+                for(let i=0;i<str.length;i++) hex += ''+str.charCodeAt(i).toString(16);
+                return hex;
+            },
+            
+            log: (id, txt, type) => {
+                const box = document.getElementById(id);
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `<span>[${type}]</span> ${txt}`;
+                box.appendChild(entry);
+                box.scrollTop = box.scrollHeight;
+            },
+
+            process: function() {
+                const input = document.getElementById('msg-input').value;
+                const hex = this.stringToHex(input);
+                const mac = Math.floor(Math.random()*4294967295).toString(16).toUpperCase(); // Mock MAC-I
+                
+                // Clear Receiver
+                document.getElementById('rx-log').innerHTML = '';
+                document.getElementById('final-msg').innerText = '---';
+                document.getElementById('chk-int').classList.remove('pass');
+                document.getElementById('chk-int').innerText = "Integrity ⚪";
+                document.getElementById('chk-ciph').classList.remove('pass');
+                document.getElementById('chk-ciph').innerText = "Decipher ⚪";
+
+                // Sender Process
+                this.log('tx-log', `Received from RRC: "${input}"`, 'SDAP');
+                this.log('tx-log', `SEQ Allocation: SN=${sn}`, 'PDCP');
+                setTimeout(() => this.log('tx-log', `Integrity Calc (NIA2): MAC-I=${mac}`, 'SEC'), 500);
+                setTimeout(() => {
+                    this.log('tx-log', `Ciphering (NEA2): XORing payload...`, 'SEC');
+                    this.log('tx-log', `Output Hex: ${hex.substring(0,10)}... (Ciphered)`, 'PHY');
+                    this.transmit(input, mac, hex);
+                }, 1000);
+            },
+
+            transmit: function(original, mac, cipheredHex) {
+                // Network Delay Simulation
+                setTimeout(() => {
+                    this.receiverProcess(original, mac, cipheredHex);
+                }, 2000);
+            },
+
+            receiverProcess: function(original, mac, cipheredHex) {
+                this.log('rx-log', `PDU Received from RLC`, 'PHY');
+                
+                // Decipher
+                setTimeout(() => {
+                    this.log('rx-log', `Deciphering with Key... Success`, 'SEC');
+                    document.getElementById('chk-ciph').classList.add('pass');
+                    document.getElementById('chk-ciph').innerText = "Decipher ✔";
+                }, 500);
+
+                // Integrity
+                setTimeout(() => {
+                    this.log('rx-log', `Verifying MAC-I: ${mac} == ${mac}`, 'SEC');
+                    document.getElementById('chk-int').classList.add('pass');
+                    document.getElementById('chk-int').innerText = "Integrity ✔";
+                }, 1000);
+
+                // Header Decomp
+                setTimeout(() => {
+                    this.log('rx-log', `ROHC Decompression: Context found`, 'ROHC');
+                    document.getElementById('final-msg').innerText = original;
+                    document.getElementById('chk-seq').classList.add('pass');
+                    document.getElementById('chk-seq').innerText = "Sequence ✔";
+                }, 1500);
+            }
+        };
+
+    </script>
+</body>
+</html>

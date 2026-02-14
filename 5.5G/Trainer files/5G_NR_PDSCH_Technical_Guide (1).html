@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5G NR PDSCH — Deep Technical Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2035;
+  --bg-card-hover: #1f2a45;
+  --accent-cyan: #00e5ff;
+  --accent-blue: #3b82f6;
+  --accent-purple: #a855f7;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-pink: #ec4899;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-dim: #64748b;
+  --border: #1e293b;
+  --glow-cyan: 0 0 20px rgba(0,229,255,0.3);
+  --glow-blue: 0 0 20px rgba(59,130,246,0.3);
+  --glow-purple: 0 0 20px rgba(168,85,247,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--accent-cyan); border-radius: 3px; }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0,0); }
+  100% { transform: translate(60px,60px); }
+}
+
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  opacity: 0;
+  animation: particleFloat 8s infinite;
+}
+
+@keyframes particleFloat {
+  0% { opacity: 0; transform: translateY(100vh) scale(0); }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.3; }
+  100% { opacity: 0; transform: translateY(-20vh) scale(1); }
+}
+
+.hero-content {
+  text-align: center;
+  z-index: 2;
+  animation: fadeInUp 1s ease-out;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 50px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  animation: pulseGlow 3s infinite;
+}
+
+@keyframes pulseGlow {
+  0%,100% { box-shadow: 0 0 10px rgba(0,229,255,0.2); }
+  50% { box-shadow: 0 0 25px rgba(0,229,255,0.5); }
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero h1 span {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--text-secondary), var(--text-dim));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-top: 0.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 1.5rem auto 2rem;
+}
+
+.hero-specs {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.spec-item {
+  text-align: center;
+  animation: fadeInUp 1s ease-out both;
+}
+
+.spec-item:nth-child(2) { animation-delay: 0.2s; }
+.spec-item:nth-child(3) { animation-delay: 0.4s; }
+.spec-item:nth-child(4) { animation-delay: 0.6s; }
+
+.spec-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.spec-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── NAVIGATION ─── */
+.toc {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,14,26,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}
+
+.toc-inner {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-width: max-content;
+}
+
+.toc a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.3s;
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.toc a:hover {
+  color: var(--accent-cyan);
+  background: rgba(0,229,255,0.08);
+}
+
+/* ─── SECTIONS ─── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+section {
+  padding: 5rem 0;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+
+section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.section-desc {
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 0.95rem;
+}
+
+/* ─── CARDS ─── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.8rem;
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+  transform: scaleX(0);
+  transition: transform 0.4s;
+}
+
+.card:hover::before { transform: scaleX(1); }
+.card:hover { border-color: rgba(0,229,255,0.2); transform: translateY(-4px); box-shadow: var(--glow-cyan); }
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ─── ANIMATED RESOURCE GRID ─── */
+.resource-grid-wrapper {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.rg-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.rg-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.rg-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* ─── OFDM GRID ANIMATION ─── */
+.ofdm-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(14, 1fr);
+  gap: 2px;
+  margin: 1.5rem 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+}
+
+.ofdm-row-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  color: var(--text-dim);
+  font-size: 0.65rem;
+}
+
+.ofdm-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.55rem;
+  font-weight: 600;
+  opacity: 0;
+  animation: cellAppear 0.3s ease-out forwards;
+  transition: transform 0.2s;
+  cursor: default;
+  position: relative;
+}
+
+.ofdm-cell:hover {
+  transform: scale(1.3);
+  z-index: 10;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.ofdm-col-labels {
+  display: grid;
+  grid-template-columns: 60px repeat(14, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.ofdm-col-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+}
+
+@keyframes cellAppear {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.cell-dmrs { background: var(--accent-purple); }
+.cell-pdsch { background: var(--accent-cyan); }
+.cell-ptrs { background: var(--accent-orange); }
+.cell-coreset { background: var(--accent-red); }
+.cell-empty { background: rgba(255,255,255,0.03); }
+.cell-ssb { background: var(--accent-green); }
+.cell-csi { background: var(--accent-pink); }
+
+/* ─── FLOW DIAGRAM ─── */
+.flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 2rem 0;
+}
+
+.flow-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  min-width: 130px;
+  opacity: 0;
+  animation: flowIn 0.5s ease-out forwards;
+  transition: all 0.3s;
+}
+
+.flow-box:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-3px);
+}
+
+.flow-box h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.flow-box p {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.flow-arrow {
+  color: var(--accent-cyan);
+  font-size: 1.4rem;
+  opacity: 0;
+  animation: arrowPulse 0.5s ease-out forwards;
+}
+
+@keyframes flowIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes arrowPulse {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ─── MCS TABLE ─── */
+.mcs-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.mcs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+}
+
+.mcs-table thead {
+  background: var(--bg-card);
+}
+
+.mcs-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  border-bottom: 2px solid var(--accent-cyan);
+  white-space: nowrap;
+}
+
+.mcs-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.mcs-table tr:hover td {
+  background: rgba(0,229,255,0.04);
+  color: var(--text-primary);
+}
+
+.mcs-table tr { opacity: 0; animation: rowSlide 0.4s ease-out forwards; }
+
+@keyframes rowSlide {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── SLOT STRUCTURE SVG ANIMATION ─── */
+.slot-anim {
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+  display: block;
+}
+
+/* ─── PARAMETER EXPLORER ─── */
+.param-explorer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.param-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  transition: all 0.3s;
+  cursor: default;
+}
+
+.param-card:hover {
+  border-color: var(--accent-blue);
+  box-shadow: var(--glow-blue);
+}
+
+.param-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.param-val {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0.3rem 0;
+}
+
+.param-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* ─── TABS ─── */
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tab-btn:hover { border-color: var(--accent-cyan); color: var(--text-secondary); }
+.tab-btn.active { background: rgba(0,229,255,0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+.tab-content { display: none; animation: fadeInUp 0.4s ease-out; }
+.tab-content.active { display: block; }
+
+/* ─── MODULATION ANIMATION ─── */
+.mod-visual {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+}
+
+.constellation {
+  text-align: center;
+}
+
+.constellation h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  margin-bottom: 0.5rem;
+}
+
+.constellation canvas {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* ─── INFO BOXES ─── */
+.info-box {
+  background: rgba(0,229,255,0.05);
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 0 10px 10px 0;
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.info-box.warn {
+  background: rgba(245,158,11,0.05);
+  border-left-color: var(--accent-orange);
+}
+
+.info-box h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.info-box p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* ─── KPI METERS ─── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.kpi-meter {
+  text-align: center;
+}
+
+.kpi-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 0.8rem;
+}
+
+.kpi-ring svg {
+  transform: rotate(-90deg);
+}
+
+.kpi-ring-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 8;
+}
+
+.kpi-ring-fill {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 339.3;
+  stroke-dashoffset: 339.3;
+  transition: stroke-dashoffset 2s ease-out;
+}
+
+.kpi-ring-val {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* ─── THROUGHPUT CALCULATOR ─── */
+.calc-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.calc-field label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.calc-field select, .calc-field input {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.calc-field select:focus, .calc-field input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.calc-result {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(0,229,255,0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0,229,255,0.15);
+}
+
+.calc-result-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.calc-result-unit {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.calc-formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.5rem;
+  word-break: break-all;
+}
+
+/* ─── TIMELINE ─── */
+.timeline {
+  position: relative;
+  padding-left: 3rem;
+  margin: 2rem 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-purple));
+}
+
+.tl-item {
+  position: relative;
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.6s;
+}
+
+.tl-item.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.tl-dot {
+  position: absolute;
+  left: -2.4rem;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan);
+}
+
+.tl-item h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.tl-item p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center;
+  padding: 3rem 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+footer a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .hero-specs { gap: 1rem; }
+  .ofdm-grid, .ofdm-col-labels { font-size: 0.5rem; }
+  .flow-container { flex-direction: column; align-items: center; }
+  .flow-arrow { transform: rotate(90deg); }
+  .mod-visual { gap: 1.5rem; }
+  .toc-inner { justify-content: flex-start; }
+}
+
+/* ─── TOOLTIP ─── */
+.tooltip {
+  position: fixed;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-primary);
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 220px;
+  box-shadow: var(--glow-cyan);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* HARQ animation */
+.harq-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 2rem 0;
+}
+
+.harq-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+}
+
+.harq-block {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  min-width: 100px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.harq-block.ue { border-color: var(--accent-blue); }
+.harq-block.gnb { border-color: var(--accent-green); }
+.harq-block.active { animation: harqPulse 1s ease-in-out; }
+
+@keyframes harqPulse {
+  0%,100% { box-shadow: none; }
+  50% { box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+}
+
+.harq-arrow {
+  font-size: 1.2rem;
+  color: var(--accent-cyan);
+}
+
+.harq-msg {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ─── Code-like display ─── */
+.code-block {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  line-height: 1.8;
+  margin: 1rem 0;
+}
+
+.code-block .key { color: var(--accent-cyan); }
+.code-block .val { color: var(--accent-orange); }
+.code-block .comment { color: var(--text-dim); }
+
+/* BW table */
+.bw-visual {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 2rem 0;
+  height: 180px;
+}
+
+.bw-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex: 1;
+  max-width: 90px;
+}
+
+.bw-bar-fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(to top, var(--accent-cyan), var(--accent-blue));
+  opacity: 0;
+  animation: barGrow 1s ease-out forwards;
+  position: relative;
+}
+
+.bw-bar-fill::after {
+  content: attr(data-prb);
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--accent-cyan);
+  white-space: nowrap;
+}
+
+@keyframes barGrow {
+  from { height: 0; opacity: 0; }
+  to { opacity: 1; }
+}
+
+.bw-bar-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+/* 3GPP references */
+.ref-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(168,85,247,0.1);
+  color: var(--accent-purple);
+  border: 1px solid rgba(168,85,247,0.2);
+  margin-left: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="tooltip" id="tooltip"></div>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-content">
+    <div class="hero-badge">3GPP TS 38.211 / 38.214</div>
+    <h1>5G NR PDSCH
+      <span>Physical Downlink Shared Channel</span>
+    </h1>
+    <p class="hero-subtitle">The primary channel carrying user data and system information in 5G New Radio downlink. A deep technical exploration.</p>
+    <div class="hero-specs">
+      <div class="spec-item">
+        <div class="spec-value">256QAM</div>
+        <div class="spec-label">Max Modulation</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-value">~4.2 Gbps</div>
+        <div class="spec-label">Peak per CC</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-value">16</div>
+        <div class="spec-label">HARQ Processes</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-value">948/1024</div>
+        <div class="spec-label">Max Code Rate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TABLE OF CONTENTS ═══════════════════ -->
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#overview">Overview</a>
+    <a href="#resource-grid">Resource Grid</a>
+    <a href="#slot-structure">Slot Structure</a>
+    <a href="#modulation">Modulation & Coding</a>
+    <a href="#processing">TX Processing</a>
+    <a href="#scheduling">Scheduling</a>
+    <a href="#harq">HARQ</a>
+    <a href="#dmrs">DMRS</a>
+    <a href="#bandwidth">Bandwidth Parts</a>
+    <a href="#throughput">Throughput Calc</a>
+    <a href="#kpi">KPIs</a>
+    <a href="#mapping">Mapping Types</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ═══════════════════ SECTION 1: OVERVIEW ═══════════════════ -->
+<section id="overview">
+  <div class="section-header">
+    <span class="section-num">01 — Overview</span>
+    <h2 class="section-title">What is PDSCH?</h2>
+    <p class="section-desc">The workhorse of 5G NR downlink — carrying everything from user data to system broadcast messages.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon" style="background:rgba(0,229,255,0.1);color:var(--accent-cyan);">📡</div>
+      <h3>Primary Data Channel</h3>
+      <p>PDSCH carries user plane data (IP packets), RRC messages, paging information, and System Information Blocks (SIBs). It is the DL counterpart of PUSCH in the uplink.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background:rgba(59,130,246,0.1);color:var(--accent-blue);">⚡</div>
+      <h3>Dynamic Scheduling</h3>
+      <p>Scheduled by DCI (Downlink Control Information) on PDCCH — using DCI Format 1_0 (fallback) or DCI Format 1_1/1_2 (full feature). Resource allocation can be Type 0 (bitmap) or Type 1 (contiguous).</p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background:rgba(168,85,247,0.1);color:var(--accent-purple);">🔄</div>
+      <h3>HARQ Retransmissions</h3>
+      <p>Supports up to 16 parallel HARQ processes with asynchronous, adaptive retransmissions. Uses Incremental Redundancy (IR) with LDPC coding for robust data delivery.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background:rgba(16,185,129,0.1);color:var(--accent-green);">📊</div>
+      <h3>MIMO & Beamforming</h3>
+      <p>Supports up to 8 MIMO layers (per UE), with codebook-based and non-codebook-based precoding. Uses CSI-RS for channel estimation and PMI/RI/CQI reporting.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background:rgba(245,158,11,0.1);color:var(--accent-orange);">📐</div>
+      <h3>Flexible Numerology</h3>
+      <p>Operates across sub-carrier spacings of 15, 30, 60, 120 kHz (μ = 0,1,2,3). Slot duration scales from 1ms (15kHz) down to 0.125ms (120kHz) for URLLC.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background:rgba(236,72,153,0.1);color:var(--accent-pink);">🔐</div>
+      <h3>What PDSCH Carries</h3>
+      <p>DL-SCH transport channel data, PCH (paging), RAR (Random Access Response), SIB1 and other SIBs. Each maps differently to PDSCH resources and scheduling mechanisms.</p>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:2rem;">
+    <h4>📋 Key 3GPP Specifications</h4>
+    <p><strong>TS 38.211</strong> — Physical channels and modulation (RE mapping, DMRS sequences) &nbsp;|&nbsp; <strong>TS 38.212</strong> — Multiplexing and channel coding (CRC, LDPC, rate matching) &nbsp;|&nbsp; <strong>TS 38.213</strong> — Physical layer procedures (HARQ-ACK) &nbsp;|&nbsp; <strong>TS 38.214</strong> — Data procedures (MCS, resource allocation, link adaptation)</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 2: RESOURCE GRID ═══════════════════ -->
+<section id="resource-grid">
+  <div class="section-header">
+    <span class="section-num">02 — Resource Grid</span>
+    <h2 class="section-title">PDSCH in the NR Resource Grid</h2>
+    <p class="section-desc">Visualizing how PDSCH maps to subcarriers and OFDM symbols within a slot.</p>
+  </div>
+
+  <div class="resource-grid-wrapper">
+    <div class="rg-title-row">
+      <div class="rg-label">1 Slot = 14 OFDM Symbols (Normal CP)</div>
+      <div class="rg-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-red);"></div>CORESET/PDCCH</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-purple);"></div>DMRS</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cyan);"></div>PDSCH Data</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-orange);"></div>PT-RS</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green);"></div>SSB</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-pink);"></div>CSI-RS</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.05);"></div>Empty/Guard</div>
+      </div>
+    </div>
+
+    <div class="ofdm-col-labels" id="colLabels"></div>
+    <div class="ofdm-grid" id="ofdmGrid"></div>
+
+    <div class="info-box" style="margin-top:1rem;">
+      <h4>🔍 Hover over cells to see details</h4>
+      <p>Each cell = 1 Resource Element (RE) = 1 subcarrier × 1 OFDM symbol. 12 subcarriers × 14 symbols = 168 REs per PRB per slot. PDSCH is mapped to available REs after DMRS, CORESET, CSI-RS, and SSB allocations are excluded.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 3: SLOT STRUCTURE ═══════════════════ -->
+<section id="slot-structure">
+  <div class="section-header">
+    <span class="section-num">03 — Slot Structure</span>
+    <h2 class="section-title">NR Slot & Mini-Slot</h2>
+    <p class="section-desc">Flexible slot configurations for eMBB, URLLC and mMTC use cases.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Normal Slot (14 symbols)</h3>
+      <p>Standard scheduling unit. Used for eMBB traffic. With SCS=30kHz, slot = 0.5ms. PDSCH Mapping Type A typically starts at symbol 2 or 3 (after CORESET) and extends to symbol 13.</p>
+      <div class="code-block" style="margin-top:1rem;">
+        <span class="key">slotConfig:</span><br>
+        &nbsp;&nbsp;<span class="key">SCS:</span> <span class="val">30 kHz (μ=1)</span><br>
+        &nbsp;&nbsp;<span class="key">symbols:</span> <span class="val">14</span><br>
+        &nbsp;&nbsp;<span class="key">slotDuration:</span> <span class="val">0.5 ms</span><br>
+        &nbsp;&nbsp;<span class="key">slotsPerSubframe:</span> <span class="val">2</span><br>
+        &nbsp;&nbsp;<span class="key">slotsPerFrame:</span> <span class="val">20</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Mini-Slot (2, 4, or 7 symbols)</h3>
+      <p>Sub-slot scheduling for low-latency URLLC. PDSCH Mapping Type B starts at any symbol and spans 2, 4, or 7 symbols. Enables preemption of eMBB traffic for urgent URLLC data.</p>
+      <div class="code-block" style="margin-top:1rem;">
+        <span class="key">miniSlotConfig:</span><br>
+        &nbsp;&nbsp;<span class="key">mappingType:</span> <span class="val">Type B</span><br>
+        &nbsp;&nbsp;<span class="key">startSymbol:</span> <span class="val">any (S)</span><br>
+        &nbsp;&nbsp;<span class="key">length:</span> <span class="val">{2, 4, 7} symbols</span><br>
+        &nbsp;&nbsp;<span class="key">DMRS:</span> <span class="val">front-loaded at S</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;">
+    <h3 style="text-align:center;margin-bottom:1rem;">Numerology Comparison</h3>
+    <div class="mcs-table-wrap">
+      <table class="mcs-table">
+        <thead>
+          <tr><th>μ (SCS)</th><th>SCS (kHz)</th><th>Symbol Duration</th><th>Slot Duration</th><th>Slots/Subframe</th><th>Slots/Frame</th><th>CP Type</th></tr>
+        </thead>
+        <tbody id="numerologyBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 4: MODULATION & CODING ═══════════════════ -->
+<section id="modulation">
+  <div class="section-header">
+    <span class="section-num">04 — Modulation & Coding</span>
+    <h2 class="section-title">MCS & Constellation</h2>
+    <p class="section-desc">Adaptive modulation and coding with LDPC for maximum spectral efficiency.</p>
+  </div>
+
+  <!-- Constellation diagrams -->
+  <div class="mod-visual">
+    <div class="constellation">
+      <h4>QPSK (2 bits/RE)</h4>
+      <canvas id="canvasQPSK" width="140" height="140"></canvas>
+    </div>
+    <div class="constellation">
+      <h4>16QAM (4 bits/RE)</h4>
+      <canvas id="canvas16QAM" width="140" height="140"></canvas>
+    </div>
+    <div class="constellation">
+      <h4>64QAM (6 bits/RE)</h4>
+      <canvas id="canvas64QAM" width="140" height="140"></canvas>
+    </div>
+    <div class="constellation">
+      <h4>256QAM (8 bits/RE)</h4>
+      <canvas id="canvas256QAM" width="140" height="140"></canvas>
+    </div>
+  </div>
+
+  <div class="tab-nav" id="mcsTabNav">
+    <button class="tab-btn active" data-tab="mcsTable1">MCS Table 1 (64QAM)</button>
+    <button class="tab-btn" data-tab="mcsTable2">MCS Table 2 (256QAM)</button>
+    <button class="tab-btn" data-tab="mcsTable3">MCS Table 3 (64QAM Low-SE)</button>
+  </div>
+
+  <div class="tab-content active" id="mcsTable1">
+    <div class="mcs-table-wrap">
+      <table class="mcs-table">
+        <thead><tr><th>MCS Index</th><th>Modulation</th><th>Mod Order (Qm)</th><th>Target Code Rate (×1024)</th><th>Spectral Eff.</th></tr></thead>
+        <tbody id="mcsBody1"></tbody>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:1rem;">
+      <h4>📌 MCS Table 1 <span class="ref-tag">TS 38.214 Table 5.1.3.1-1</span></h4>
+      <p>Default table. QPSK to 64QAM. MCS 0-9: QPSK, MCS 10-16: 16QAM, MCS 17-28: 64QAM. MCS 29-31: reserved for retransmission signaling.</p>
+    </div>
+  </div>
+
+  <div class="tab-content" id="mcsTable2">
+    <div class="mcs-table-wrap">
+      <table class="mcs-table">
+        <thead><tr><th>MCS Index</th><th>Modulation</th><th>Mod Order (Qm)</th><th>Target Code Rate (×1024)</th><th>Spectral Eff.</th></tr></thead>
+        <tbody id="mcsBody2"></tbody>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:1rem;">
+      <h4>📌 MCS Table 2 <span class="ref-tag">TS 38.214 Table 5.1.3.1-2</span></h4>
+      <p>256QAM table for high SINR scenarios. MCS 0-4: QPSK, MCS 5-10: 16QAM, MCS 11-19: 64QAM, MCS 20-27: 256QAM. Requires higher SNR but achieves up to ~7.4 bits/s/Hz spectral efficiency.</p>
+    </div>
+  </div>
+
+  <div class="tab-content" id="mcsTable3">
+    <div class="mcs-table-wrap">
+      <table class="mcs-table">
+        <thead><tr><th>MCS Index</th><th>Modulation</th><th>Mod Order (Qm)</th><th>Target Code Rate (×1024)</th><th>Spectral Eff.</th></tr></thead>
+        <tbody id="mcsBody3"></tbody>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:1rem;">
+      <h4>📌 MCS Table 3 <span class="ref-tag">TS 38.214 Table 5.1.3.1-3</span></h4>
+      <p>Low spectral efficiency table for URLLC. Focuses on QPSK with very low code rates for maximum reliability. MCS 0-27: QPSK, MCS 28: 16QAM. Targets BLER of 10⁻⁵.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 5: TX PROCESSING ═══════════════════ -->
+<section id="processing">
+  <div class="section-header">
+    <span class="section-num">05 — Transport Block Processing</span>
+    <h2 class="section-title">PDSCH TX Chain</h2>
+    <p class="section-desc">From transport block to OFDM waveform — the complete downlink processing pipeline.</p>
+  </div>
+
+  <div class="flow-container" id="txFlow"></div>
+
+  <div class="card-grid" style="margin-top:2rem;">
+    <div class="card">
+      <h3>1. CRC Attachment</h3>
+      <p>24-bit CRC (CRC24A) appended to the transport block. For large TBs, code block segmentation adds CRC24B per code block. Enables error detection at the receiver.</p>
+      <div class="code-block">
+        <span class="comment">// TB Size > 3824 bits → CRC24A</span><br>
+        <span class="comment">// CB segmentation if TB+CRC > max LDPC input</span><br>
+        <span class="key">CRC_poly:</span> <span class="val">gCRC24A(D) = D²⁴+D²³+D¹⁸+D¹⁷+D¹⁴+D¹¹+D¹⁰+D⁷+D⁶+D⁵+D⁴+D³+D+1</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>2. LDPC Coding</h3>
+      <p>Low-Density Parity-Check codes replace Turbo codes from LTE. Two base graphs: BG1 (large TB, rate ≤ 8/9) and BG2 (small TB or low rate, rate ≤ 2/3). Native rate = 1/3 (BG1) or 1/5 (BG2).</p>
+      <div class="code-block">
+        <span class="key">BG1:</span> <span class="val">TB > 292 bits or R > 1/4</span><br>
+        <span class="key">BG2:</span> <span class="val">TB ≤ 292 bits or R ≤ 1/4</span><br>
+        <span class="key">Max lift size (Z):</span> <span class="val">384</span><br>
+        <span class="key">Max CB size:</span> <span class="val">8448 bits (BG1)</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>3. Rate Matching & HARQ</h3>
+      <p>Circular buffer rate matching selects bits from the LDPC output. Redundancy Version (RV) determines the starting position: RV0=0, RV1=17/66·N, RV2=33/66·N, RV3=56/66·N.</p>
+      <div class="code-block">
+        <span class="key">RV sequence:</span> <span class="val">{0, 2, 3, 1}</span><br>
+        <span class="key">HARQ combining:</span> <span class="val">Chase / Incremental Redundancy</span><br>
+        <span class="comment">// Limited buffer rate matching (LBRM) for UE memory</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>4. Scrambling → Modulation → Layer Mapping</h3>
+      <p>Scrambling with RNTI and cell ID specific sequence. Modulated to QPSK/16QAM/64QAM/256QAM constellation. Codewords mapped to 1-8 MIMO layers using precoding matrices.</p>
+      <div class="code-block">
+        <span class="key">Scrambling init:</span> <span class="val">c_init = n_RNTI × 2¹⁵ + q × 2¹⁴ + n_ID</span><br>
+        <span class="key">Max layers:</span> <span class="val">8 (2 CW × 4 layers each)</span><br>
+        <span class="key">CW-to-layer:</span> <span class="val">1CW: 1-4 layers, 2CW: 5-8 layers</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 6: SCHEDULING ═══════════════════ -->
+<section id="scheduling">
+  <div class="section-header">
+    <span class="section-num">06 — Resource Allocation</span>
+    <h2 class="section-title">PDSCH Scheduling</h2>
+    <p class="section-desc">How gNB assigns time-frequency resources for PDSCH via DCI.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>DCI Format 1_0 (Fallback)</h3>
+      <p>Compact DCI for initial access and fallback operation. CRC scrambled by C-RNTI, RA-RNTI, P-RNTI, TC-RNTI, or SI-RNTI. Uses Resource Allocation Type 1 only (contiguous RBs).</p>
+      <div class="code-block">
+        <span class="key">Fields:</span><br>
+        &nbsp;&nbsp;<span class="val">Frequency domain: ⌈log₂(N_BWP×(N_BWP+1)/2)⌉ bits</span><br>
+        &nbsp;&nbsp;<span class="val">Time domain: 4 bits (TDRA table index)</span><br>
+        &nbsp;&nbsp;<span class="val">MCS: 5 bits</span><br>
+        &nbsp;&nbsp;<span class="val">NDI: 1 bit, RV: 2 bits, HARQ PID: 4 bits</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>DCI Format 1_1 (Full Feature)</h3>
+      <p>Full feature DCI with support for both RA Type 0 (bitmap) and Type 1 (RIV). Includes BWP indicator, precoding, antenna ports, SRS request, CBG-based transmission, and more.</p>
+      <div class="code-block">
+        <span class="key">Additional fields:</span><br>
+        &nbsp;&nbsp;<span class="val">BWP indicator: 0-2 bits</span><br>
+        &nbsp;&nbsp;<span class="val">Antenna ports: variable</span><br>
+        &nbsp;&nbsp;<span class="val">TCI state: 3 bits (beam indication)</span><br>
+        &nbsp;&nbsp;<span class="val">ZP CSI-RS trigger: 2 bits</span><br>
+        &nbsp;&nbsp;<span class="val">CBG info: if configured</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;">
+    <h3 style="margin-bottom:1.5rem;">Resource Allocation Types</h3>
+    <div class="card-grid">
+      <div class="card" style="border-left:3px solid var(--accent-cyan);">
+        <h3>RA Type 0 — Bitmap</h3>
+        <p>Each bit in the bitmap corresponds to a Resource Block Group (RBG). RBG size is P = {2, 4, 8, 16} depending on BWP size and configuration (Config 1 or 2). Allows non-contiguous allocation.</p>
+        <div class="code-block">
+          <span class="key">Bitmap size:</span> <span class="val">⌈N_BWP / P⌉ bits</span><br>
+          <span class="comment">// Example: 100 MHz, 273 PRBs, P=16</span><br>
+          <span class="comment">// Bitmap = ⌈273/16⌉ = 18 bits</span>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--accent-purple);">
+        <h3>RA Type 1 — RIV (Contiguous)</h3>
+        <p>Resource Indication Value encodes both start RB (RB_start) and number of contiguous RBs (L_RBs) into a single integer. More efficient but requires contiguous allocation.</p>
+        <div class="code-block">
+          <span class="key">RIV formula:</span><br>
+          <span class="val">if (L-1) ≤ ⌊N_BWP/2⌋:</span><br>
+          &nbsp;&nbsp;<span class="val">RIV = N_BWP(L-1) + RB_start</span><br>
+          <span class="val">else:</span><br>
+          &nbsp;&nbsp;<span class="val">RIV = N_BWP(N_BWP-L+1) + (N_BWP-1-RB_start)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:1.5rem;">
+    <h4>⏱ Time Domain Resource Assignment (TDRA) <span class="ref-tag">TS 38.214 §5.1.2.1</span></h4>
+    <p>TDRA is indicated by a 4-bit index pointing to an RRC-configured table. Each row specifies: PDSCH mapping type (A/B), start symbol (S), and allocation length (L) in symbols. The K0 value (slot offset between PDCCH and PDSCH) is also configurable for cross-slot scheduling.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 7: HARQ ═══════════════════ -->
+<section id="harq">
+  <div class="section-header">
+    <span class="section-num">07 — HARQ Operation</span>
+    <h2 class="section-title">DL HARQ Process</h2>
+    <p class="section-desc">Asynchronous HARQ with 16 processes for robust data delivery.</p>
+  </div>
+
+  <div class="harq-flow" id="harqDemo"></div>
+
+  <div class="card-grid" style="margin-top:2rem;">
+    <div class="card">
+      <h3>HARQ-ACK on PUCCH/PUSCH</h3>
+      <p>UE sends ACK/NACK on PUCCH (formats 0,1,2,3,4) or multiplexed on PUSCH. Timing is indicated by K1 value (1-15 slots after PDSCH). HARQ-ACK codebook can be semi-static (Type 1) or dynamic (Type 2).</p>
+    </div>
+    <div class="card">
+      <h3>CBG-based Retransmission</h3>
+      <p>In NR, retransmission can be at Code Block Group (CBG) level rather than entire TB. Up to 8 CBGs per TB. Only failed CBGs are retransmitted, improving efficiency by 30-50% for large TBs.</p>
+    </div>
+    <div class="card">
+      <h3>HARQ Process Parameters</h3>
+      <div class="code-block">
+        <span class="key">maxProcesses:</span> <span class="val">16</span><br>
+        <span class="key">mode:</span> <span class="val">Asynchronous, Adaptive</span><br>
+        <span class="key">NDI toggle:</span> <span class="val">New data indicator in DCI</span><br>
+        <span class="key">RV sequence:</span> <span class="val">{0, 2, 3, 1}</span><br>
+        <span class="key">combining:</span> <span class="val">Soft combining (IR/CC)</span><br>
+        <span class="key">maxRetx:</span> <span class="val">typically 4 (configurable)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 8: DMRS ═══════════════════ -->
+<section id="dmrs">
+  <div class="section-header">
+    <span class="section-num">08 — DMRS Configuration</span>
+    <h2 class="section-title">Demodulation Reference Signals</h2>
+    <p class="section-desc">UE-specific reference signals essential for coherent demodulation of PDSCH.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>DMRS Type 1 <span class="ref-tag">TS 38.211 §7.4.1.1</span></h3>
+      <p>Comb-2 pattern: DMRS on every other subcarrier. Supports up to 4 DMRS ports (single symbol) or 8 ports (double symbol). Uses CDM groups {0,1}.</p>
+      <div class="code-block">
+        <span class="key">Subcarrier positions:</span> <span class="val">{0,2,4,6,8,10} or {1,3,5,7,9,11}</span><br>
+        <span class="key">CDM groups:</span> <span class="val">2</span><br>
+        <span class="key">Max ports (1 sym):</span> <span class="val">4</span><br>
+        <span class="key">Max ports (2 sym):</span> <span class="val">8</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>DMRS Type 2 <span class="ref-tag">TS 38.211 §7.4.1.1</span></h3>
+      <p>Comb-3 pattern: DMRS on paired subcarriers with gaps. Supports up to 6 ports (single symbol) or 12 ports (double symbol). Used for massive MIMO with many orthogonal layers.</p>
+      <div class="code-block">
+        <span class="key">Subcarrier positions:</span> <span class="val">{0,1}, {4,5}, {8,9}</span><br>
+        <span class="key">CDM groups:</span> <span class="val">3</span><br>
+        <span class="key">Max ports (1 sym):</span> <span class="val">6</span><br>
+        <span class="key">Max ports (2 sym):</span> <span class="val">12</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:1.5rem;">
+    <h4>🔧 Front-Loaded + Additional DMRS</h4>
+    <p>DMRS is always front-loaded (first DMRS at or near the start of PDSCH allocation) for fast channel estimation. Additional DMRS symbols (up to 3 more) can be configured via <code>dmrs-AdditionalPosition</code> = {pos0, pos1, pos2, pos3} for high-mobility UEs where channel coherence time is short.</p>
+  </div>
+
+  <div class="info-box warn">
+    <h4>⚠️ DMRS Overhead Consideration</h4>
+    <p>DMRS overhead directly impacts PDSCH throughput. Type 1 single symbol: 6 REs/PRB overhead. Type 2 single symbol: 4 REs/PRB overhead. Additional DMRS symbols multiply this. Optimize based on UE speed — use pos0 for stationary, pos2-3 for high mobility (>120 km/h).</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 9: BANDWIDTH PARTS ═══════════════════ -->
+<section id="bandwidth">
+  <div class="section-header">
+    <span class="section-num">09 — Bandwidth & PRBs</span>
+    <h2 class="section-title">Bandwidth Parts & Channel BW</h2>
+    <p class="section-desc">Mapping PDSCH across NR channel bandwidths with flexible BWP.</p>
+  </div>
+
+  <div class="bw-visual" id="bwChart"></div>
+
+  <div class="mcs-table-wrap" style="margin-top:2rem;">
+    <table class="mcs-table">
+      <thead><tr><th>Channel BW (MHz)</th><th>SCS 15 kHz</th><th>SCS 30 kHz</th><th>SCS 60 kHz</th><th>SCS 120 kHz</th></tr></thead>
+      <tbody id="bwTableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="info-box" style="margin-top:1.5rem;">
+    <h4>📐 Bandwidth Part (BWP) Concept</h4>
+    <p>A BWP is a contiguous set of PRBs within the carrier bandwidth. UE can be configured with up to 4 DL BWPs but only 1 active at a time. BWP allows UE power saving (narrow BWP for idle) and mixed numerology (different SCS per BWP). BWP switching takes ~1-2ms via DCI or timer.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 10: THROUGHPUT CALCULATOR ═══════════════════ -->
+<section id="throughput">
+  <div class="section-header">
+    <span class="section-num">10 — Throughput</span>
+    <h2 class="section-title">PDSCH Throughput Calculator</h2>
+    <p class="section-desc">Calculate theoretical peak and practical DL throughput based on 3GPP formula.</p>
+  </div>
+
+  <div class="calc-box">
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>Modulation Order (Qm)</label>
+        <select id="calcQm">
+          <option value="2">QPSK (Qm=2)</option>
+          <option value="4">16QAM (Qm=4)</option>
+          <option value="6" selected>64QAM (Qm=6)</option>
+          <option value="8">256QAM (Qm=8)</option>
+        </select>
+      </div>
+      <div class="calc-field">
+        <label>Scaling Factor (f)</label>
+        <select id="calcF">
+          <option value="1" selected>1</option>
+          <option value="0.75">0.75</option>
+          <option value="0.4">0.4</option>
+        </select>
+      </div>
+      <div class="calc-field">
+        <label>Code Rate (R max)</label>
+        <select id="calcR">
+          <option value="0.926" selected>948/1024 = 0.926</option>
+          <option value="0.8525">873/1024 = 0.853</option>
+          <option value="0.6660">682/1024 = 0.666</option>
+        </select>
+      </div>
+      <div class="calc-field">
+        <label>MIMO Layers (v)</label>
+        <select id="calcLayers">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="4">4</option>
+          <option value="8">8</option>
+        </select>
+      </div>
+      <div class="calc-field">
+        <label>Numerology (μ)</label>
+        <select id="calcMu">
+          <option value="0">0 (15 kHz)</option>
+          <option value="1" selected>1 (30 kHz)</option>
+          <option value="2">2 (60 kHz)</option>
+          <option value="3">3 (120 kHz)</option>
+        </select>
+      </div>
+      <div class="calc-field">
+        <label>PRBs (N_PRB)</label>
+        <input type="number" id="calcPRB" value="273" min="1" max="273">
+      </div>
+      <div class="calc-field">
+        <label>PDSCH Symbols</label>
+        <input type="number" id="calcSymbols" value="12" min="1" max="14">
+      </div>
+      <div class="calc-field">
+        <label>DMRS OH (per PRB)</label>
+        <input type="number" id="calcDMRS" value="12" min="0" max="48">
+      </div>
+      <div class="calc-field">
+        <label>Component Carriers (J)</label>
+        <select id="calcCC">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="8">8</option>
+          <option value="16">16</option>
+        </select>
+      </div>
+    </div>
+    <div class="calc-result">
+      <div class="calc-result-val" id="calcResultVal">--</div>
+      <div class="calc-result-unit">Mbps (theoretical peak DL throughput)</div>
+      <div class="calc-formula" id="calcFormula"></div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:1.5rem;">
+    <h4>📊 3GPP Throughput Formula <span class="ref-tag">TS 38.306 §4.1.2</span></h4>
+    <p><strong>Data Rate = 10⁻⁶ × Σⱼ (vⱼ × Qmⱼ × fⱼ × Rmax × N_PRBⱼ × 12 × (N_symb_sh - N_DMRS) / T_s_μ)</strong><br>
+    Where T_s_μ = 10⁻³ / (14 × 2^μ) is the average OFDM symbol duration in seconds.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 11: KPIs ═══════════════════ -->
+<section id="kpi">
+  <div class="section-header">
+    <span class="section-num">11 — Key Performance Indicators</span>
+    <h2 class="section-title">PDSCH KPIs</h2>
+    <p class="section-desc">Critical metrics for monitoring PDSCH performance in live networks.</p>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="card-grid" style="margin-top:2rem;">
+    <div class="card">
+      <h3>PDSCH BLER (Block Error Rate)</h3>
+      <p>Target: 10% for eMBB (initial BLER), 0.001% for URLLC. Measured as ratio of NACKs to total HARQ feedback. Outer loop link adaptation adjusts MCS based on BLER target.</p>
+    </div>
+    <div class="card">
+      <h3>PDSCH Throughput</h3>
+      <p>Cell-level and UE-level DL throughput. Depends on MCS, PRB allocation, MIMO layers, and scheduling efficiency. Peak DL per UE typically 1-2 Gbps in mid-band (3.5 GHz, 100MHz).</p>
+    </div>
+    <div class="card">
+      <h3>PDSCH PRB Utilization</h3>
+      <p>Ratio of scheduled PRBs to total available PRBs. High values (>80%) indicate congestion. Monitor per cell and per slice. Used for capacity planning and load balancing triggers.</p>
+    </div>
+    <div class="card">
+      <h3>CQI Distribution</h3>
+      <p>CQI 0-15 reported by UEs. Higher CQI → higher MCS → better throughput. Target: median CQI > 9 for good coverage. CQI < 5 indicates coverage issues. Maps directly to supportable MCS.</p>
+    </div>
+    <div class="card">
+      <h3>Rank Indicator (RI)</h3>
+      <p>Number of spatial streams UE can support. RI=1 (poor conditions, cell edge), RI=2 (typical), RI=4 (excellent conditions, near cell). Average RI indicates MIMO effectiveness.</p>
+    </div>
+    <div class="card">
+      <h3>Scheduling Latency</h3>
+      <p>Time from BSR/SR to first PDSCH allocation. Critical for URLLC (<1ms target). Impacted by CORESET periodicity, processing time (N1), and K0/K1 values.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 12: MAPPING TYPES ═══════════════════ -->
+<section id="mapping">
+  <div class="section-header">
+    <span class="section-num">12 — Mapping Types</span>
+    <h2 class="section-title">PDSCH Mapping Type A vs Type B</h2>
+    <p class="section-desc">Slot-based vs non-slot-based mapping for different use cases.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="border-top:3px solid var(--accent-cyan);">
+      <h3 style="color:var(--accent-cyan);">Mapping Type A (Slot-based)</h3>
+      <div class="code-block">
+        <span class="key">DMRS position:</span> <span class="val">Symbol 2 or 3 (l₀)</span><br>
+        <span class="key">Start symbol (S):</span> <span class="val">{0, 1, 2, 3}</span><br>
+        <span class="key">Length (L):</span> <span class="val">{3..14} symbols</span><br>
+        <span class="key">S+L ≤ 14</span><br>
+        <span class="key">Use case:</span> <span class="val">eMBB, standard scheduling</span>
+      </div>
+      <p style="margin-top:0.8rem;">DMRS location is relative to slot boundary (symbol 2 or 3). Designed for full-slot allocation. Typical: S=2, L=12 (after 2 CORESET symbols).</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent-purple);">
+      <h3 style="color:var(--accent-purple);">Mapping Type B (Non-slot-based)</h3>
+      <div class="code-block">
+        <span class="key">DMRS position:</span> <span class="val">First symbol of allocation</span><br>
+        <span class="key">Start symbol (S):</span> <span class="val">{0..12}</span><br>
+        <span class="key">Length (L):</span> <span class="val">{2, 4, 7} symbols</span><br>
+        <span class="key">S+L ≤ 14</span><br>
+        <span class="key">Use case:</span> <span class="val">URLLC, mini-slot</span>
+      </div>
+      <p style="margin-top:0.8rem;">DMRS is front-loaded at start of allocation (any symbol). Enables mini-slot scheduling for ultra-low latency. Can preempt ongoing eMBB transmissions.</p>
+    </div>
+  </div>
+
+  <div class="timeline" style="margin-top:3rem;" id="mappingTimeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <h4>Step 1: gNB determines scheduling need</h4>
+      <p>Based on buffer status, QoS requirements, and CQI/RI feedback, the scheduler selects UEs for PDSCH transmission.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--accent-blue)"></div>
+      <h4>Step 2: DCI on PDCCH indicates PDSCH parameters</h4>
+      <p>TDRA index, FDRA, MCS, HARQ process ID, NDI, RV, and antenna port information are encoded in DCI format 1_0 or 1_1.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--accent-purple)"></div>
+      <h4>Step 3: UE decodes PDCCH and prepares for PDSCH reception</h4>
+      <p>UE determines exact time-frequency resources from DCI, identifies DMRS locations, and configures receiver accordingly.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--accent-green)"></div>
+      <h4>Step 4: UE receives and decodes PDSCH</h4>
+      <p>Channel estimation using DMRS → equalization → demodulation → de-rate-matching → LDPC decoding → CRC check.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--accent-orange)"></div>
+      <h4>Step 5: UE sends HARQ-ACK/NACK</h4>
+      <p>After K1 slots, UE transmits ACK (CRC pass) or NACK (CRC fail) on PUCCH/PUSCH. gNB schedules retransmission if NACK.</p>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.container -->
+
+<footer>
+  <p>5G NR PDSCH Technical Reference — Based on 3GPP Release 17 Specifications</p>
+  <p style="margin-top:0.5rem;">TS 38.211 · TS 38.212 · TS 38.213 · TS 38.214 · TS 38.306</p>
+  <p style="margin-top:0.5rem;">Created for <a href="https://www.cafetele.com" target="_blank">CafeTele Telecom Training</a></p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════
+(function() {
+  const pc = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 8 + 's';
+    p.style.animationDuration = (6 + Math.random() * 6) + 's';
+    const colors = ['#00e5ff','#3b82f6','#a855f7','#10b981'];
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    pc.appendChild(p);
+  }
+})();
+
+// ═══════════════════════════════════════
+// SECTION VISIBILITY
+// ═══════════════════════════════════════
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Animate timeline items
+      e.target.querySelectorAll('.tl-item').forEach((item, i) => {
+        setTimeout(() => item.classList.add('visible'), i * 200);
+      });
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('section').forEach(s => observer.observe(s));
+
+// ═══════════════════════════════════════
+// OFDM RESOURCE GRID
+// ═══════════════════════════════════════
+(function() {
+  const grid = document.getElementById('ofdmGrid');
+  const colLabels = document.getElementById('colLabels');
+
+  // Column labels
+  const clEmpty = document.createElement('div');
+  colLabels.appendChild(clEmpty);
+  for (let s = 0; s < 14; s++) {
+    const lbl = document.createElement('div');
+    lbl.className = 'ofdm-col-label';
+    lbl.textContent = 'Sym ' + s;
+    colLabels.appendChild(lbl);
+  }
+
+  // Define patterns per row (12 subcarriers × 14 symbols)
+  // 0=empty, 1=PDSCH, 2=DMRS, 3=CORESET, 4=PTRS, 5=SSB, 6=CSI-RS
+  const patterns = [
+    // SC 11 (top)
+    [3,3,2,1,1,1,1,1,1,1,1,6,1,1],
+    [3,3,1,1,1,1,1,1,1,1,1,1,1,1],
+    [3,3,2,1,1,1,1,2,1,1,1,6,1,1],
+    [3,3,1,1,4,1,1,1,1,4,1,1,1,1],
+    [3,3,2,1,1,1,1,1,1,1,1,6,1,1],
+    [3,3,1,1,1,1,1,2,1,1,1,1,1,1],
+    [3,3,2,1,1,1,1,1,1,1,1,6,1,1],
+    [3,3,1,1,4,1,1,1,1,4,1,1,1,1],
+    [3,3,2,1,1,1,1,2,1,1,1,6,1,1],
+    [3,3,1,1,1,1,1,1,1,1,1,1,1,1],
+    [3,3,2,1,1,1,1,1,1,1,1,6,1,1],
+    // SC 0 (bottom)
+    [3,3,1,1,4,1,1,2,1,4,1,1,1,1],
+  ];
+
+  const typeNames = ['Empty','PDSCH Data','DMRS','CORESET','PT-RS','SSB','CSI-RS'];
+  const typeClasses = ['cell-empty','cell-pdsch','cell-dmrs','cell-coreset','cell-ptrs','cell-ssb','cell-csi'];
+
+  const tooltip = document.getElementById('tooltip');
+
+  patterns.forEach((row, ri) => {
+    const label = document.createElement('div');
+    label.className = 'ofdm-row-label';
+    label.textContent = 'SC ' + (11 - ri);
+    grid.appendChild(label);
+
+    row.forEach((val, ci) => {
+      const cell = document.createElement('div');
+      cell.className = 'ofdm-cell ' + typeClasses[val];
+      cell.style.animationDelay = ((ri * 14 + ci) * 12) + 'ms';
+
+      cell.addEventListener('mouseenter', (e) => {
+        tooltip.style.opacity = '1';
+        tooltip.innerHTML = `<strong>${typeNames[val]}</strong><br>SC ${11-ri}, Symbol ${ci}<br>RE index: ${(11-ri)*14 + ci}`;
+      });
+      cell.addEventListener('mousemove', (e) => {
+        tooltip.style.left = (e.clientX + 12) + 'px';
+        tooltip.style.top = (e.clientY - 40) + 'px';
+      });
+      cell.addEventListener('mouseleave', () => {
+        tooltip.style.opacity = '0';
+      });
+
+      grid.appendChild(cell);
+    });
+  });
+})();
+
+// ═══════════════════════════════════════
+// NUMEROLOGY TABLE
+// ═══════════════════════════════════════
+(function() {
+  const data = [
+    {mu:0, scs:15, symDur:'66.67 μs', slotDur:'1 ms', slotsPerSF:1, slotsPerF:10, cp:'Normal'},
+    {mu:1, scs:30, symDur:'33.33 μs', slotDur:'0.5 ms', slotsPerSF:2, slotsPerF:20, cp:'Normal'},
+    {mu:2, scs:60, symDur:'16.67 μs', slotDur:'0.25 ms', slotsPerSF:4, slotsPerF:40, cp:'Normal/Extended'},
+    {mu:3, scs:120, symDur:'8.33 μs', slotDur:'0.125 ms', slotsPerSF:8, slotsPerF:80, cp:'Normal'},
+  ];
+  const body = document.getElementById('numerologyBody');
+  data.forEach((d, i) => {
+    const tr = document.createElement('tr');
+    tr.style.animationDelay = (i * 100) + 'ms';
+    tr.innerHTML = `<td>${d.mu} (μ=${d.mu})</td><td>${d.scs}</td><td>${d.symDur}</td><td>${d.slotDur}</td><td>${d.slotsPerSF}</td><td>${d.slotsPerF}</td><td>${d.cp}</td>`;
+    body.appendChild(tr);
+  });
+})();
+
+// ═══════════════════════════════════════
+// CONSTELLATION DIAGRAMS
+// ═══════════════════════════════════════
+function drawConstellation(canvasId, order) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w/2, cy = h/2;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(0,0,w,h);
+
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx,0); ctx.lineTo(cx,h);
+  ctx.moveTo(0,cy); ctx.lineTo(w,cy);
+  ctx.stroke();
+
+  const n = Math.sqrt(order);
+  const spacing = (w - 30) / (n - 1);
+  const startX = 15, startY = 15;
+  let delay = 0;
+
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      delay += 30;
+      setTimeout(() => {
+        const x = startX + j * spacing;
+        const y = startY + i * spacing;
+
+        ctx.beginPath();
+        ctx.arc(x, y, order > 64 ? 1.5 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#00e5ff';
+        ctx.fill();
+        ctx.shadowColor = '#00e5ff';
+        ctx.shadowBlur = order > 64 ? 3 : 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }, delay);
+    }
+  }
+}
+
+setTimeout(() => {
+  drawConstellation('canvasQPSK', 4);
+  drawConstellation('canvas16QAM', 16);
+  drawConstellation('canvas64QAM', 64);
+  drawConstellation('canvas256QAM', 256);
+}, 500);
+
+// ═══════════════════════════════════════
+// MCS TABLES
+// ═══════════════════════════════════════
+(function() {
+  // Table 1 (64QAM) - representative entries
+  const t1 = [
+    [0,'QPSK',2,120,'0.2344'],[1,'QPSK',2,157,'0.3066'],[2,'QPSK',2,193,'0.3770'],
+    [3,'QPSK',2,251,'0.4902'],[4,'QPSK',2,308,'0.6016'],[5,'QPSK',2,379,'0.7402'],
+    [6,'QPSK',2,449,'0.8770'],[7,'QPSK',2,526,'1.0273'],[8,'QPSK',2,602,'1.1758'],
+    [9,'QPSK',2,679,'1.3262'],[10,'16QAM',4,340,'1.3281'],[11,'16QAM',4,378,'1.4766'],
+    [12,'16QAM',4,434,'1.6953'],[13,'16QAM',4,490,'1.9141'],[14,'16QAM',4,553,'2.1602'],
+    [15,'16QAM',4,616,'2.4063'],[16,'16QAM',4,658,'2.5703'],[17,'64QAM',6,438,'2.5664'],
+    [18,'64QAM',6,466,'2.7305'],[19,'64QAM',6,517,'3.0293'],[20,'64QAM',6,567,'3.3223'],
+    [21,'64QAM',6,616,'3.6094'],[22,'64QAM',6,666,'3.9023'],[23,'64QAM',6,719,'4.2129'],
+    [24,'64QAM',6,772,'4.5234'],[25,'64QAM',6,822,'4.8164'],[26,'64QAM',6,873,'5.1152'],
+    [27,'64QAM',6,910,'5.3320'],[28,'64QAM',6,948,'5.5547'],
+  ];
+
+  const t2 = [
+    [0,'QPSK',2,120,'0.2344'],[1,'QPSK',2,193,'0.3770'],[2,'QPSK',2,308,'0.6016'],
+    [3,'QPSK',2,449,'0.8770'],[4,'QPSK',2,602,'1.1758'],[5,'16QAM',4,378,'1.4766'],
+    [6,'16QAM',4,434,'1.6953'],[7,'16QAM',4,490,'1.9141'],[8,'16QAM',4,553,'2.1602'],
+    [9,'16QAM',4,616,'2.4063'],[10,'16QAM',4,658,'2.5703'],[11,'64QAM',6,466,'2.7305'],
+    [12,'64QAM',6,517,'3.0293'],[13,'64QAM',6,567,'3.3223'],[14,'64QAM',6,616,'3.6094'],
+    [15,'64QAM',6,666,'3.9023'],[16,'64QAM',6,719,'4.2129'],[17,'64QAM',6,772,'4.5234'],
+    [18,'64QAM',6,822,'4.8164'],[19,'64QAM',6,873,'5.1152'],[20,'256QAM',8,682.5,'5.3320'],
+    [21,'256QAM',8,711,'5.5547'],[22,'256QAM',8,754,'5.8906'],[23,'256QAM',8,797,'6.2266'],
+    [24,'256QAM',8,841,'6.5703'],[25,'256QAM',8,885,'6.9141'],[26,'256QAM',8,916.5,'7.1602'],
+    [27,'256QAM',8,948,'7.4063'],
+  ];
+
+  const t3 = [
+    [0,'QPSK',2,30,'0.0586'],[1,'QPSK',2,40,'0.0781'],[2,'QPSK',2,50,'0.0977'],
+    [3,'QPSK',2,64,'0.1250'],[4,'QPSK',2,78,'0.1523'],[5,'QPSK',2,99,'0.1934'],
+    [6,'QPSK',2,120,'0.2344'],[7,'QPSK',2,157,'0.3066'],[8,'QPSK',2,193,'0.3770'],
+    [9,'QPSK',2,251,'0.4902'],[10,'QPSK',2,308,'0.6016'],[11,'QPSK',2,379,'0.7402'],
+    [12,'QPSK',2,449,'0.8770'],[13,'QPSK',2,526,'1.0273'],[14,'QPSK',2,602,'1.1758'],
+    [15,'QPSK',2,679,'1.3262'],
+  ];
+
+  function fillTable(data, bodyId) {
+    const body = document.getElementById(bodyId);
+    data.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      tr.style.animationDelay = (i * 50) + 'ms';
+      tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  fillTable(t1, 'mcsBody1');
+  fillTable(t2, 'mcsBody2');
+  fillTable(t3, 'mcsBody3');
+})();
+
+// ═══════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabId = btn.dataset.tab;
+    const parent = btn.closest('section');
+    parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  });
+});
+
+// ═══════════════════════════════════════
+// TX PROCESSING CHAIN
+// ═══════════════════════════════════════
+(function() {
+  const steps = [
+    {title:'TB Input', desc:'DL-SCH data'},
+    {title:'CRC24A', desc:'Error detection'},
+    {title:'CB Segment', desc:'Code blocks'},
+    {title:'LDPC Encode', desc:'BG1 or BG2'},
+    {title:'Rate Match', desc:'RV0/1/2/3'},
+    {title:'CB Concat', desc:'Reassemble'},
+    {title:'Scramble', desc:'RNTI+CellID'},
+    {title:'Modulate', desc:'QAM mapping'},
+    {title:'Layer Map', desc:'1-8 layers'},
+    {title:'Precode', desc:'MIMO precoding'},
+    {title:'RE Map', desc:'OFDM grid'},
+    {title:'OFDM/CP', desc:'IFFT + CP'},
+  ];
+
+  const container = document.getElementById('txFlow');
+  steps.forEach((s, i) => {
+    const box = document.createElement('div');
+    box.className = 'flow-box';
+    box.style.animationDelay = (i * 100) + 'ms';
+    box.innerHTML = `<h4>${s.title}</h4><p>${s.desc}</p>`;
+    container.appendChild(box);
+
+    if (i < steps.length - 1) {
+      const arrow = document.createElement('div');
+      arrow.className = 'flow-arrow';
+      arrow.textContent = '→';
+      arrow.style.animationDelay = (i * 100 + 50) + 'ms';
+      container.appendChild(arrow);
+    }
+  });
+})();
+
+// ═══════════════════════════════════════
+// HARQ DEMO
+// ═══════════════════════════════════════
+(function() {
+  const container = document.getElementById('harqDemo');
+  const steps = [
+    {left:'gNB', right:'UE', arrow:'→', msg:'PDCCH (DCI) + PDSCH (TB, RV0)', color:'var(--accent-cyan)'},
+    {left:'gNB', right:'UE', arrow:'←', msg:'HARQ-ACK: NACK (CRC failed)', color:'var(--accent-red)'},
+    {left:'gNB', right:'UE', arrow:'→', msg:'PDCCH + PDSCH Retx (same HARQ PID, RV2)', color:'var(--accent-orange)'},
+    {left:'gNB', right:'UE', arrow:'←', msg:'HARQ-ACK: ACK (CRC pass after soft combining)', color:'var(--accent-green)'},
+  ];
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'harq-row';
+  header.innerHTML = `<div class="harq-block gnb" style="font-weight:700;color:var(--accent-green);">gNB</div>
+    <div style="width:200px;"></div>
+    <div class="harq-block ue" style="font-weight:700;color:var(--accent-blue);">UE</div>`;
+  container.appendChild(header);
+
+  steps.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'harq-row';
+    row.style.opacity = '0';
+    row.style.transition = 'opacity 0.5s';
+
+    const arrowDir = s.arrow === '→' ? '→→→' : '←←←';
+    row.innerHTML = `<div style="width:100px;"></div>
+      <div style="text-align:center;">
+        <div class="harq-arrow" style="color:${s.color};">${arrowDir}</div>
+        <div class="harq-msg">${s.msg}</div>
+      </div>
+      <div style="width:100px;"></div>`;
+
+    container.appendChild(row);
+
+    setTimeout(() => { row.style.opacity = '1'; }, 800 + i * 700);
+  });
+})();
+
+// ═══════════════════════════════════════
+// BANDWIDTH CHART
+// ═══════════════════════════════════════
+(function() {
+  const bws = [
+    {bw:'5 MHz', prb:25, h:15},{bw:'10 MHz', prb:52, h:30},{bw:'15 MHz', prb:79, h:46},
+    {bw:'20 MHz', prb:106, h:62},{bw:'25 MHz', prb:133, h:77},{bw:'30 MHz', prb:160, h:93},
+    {bw:'40 MHz', prb:216, h:125},{bw:'50 MHz', prb:270, h:157},{bw:'60 MHz', prb:162, h:94},
+    {bw:'80 MHz', prb:217, h:126},{bw:'100 MHz', prb:273, h:160},
+  ];
+
+  const chart = document.getElementById('bwChart');
+  bws.forEach((b, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'bw-bar';
+    const fill = document.createElement('div');
+    fill.className = 'bw-bar-fill';
+    fill.setAttribute('data-prb', b.prb + ' PRBs');
+    fill.style.height = b.h + 'px';
+    fill.style.animationDelay = (i * 100) + 'ms';
+    const label = document.createElement('div');
+    label.className = 'bw-bar-label';
+    label.textContent = b.bw;
+    bar.appendChild(fill);
+    bar.appendChild(label);
+    chart.appendChild(bar);
+  });
+
+  // BW table
+  const bwData = [
+    ['5',25,11,'-','-'],['10',52,24,11,'-'],['15',79,38,18,'-'],['20',106,51,24,'-'],
+    ['25',133,65,31,'-'],['30',160,78,38,'-'],['40',216,106,51,24],
+    ['50',270,133,65,32],['60','-',162,79,39],['80','-',217,107,54],['100','-',273,135,66],
+  ];
+  const body = document.getElementById('bwTableBody');
+  bwData.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.style.animationDelay = (i * 60) + 'ms';
+    tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td>`;
+    body.appendChild(tr);
+  });
+})();
+
+// ═══════════════════════════════════════
+// THROUGHPUT CALCULATOR
+// ═══════════════════════════════════════
+function calcThroughput() {
+  const Qm = parseInt(document.getElementById('calcQm').value);
+  const f = parseFloat(document.getElementById('calcF').value);
+  const R = parseFloat(document.getElementById('calcR').value);
+  const v = parseInt(document.getElementById('calcLayers').value);
+  const mu = parseInt(document.getElementById('calcMu').value);
+  const nPRB = parseInt(document.getElementById('calcPRB').value);
+  const nSym = parseInt(document.getElementById('calcSymbols').value);
+  const nDMRS = parseInt(document.getElementById('calcDMRS').value);
+  const J = parseInt(document.getElementById('calcCC').value);
+
+  const Ts = 1e-3 / (14 * Math.pow(2, mu));
+  const nRE = nPRB * 12 * nSym - nDMRS;
+  const rateMbps = 1e-6 * J * v * Qm * f * R * nRE / Ts;
+
+  document.getElementById('calcResultVal').textContent = rateMbps.toFixed(1);
+  document.getElementById('calcFormula').textContent =
+    `= 10⁻⁶ × ${J} × ${v} × ${Qm} × ${f} × ${R.toFixed(3)} × (${nPRB}×12×${nSym} - ${nDMRS}) / ${Ts.toExponential(4)}`;
+}
+
+['calcQm','calcF','calcR','calcLayers','calcMu','calcPRB','calcSymbols','calcDMRS','calcCC'].forEach(id => {
+  document.getElementById(id).addEventListener('change', calcThroughput);
+  document.getElementById(id).addEventListener('input', calcThroughput);
+});
+calcThroughput();
+
+// ═══════════════════════════════════════
+// KPI RINGS
+// ═══════════════════════════════════════
+(function() {
+  const kpis = [
+    {label:'Initial BLER Target',val:'10%',pct:10,color:'var(--accent-green)'},
+    {label:'Residual BLER',val:'0.1%',pct:0.1,color:'var(--accent-cyan)'},
+    {label:'Avg PRB Utilization',val:'65%',pct:65,color:'var(--accent-blue)'},
+    {label:'Median CQI',val:'10/15',pct:67,color:'var(--accent-purple)'},
+    {label:'Avg MIMO Rank',val:'2.4',pct:60,color:'var(--accent-orange)'},
+  ];
+
+  const row = document.getElementById('kpiRow');
+  kpis.forEach(k => {
+    const meter = document.createElement('div');
+    meter.className = 'kpi-meter';
+    const offset = 339.3 - (339.3 * k.pct / 100);
+    meter.innerHTML = `
+      <div class="kpi-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle class="kpi-ring-bg" cx="60" cy="60" r="54"/>
+          <circle class="kpi-ring-fill" cx="60" cy="60" r="54"
+            style="stroke:${k.color};stroke-dashoffset:${339.3}" data-target="${offset}"/>
+        </svg>
+        <div class="kpi-ring-val" style="color:${k.color}">${k.val}</div>
+      </div>
+      <div class="kpi-label">${k.label}</div>`;
+    row.appendChild(meter);
+  });
+
+  // Animate rings when visible
+  const kpiObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.kpi-ring-fill').forEach(ring => {
+          setTimeout(() => {
+            ring.style.strokeDashoffset = ring.dataset.target;
+          }, 300);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  kpiObs.observe(document.getElementById('kpiRow'));
+})();
+</script>
+</body>
+</html>

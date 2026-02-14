@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5G NR Transport Block Processing Chain — Interactive Animator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-deep: #0a0e1a;
+  --bg-panel: #0f1424;
+  --bg-card: #151a30;
+  --bg-card-hover: #1a2040;
+  --border: #1e2848;
+  --border-active: #3b82f6;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8892b0;
+  --text-muted: #5a6480;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #ec4899;
+  --glow-blue: rgba(59, 130, 246, 0.15);
+  --glow-cyan: rgba(6, 182, 212, 0.15);
+  --glow-green: rgba(16, 185, 129, 0.15);
+  --step-colors-0: #3b82f6;
+  --step-colors-1: #8b5cf6;
+  --step-colors-2: #06b6d4;
+  --step-colors-3: #10b981;
+  --step-colors-4: #f59e0b;
+  --step-colors-5: #ec4899;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, var(--bg-panel) 0%, #111832 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-logo {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+}
+.header h1 {
+  font-size: 16px; font-weight: 600; letter-spacing: -0.3px;
+}
+.header h1 span { color: var(--accent-cyan); }
+.header-sub {
+  font-size: 11px; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* CONTROLS BAR */
+.controls-bar {
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.ctrl-group {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+}
+.ctrl-group label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+.ctrl-group input[type="number"], .ctrl-group input[type="range"] {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: 90px;
+  outline: none;
+  transition: border 0.2s;
+}
+.ctrl-group input[type="number"]:focus {
+  border-color: var(--accent-blue);
+}
+.ctrl-group input[type="range"] {
+  width: 80px; padding: 0; border: none; background: none;
+  accent-color: var(--accent-cyan);
+}
+.ctrl-group select {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  outline: none;
+}
+.speed-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--accent-cyan); min-width: 30px;
+}
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: transparent; color: #fff;
+}
+.btn-primary:hover { opacity: 0.9; border-color: transparent; }
+.btn svg { width: 14px; height: 14px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* MAIN LAYOUT */
+.main {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  height: calc(100vh - 110px);
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; height: auto; }
+}
+
+/* LEFT PANEL — FLOW DIAGRAM */
+.flow-panel {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  padding: 20px;
+  overflow-y: auto;
+  position: relative;
+}
+.flow-panel-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 16px;
+}
+
+/* STEP BOXES */
+.step-box {
+  position: relative;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  overflow: hidden;
+}
+.step-box::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--step-color);
+  border-radius: 3px 0 0 3px;
+  opacity: 0.3;
+  transition: opacity 0.35s, width 0.35s;
+}
+.step-box.active {
+  border-color: var(--step-color);
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--step-color) 15%, transparent),
+              inset 0 0 30px color-mix(in srgb, var(--step-color) 5%, transparent);
+  transform: scale(1.02);
+}
+.step-box.active::before { opacity: 1; width: 4px; }
+.step-box.completed { opacity: 0.6; }
+.step-box.completed::before { opacity: 0.6; }
+
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--step-color) 20%, transparent);
+  color: var(--step-color);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  margin-right: 8px;
+}
+.step-title {
+  font-size: 13px; font-weight: 600;
+  display: inline;
+}
+.step-subtitle {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 6px;
+}
+.step-computed {
+  font-size: 10px;
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+  display: none;
+}
+.step-box.active .step-computed,
+.step-box.completed .step-computed { display: block; }
+
+/* ARROW CONNECTOR */
+.arrow-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  position: relative;
+}
+.arrow-line {
+  width: 2px; height: 100%;
+  background: var(--border);
+  position: relative;
+}
+.arrow-head {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--border);
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* DATA TOKENS (animated bits) */
+.data-token {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  opacity: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.arrow-connector.active .arrow-line { background: var(--accent-cyan); }
+.arrow-connector.active .arrow-head { border-top-color: var(--accent-cyan); }
+
+@keyframes tokenFlow {
+  0% { top: 0; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { top: calc(100% - 6px); opacity: 0; }
+}
+
+/* FORMULA OVERLAY */
+.formula-overlay {
+  position: fixed;
+  top: 50%; left: 190px;
+  transform: translateY(-50%);
+  background: var(--bg-deep);
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-cyan);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.2);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  max-width: 320px;
+  line-height: 1.6;
+}
+.formula-overlay.visible { opacity: 1; }
+
+/* RIGHT PANEL — EXPLANATION */
+.explain-panel {
+  padding: 24px;
+  overflow-y: auto;
+  background: var(--bg-deep);
+}
+.explain-step-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--step-color) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--step-color) 30%, transparent);
+  margin-bottom: 16px;
+}
+.explain-step-badge .badge-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--step-color);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+}
+.explain-step-badge .badge-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--step-color);
+}
+
+.explain-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.explain-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+/* INFO CARDS */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+  .info-grid { grid-template-columns: 1fr; }
+}
+.info-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.info-card-header {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 8px;
+}
+.info-card-header .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.info-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.info-card .mono {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+  font-size: 12px;
+}
+.info-card .val-highlight {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent-cyan) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 25%, transparent);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-cyan);
+}
+
+/* DECISION BOX */
+.decision-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--accent-amber);
+  border-left: 3px solid var(--accent-amber);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.decision-box h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent-amber);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 8px;
+}
+.decision-box p, .decision-box li {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.decision-box ul {
+  list-style: none; padding-left: 0;
+}
+.decision-box li { padding: 3px 0; }
+.decision-box li::before {
+  content: '▸ ';
+  color: var(--accent-amber);
+}
+.decision-box .triggered {
+  color: var(--accent-green);
+  font-weight: 600;
+}
+.decision-box .not-triggered {
+  color: var(--text-muted);
+}
+
+/* VISUAL BITS ANIMATION */
+.bits-visual {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.bits-row {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.bit-cell {
+  width: 12px; height: 12px;
+  border-radius: 2px;
+  font-size: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.3s;
+}
+.bit-cell.data { background: var(--accent-blue); color: #fff; }
+.bit-cell.crc { background: var(--accent-amber); color: #000; }
+.bit-cell.parity { background: var(--accent-purple); color: #fff; }
+.bit-cell.punct { background: var(--accent-red); opacity: 0.3; }
+.bit-cell.selected { background: var(--accent-green); color: #fff; }
+.bits-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.bits-legend {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;
+}
+.bits-legend-item {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--text-secondary);
+}
+.bits-legend-item .swatch {
+  width: 10px; height: 10px; border-radius: 2px;
+}
+
+/* SUMMARY PANEL */
+.summary-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 20px;
+}
+.summary-panel h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 12px;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.summary-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+.summary-item .s-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.summary-item .s-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  height: 3px;
+  background: var(--bg-card);
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+  transition: width 0.5s ease;
+  border-radius: 0 2px 2px 0;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* INTRO SCREEN */
+.intro-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 30px;
+}
+.intro-icon {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+.intro-screen h2 {
+  font-size: 20px; font-weight: 700; margin-bottom: 8px;
+}
+.intro-screen p {
+  font-size: 13px; color: var(--text-secondary); max-width: 400px; line-height: 1.6;
+}
+
+/* Pulse animation for active step */
+@keyframes stepPulse {
+  0%, 100% { box-shadow: 0 0 20px color-mix(in srgb, var(--step-color) 10%, transparent); }
+  50% { box-shadow: 0 0 30px color-mix(in srgb, var(--step-color) 25%, transparent); }
+}
+.step-box.active { animation: stepPulse 2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">5G</div>
+    <div>
+      <h1>NR Transport Block <span>Processing Chain</span></h1>
+      <div class="header-sub">DL-SCH / UL-SCH · 3GPP TS 38.212 · Interactive Animator</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls-bar">
+  <div class="ctrl-group">
+    <label>TB Size</label>
+    <input type="number" id="tbSize" value="6000" min="1" max="1000000" title="Transport Block size in bits">
+  </div>
+  <div class="ctrl-group">
+    <label>Code Rate</label>
+    <input type="number" id="codeRate" value="0.45" min="0.01" max="0.95" step="0.01">
+  </div>
+  <div class="ctrl-group">
+    <label>RV</label>
+    <select id="rvSelect">
+      <option value="0">RV 0</option>
+      <option value="1">RV 1</option>
+      <option value="2">RV 2</option>
+      <option value="3">RV 3</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <label>E bits</label>
+    <input type="number" id="eBits" value="" min="1" placeholder="auto">
+  </div>
+  <div class="ctrl-group">
+    <label>Speed</label>
+    <input type="range" id="speedSlider" min="0.5" max="3" step="0.25" value="1">
+    <span class="speed-val" id="speedVal">1×</span>
+  </div>
+
+  <button class="btn btn-primary" id="btnRun" title="Recompute & Play">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
+    Run
+  </button>
+  <button class="btn" id="btnPause" title="Pause / Resume" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+    Pause
+  </button>
+  <button class="btn" id="btnStepBack" title="Step Back" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+  </button>
+  <button class="btn" id="btnStepFwd" title="Step Forward" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,6 15,12 9,18"/></svg>
+  </button>
+  <button class="btn" id="btnReset" title="Reset">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+    Reset
+  </button>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- LEFT: FLOW DIAGRAM -->
+  <div class="flow-panel" id="flowPanel">
+    <div class="flow-panel-title">▎ Processing Pipeline</div>
+    <div id="flowContainer"></div>
+  </div>
+
+  <!-- RIGHT: EXPLANATION -->
+  <div class="explain-panel" id="explainPanel">
+    <div class="intro-screen" id="introScreen">
+      <div class="intro-icon">📡</div>
+      <h2>5G NR TB Processing</h2>
+      <p>Set your parameters above and click <strong>Run</strong> to watch the transport block processing chain animate step-by-step with computed values from 3GPP TS 38.212.</p>
+      <p style="margin-top:12px; font-size:11px; color:var(--text-muted)">You can also use Step Forward/Back for manual control.</p>
+    </div>
+    <div id="explainContent" style="display:none"></div>
+    <div class="summary-panel" id="summaryPanel" style="display:none">
+      <h3>◈ Computed Summary</h3>
+      <div class="summary-grid" id="summaryGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FORMULA OVERLAY -->
+<div class="formula-overlay" id="formulaOverlay"></div>
+
+<script>
+// ─── STEP DEFINITIONS ───
+const STEPS = [
+  { id: 'crc', title: 'CRC Attachment', shortTitle: 'TB CRC', color: 'var(--step-colors-0)' },
+  { id: 'ldpc', title: 'LDPC Base Graph Selection', shortTitle: 'BG Select', color: 'var(--step-colors-1)' },
+  { id: 'segment', title: 'Code Block Segmentation & CB CRC', shortTitle: 'CB Segment', color: 'var(--step-colors-2)' },
+  { id: 'encode', title: 'LDPC Channel Coding', shortTitle: 'LDPC Encode', color: 'var(--step-colors-3)' },
+  { id: 'ratematch', title: 'Rate Matching', shortTitle: 'Rate Match', color: 'var(--step-colors-4)' },
+  { id: 'concat', title: 'Code Block Concatenation', shortTitle: 'CB Concat', color: 'var(--step-colors-5)' },
+];
+
+// ─── STATE ───
+let state = {
+  currentStep: -1,
+  playing: false,
+  timer: null,
+  speed: 1,
+  computed: null,
+};
+
+// ─── DOM REFS ───
+const $flow = document.getElementById('flowContainer');
+const $explain = document.getElementById('explainContent');
+const $intro = document.getElementById('introScreen');
+const $summary = document.getElementById('summaryPanel');
+const $summaryGrid = document.getElementById('summaryGrid');
+const $progress = document.getElementById('progressFill');
+const $formula = document.getElementById('formulaOverlay');
+const $btnRun = document.getElementById('btnRun');
+const $btnPause = document.getElementById('btnPause');
+const $btnStepBack = document.getElementById('btnStepBack');
+const $btnStepFwd = document.getElementById('btnStepFwd');
+const $btnReset = document.getElementById('btnReset');
+const $speedSlider = document.getElementById('speedSlider');
+const $speedVal = document.getElementById('speedVal');
+
+// ─── BUILD FLOW DIAGRAM ───
+function buildFlow() {
+  $flow.innerHTML = '';
+  STEPS.forEach((step, i) => {
+    const box = document.createElement('div');
+    box.className = 'step-box';
+    box.style.setProperty('--step-color', step.color);
+    box.dataset.step = i;
+    box.innerHTML = `
+      <span class="step-num">${i + 1}</span>
+      <span class="step-title">${step.title}</span>
+      <div class="step-subtitle">${step.shortTitle}</div>
+      <div class="step-computed" id="stepComputed${i}"></div>
+    `;
+    box.addEventListener('click', () => goToStep(i));
+    $flow.appendChild(box);
+
+    if (i < STEPS.length - 1) {
+      const arrow = document.createElement('div');
+      arrow.className = 'arrow-connector';
+      arrow.dataset.arrow = i;
+      arrow.innerHTML = `
+        <div class="arrow-line">
+          <div class="arrow-head"></div>
+          <div class="data-token" style="left:-2px"></div>
+          <div class="data-token" style="left:-2px"></div>
+          <div class="data-token" style="left:-2px"></div>
+        </div>`;
+      $flow.appendChild(arrow);
+    }
+  });
+}
+
+// ─── COMPUTE ───
+function compute() {
+  const tbSize = parseInt(document.getElementById('tbSize').value) || 6000;
+  const codeRate = parseFloat(document.getElementById('codeRate').value) || 0.45;
+  const rv = parseInt(document.getElementById('rvSelect').value);
+  let eOverride = document.getElementById('eBits').value;
+
+  // 1) CRC
+  const tbCrcLen = tbSize > 3824 ? 24 : 16;
+  const tbPlusCrc = tbSize + tbCrcLen;
+
+  // 2) LDPC BG selection
+  let bg = 1;
+  const bgReasons = [];
+  const cond1 = codeRate <= 0.25;
+  const cond2 = tbSize <= 292;
+  const cond3 = tbSize <= 3824 && codeRate <= 0.67;
+  bgReasons.push({ text: `Code rate ≤ 0.25 → ${codeRate} ≤ 0.25`, triggered: cond1 });
+  bgReasons.push({ text: `TB size ≤ 292 → ${tbSize} ≤ 292`, triggered: cond2 });
+  bgReasons.push({ text: `TB size ≤ 3824 AND code rate ≤ 0.67 → ${tbSize} ≤ 3824 && ${codeRate} ≤ 0.67`, triggered: cond3 });
+  if (cond1 || cond2 || cond3) bg = 2;
+
+  // 3) Segmentation
+  const kcbMax = bg === 1 ? 8448 : 3840;
+  const segRequired = tbPlusCrc > kcbMax;
+  let C = 1;
+  if (segRequired) {
+    C = Math.ceil(tbPlusCrc / (kcbMax - 24));
+  }
+  const cbCrcAdded = C > 1;
+  const cbCrcLen = cbCrcAdded ? 24 : 0;
+  const totalBitsAfterSegCrc = tbPlusCrc + C * cbCrcLen;
+  const cbSize = Math.ceil(totalBitsAfterSegCrc / C);
+
+  // 4) LDPC coding (conceptual)
+  const parityFactor = bg === 1 ? 2.0 : 1.67;
+  const codedBitsPerCB = Math.floor(cbSize * parityFactor);
+  const totalCodedBits = codedBitsPerCB * C;
+
+  // 5) Rate matching
+  let eBits;
+  if (eOverride && parseInt(eOverride) > 0) {
+    eBits = parseInt(eOverride);
+  } else {
+    eBits = Math.floor(tbPlusCrc / codeRate);
+    document.getElementById('eBits').value = eBits;
+  }
+  const eBitsPerCB = Math.floor(eBits / C);
+  const isPuncturing = eBitsPerCB < codedBitsPerCB;
+
+  // 6) Concatenation
+  const totalOutput = eBitsPerCB * C;
+
+  return {
+    tbSize, codeRate, rv,
+    tbCrcLen, tbPlusCrc,
+    bg, bgReasons,
+    kcbMax, segRequired, C, cbCrcAdded, cbCrcLen, cbSize,
+    codedBitsPerCB, totalCodedBits,
+    eBits, eBitsPerCB, isPuncturing,
+    totalOutput,
+  };
+}
+
+// ─── UPDATE STEP COMPUTED LABELS ───
+function updateStepLabels(c) {
+  const labels = [
+    `CRC: ${c.tbCrcLen}b → ${c.tbPlusCrc} bits`,
+    `Base Graph: BG${c.bg}`,
+    `C=${c.C}, CB CRC: ${c.cbCrcAdded ? 'Yes (24b)' : 'No'}`,
+    `${c.codedBitsPerCB} coded bits/CB`,
+    `E=${c.eBits} (${c.isPuncturing ? 'puncturing' : 'repetition'}) RV${c.rv}`,
+    `Output: ${c.totalOutput} bits → PHY`,
+  ];
+  labels.forEach((lbl, i) => {
+    const el = document.getElementById(`stepComputed${i}`);
+    if (el) el.textContent = lbl;
+  });
+}
+
+// ─── BUILD EXPLANATION CONTENT ───
+function buildExplanation(stepIndex, c) {
+  if (!c) return '';
+  const step = STEPS[stepIndex];
+
+  const wrapCard = (icon, title, content, dotColor) => `
+    <div class="info-card">
+      <div class="info-card-header"><span class="dot" style="background:${dotColor || 'var(--accent-blue)'}"></span>${title}</div>
+      ${content}
+    </div>`;
+
+  let html = `
+    <div class="explain-step-badge" style="--step-color:${step.color}">
+      <div class="badge-num">${stepIndex + 1}</div>
+      <div class="badge-label">Step ${stepIndex + 1} of ${STEPS.length}</div>
+    </div>
+    <div class="explain-title">${step.title}</div>`;
+
+  switch (stepIndex) {
+    case 0: // CRC Attachment
+      html += `
+        <div class="explain-description">
+          A Cyclic Redundancy Check (CRC) is appended to the Transport Block to enable error detection at the receiver.
+          The CRC length depends on the TB size — larger TBs use a 24-bit CRC for stronger protection, while smaller TBs use 16 bits.
+        </div>
+        <div class="decision-box">
+          <h4>⚡ Decision Rule</h4>
+          <ul>
+            <li class="${c.tbSize > 3824 ? 'triggered' : 'not-triggered'}">
+              If TB_size > 3824 → CRC = 24 bits ${c.tbSize > 3824 ? '✓ TRIGGERED' : ''}
+            </li>
+            <li class="${c.tbSize <= 3824 ? 'triggered' : 'not-triggered'}">
+              Else → CRC = 16 bits ${c.tbSize <= 3824 ? '✓ TRIGGERED' : ''}
+            </li>
+          </ul>
+        </div>
+        <div class="info-grid">
+          ${wrapCard('📥', 'Input', `<p>Transport Block: <span class="val-highlight">${c.tbSize.toLocaleString()} bits</span></p>`, 'var(--accent-blue)')}
+          ${wrapCard('📤', 'Output', `<p>TB + CRC: <span class="val-highlight">${c.tbPlusCrc.toLocaleString()} bits</span> (${c.tbSize} + ${c.tbCrcLen})</p>`, 'var(--accent-green)')}
+          ${wrapCard('🎯', 'Why It Exists', `<p>CRC allows the receiver to detect bit errors in the decoded TB. If CRC fails, the block is flagged as erroneous → triggers HARQ NACK.</p>`, 'var(--accent-amber)')}
+          ${wrapCard('📐', 'Key Formula', `<p class="mono">TB_CRC = ${c.tbCrcLen} bits<br>B = A + L = ${c.tbSize} + ${c.tbCrcLen} = ${c.tbPlusCrc}</p>`, 'var(--accent-cyan)')}
+        </div>
+        ${buildBitsVisual_CRC(c)}`;
+      break;
+
+    case 1: // LDPC BG
+      html += `
+        <div class="explain-description">
+          5G NR uses LDPC (Low-Density Parity-Check) codes with two base graph families. BG1 is optimized for larger block sizes and higher code rates, while BG2 handles smaller blocks and lower rates more efficiently.
+        </div>
+        <div class="decision-box">
+          <h4>⚡ BG Selection Rules (Choose BG2 if ANY true)</h4>
+          <ul>
+            ${c.bgReasons.map(r => `<li class="${r.triggered ? 'triggered' : 'not-triggered'}">${r.text} ${r.triggered ? '✓ TRIGGERED' : ''}</li>`).join('')}
+          </ul>
+          <p style="margin-top:8px"><strong style="color:${step.color}">Result → Base Graph ${c.bg} (BG${c.bg})</strong></p>
+        </div>
+        <div class="info-grid">
+          ${wrapCard('📥', 'Input', `<p>TB + CRC: <span class="val-highlight">${c.tbPlusCrc.toLocaleString()} bits</span><br>Code Rate: <span class="val-highlight">${c.codeRate}</span></p>`, 'var(--accent-blue)')}
+          ${wrapCard('📤', 'Output', `<p>Selected: <span class="val-highlight">BG${c.bg}</span><br>Max CB size (K_cb): <span class="val-highlight">${c.kcbMax.toLocaleString()}</span></p>`, 'var(--accent-green)')}
+          ${wrapCard('🎯', 'Why It Exists', `<p>Different code rate regions and block sizes benefit from different LDPC matrix structures. BG1 supports up to 8448 information bits per CB. BG2 supports up to 3840.</p>`, 'var(--accent-amber)')}
+          ${wrapCard('📐', 'Key Parameters', `<p class="mono">BG1: 46×68 base matrix, K_cb=8448<br>BG2: 42×52 base matrix, K_cb=3840<br>Lifting size Z: 2–384</p>`, 'var(--accent-cyan)')}
+        </div>`;
+      break;
+
+    case 2: // Segmentation
+      html += `
+        <div class="explain-description">
+          If the TB (after CRC) exceeds the maximum code block size allowed by the selected base graph, it must be segmented into
+          multiple code blocks. Each code block then gets its own 24-bit CRC for per-block error detection.
+        </div>
+        <div class="decision-box">
+          <h4>⚡ Segmentation Decision</h4>
+          <ul>
+            <li class="${c.segRequired ? 'triggered' : 'not-triggered'}">
+              BG${c.bg}: TB+CRC (${c.tbPlusCrc}) ${c.segRequired ? '>' : '≤'} K_cb_max (${c.kcbMax}) → Segmentation ${c.segRequired ? 'REQUIRED ✓' : 'NOT required'}
+            </li>
+          </ul>
+          ${c.segRequired ? `<p style="margin-top:6px" class="mono">C = ⌈${c.tbPlusCrc} / (${c.kcbMax} - 24)⌉ = ⌈${c.tbPlusCrc} / ${c.kcbMax - 24}⌉ = <strong>${c.C}</strong></p>` : ''}
+          <p style="margin-top:6px">CB CRC: ${c.cbCrcAdded ? `<span class="triggered">Added (24 bits per CB) since C=${c.C} > 1</span>` : `<span class="not-triggered">Not added (only 1 code block)</span>`}</p>
+        </div>
+        <div class="info-grid">
+          ${wrapCard('📥', 'Input', `<p>TB+CRC: <span class="val-highlight">${c.tbPlusCrc.toLocaleString()} bits</span></p>`, 'var(--accent-blue)')}
+          ${wrapCard('📤', 'Output', `<p>Code Blocks: <span class="val-highlight">C = ${c.C}</span><br>CB Size: ~<span class="val-highlight">${c.cbSize.toLocaleString()} bits</span><br>CB CRC: <span class="val-highlight">${c.cbCrcAdded ? '24b each' : 'None'}</span></p>`, 'var(--accent-green)')}
+          ${wrapCard('🎯', 'Why It Exists', `<p>LDPC encoders have a max input size. Segmentation splits large TBs into manageable chunks. Per-CB CRC enables early termination in LDPC decoding — if one CB passes, skip it.</p>`, 'var(--accent-amber)')}
+          ${wrapCard('📐', 'Key Formula', `<p class="mono">K_cb = ${c.kcbMax} (BG${c.bg})<br>C = ⌈B/(K_cb - 24)⌉ = ${c.C}<br>CB bits ≈ ${c.cbSize}</p>`, 'var(--accent-cyan)')}
+        </div>
+        ${buildBitsVisual_Segment(c)}`;
+      break;
+
+    case 3: // LDPC Coding
+      html += `
+        <div class="explain-description">
+          Each code block is now LDPC-encoded. The encoder takes the information bits (systematic) and generates additional parity bits
+          based on the parity-check matrix defined by BG${c.bg} and the selected lifting size Z. This is the core FEC (Forward Error Correction) step.
+        </div>
+        <div class="info-grid">
+          ${wrapCard('📥', 'Input', `<p>Per CB: ~<span class="val-highlight">${c.cbSize.toLocaleString()} info bits</span><br>Total: ${c.C} code blocks</p>`, 'var(--accent-blue)')}
+          ${wrapCard('📤', 'Output', `<p>Per CB: ~<span class="val-highlight">${c.codedBitsPerCB.toLocaleString()} coded bits</span><br>(systematic + parity)<br>Total: ~<span class="val-highlight">${c.totalCodedBits.toLocaleString()} bits</span></p>`, 'var(--accent-green)')}
+          ${wrapCard('🎯', 'Why It Exists', `<p>LDPC adds structured redundancy so the receiver can correct errors using iterative belief-propagation decoding. 5G NR LDPC achieves near-Shannon-limit performance with low decoding latency.</p>`, 'var(--accent-amber)')}
+          ${wrapCard('📐', 'How It Works', `<p class="mono">Base Graph: BG${c.bg}<br>H = base matrix × lifting size Z<br>Systematic bits preserved<br>Parity bits generated via H·c = 0</p>`, 'var(--accent-cyan)')}
+        </div>
+        ${buildBitsVisual_LDPC(c)}`;
+      break;
+
+    case 4: // Rate Matching
+      html += `
+        <div class="explain-description">
+          Rate matching selects exactly E bits from the LDPC-coded output for transmission. It includes bit selection (circular buffer),
+          interleaving, and either puncturing (dropping bits) or repetition (repeating bits) depending on the available resources.
+          The Redundancy Version (RV) determines the starting read position in the circular buffer.
+        </div>
+        <div class="decision-box">
+          <h4>⚡ Rate Matching Parameters</h4>
+          <ul>
+            <li class="triggered">E = ${c.eBits.toLocaleString()} bits to transmit</li>
+            <li>LDPC coded per CB: ${c.codedBitsPerCB.toLocaleString()} bits</li>
+            <li>E per CB: ${c.eBitsPerCB.toLocaleString()} bits</li>
+            <li class="${c.isPuncturing ? 'triggered' : 'not-triggered'}">Mode: ${c.isPuncturing ? 'PUNCTURING (E < coded) — dropping ' + (c.codedBitsPerCB - c.eBitsPerCB) + ' bits/CB' : 'REPETITION (E ≥ coded) — repeating ' + (c.eBitsPerCB - c.codedBitsPerCB) + ' bits/CB'}</li>
+            <li>RV ${c.rv}: Start offset = ${['0 (beginning)', '~1/3 into buffer', '~2/3 into buffer', '~1/4 into buffer'][c.rv]}</li>
+          </ul>
+        </div>
+        <div class="info-grid">
+          ${wrapCard('📥', 'Input', `<p>Per CB: <span class="val-highlight">${c.codedBitsPerCB.toLocaleString()} coded bits</span></p>`, 'var(--accent-blue)')}
+          ${wrapCard('📤', 'Output', `<p>Per CB: <span class="val-highlight">${c.eBitsPerCB.toLocaleString()} E bits</span></p>`, 'var(--accent-green)')}
+          ${wrapCard('🎯', 'Why It Exists', `<p>Matches the encoded bits to the exact number of REs (resource elements) allocated by the scheduler. RV allows HARQ retransmissions to send different parity bits → Incremental Redundancy.</p>`, 'var(--accent-amber)')}
+          ${wrapCard('📐', 'RV Concept', `<p class="mono">Circular buffer: [sys|parity]<br>RV0: start=0 (systematic first)<br>RV1: start≈33% (IR parity)<br>RV2: start≈67%<br>RV3: start≈25%</p>`, 'var(--accent-cyan)')}
+        </div>
+        ${buildBitsVisual_RateMatch(c)}`;
+      break;
+
+    case 5: // Concatenation
+      html += `
+        <div class="explain-description">
+          The rate-matched outputs from all ${c.C} code block(s) are concatenated into a single bitstream.
+          This combined bitstream is then passed to the next stages: scrambling, modulation mapping, layer mapping,
+          and resource element mapping for OFDM transmission.
+        </div>
+        <div class="info-grid">
+          ${wrapCard('📥', 'Input', `<p>${c.C} code block(s), each with <span class="val-highlight">${c.eBitsPerCB.toLocaleString()} bits</span></p>`, 'var(--accent-blue)')}
+          ${wrapCard('📤', 'Output', `<p>Single bitstream: <span class="val-highlight">${c.totalOutput.toLocaleString()} bits</span><br>→ Scrambling → Modulation → OFDM</p>`, 'var(--accent-green)')}
+          ${wrapCard('🎯', 'Why It Exists', `<p>Reassembles segmented code blocks into a continuous bit sequence matching the physical channel allocation. The order matches the original segmentation for correct reassembly at the receiver.</p>`, 'var(--accent-amber)')}
+          ${wrapCard('📐', 'Output Size', `<p class="mono">G = C × E_per_CB<br>G = ${c.C} × ${c.eBitsPerCB.toLocaleString()}<br>G = ${c.totalOutput.toLocaleString()} bits</p>`, 'var(--accent-cyan)')}
+        </div>
+        ${buildBitsVisual_Concat(c)}`;
+      break;
+  }
+  return html;
+}
+
+// ─── BITS VISUALIZATIONS ───
+function buildBitsVisual_CRC(c) {
+  const dataBits = Math.min(40, c.tbSize > 40 ? 40 : c.tbSize);
+  const crcBits = c.tbCrcLen === 24 ? 6 : 4;
+  let cells = '';
+  for (let i = 0; i < dataBits; i++) cells += `<div class="bit-cell data"></div>`;
+  if (c.tbSize > 40) cells += `<div class="bit-cell" style="background:transparent;color:var(--text-muted);width:20px;font-size:9px">···</div>`;
+  for (let i = 0; i < crcBits; i++) cells += `<div class="bit-cell crc"></div>`;
+  return `
+    <div class="bits-visual">
+      <div class="bits-label">TB data + CRC visualization (representative)</div>
+      <div class="bits-row">${cells}</div>
+      <div class="bits-legend">
+        <div class="bits-legend-item"><div class="swatch" style="background:var(--accent-blue)"></div>Data bits (${c.tbSize})</div>
+        <div class="bits-legend-item"><div class="swatch" style="background:var(--accent-amber)"></div>CRC (${c.tbCrcLen}b)</div>
+      </div>
+    </div>`;
+}
+
+function buildBitsVisual_Segment(c) {
+  if (c.C <= 1) {
+    return `<div class="bits-visual"><div class="bits-label">No segmentation needed — single code block</div>
+      <div class="bits-row">${'<div class="bit-cell data"></div>'.repeat(30)}<div class="bit-cell" style="background:transparent;color:var(--text-muted);width:20px;font-size:9px">···</div></div></div>`;
+  }
+  let html = '<div class="bits-visual"><div class="bits-label">Code Block Segmentation</div>';
+  const colors = ['var(--accent-blue)', 'var(--accent-purple)', 'var(--accent-cyan)', 'var(--accent-green)', 'var(--accent-pink)'];
+  for (let i = 0; i < Math.min(c.C, 4); i++) {
+    const col = colors[i % colors.length];
+    html += `<div style="margin:4px 0"><span class="bits-label" style="color:${col}">CB${i}: </span><div class="bits-row" style="display:inline-flex">`;
+    for (let j = 0; j < 16; j++) html += `<div class="bit-cell" style="background:${col}"></div>`;
+    html += `<div class="bit-cell" style="background:transparent;color:var(--text-muted);width:20px;font-size:9px">···</div>`;
+    for (let j = 0; j < 3; j++) html += `<div class="bit-cell crc"></div>`;
+    html += `</div></div>`;
+  }
+  if (c.C > 4) html += `<div class="bits-label" style="margin-top:4px">... + ${c.C - 4} more CB(s)</div>`;
+  html += `<div class="bits-legend" style="margin-top:8px">
+    <div class="bits-legend-item"><div class="swatch" style="background:var(--accent-blue)"></div>CB data</div>
+    <div class="bits-legend-item"><div class="swatch" style="background:var(--accent-amber)"></div>CB CRC (24b)</div>
+  </div></div>`;
+  return html;
+}
+
+function buildBitsVisual_LDPC(c) {
+  const infoBits = 20;
+  const parityBits = Math.round(infoBits * (c.codedBitsPerCB / c.cbSize - 1));
+  let cells = '';
+  for (let i = 0; i < infoBits; i++) cells += `<div class="bit-cell data"></div>`;
+  for (let i = 0; i < parityBits; i++) cells += `<div class="bit-cell parity"></div>`;
+  return `
+    <div class="bits-visual">
+      <div class="bits-label">LDPC encoding (conceptual — 1 code block)</div>
+      <div class="bits-row">${cells}</div>
+      <div class="bits-legend">
+        <div class="bits-legend-item"><div class="swatch" style="background:var(--accent-blue)"></div>Systematic (info)</div>
+        <div class="bits-legend-item"><div class="swatch" style="background:var(--accent-purple)"></div>Parity bits</div>
+      </div>
+    </div>`;
+}
+
+function buildBitsVisual_RateMatch(c) {
+  const totalCells = 40;
+  const eCells = c.isPuncturing ? Math.round(totalCells * c.eBitsPerCB / c.codedBitsPerCB) : totalCells;
+  const rvOffset = Math.round(totalCells * [0, 0.33, 0.67, 0.25][c.rv]);
+  let cells = '';
+  for (let i = 0; i < totalCells; i++) {
+    const idx = (i + rvOffset) % totalCells;
+    const inWindow = idx < eCells;
+    if (c.isPuncturing) {
+      cells += `<div class="bit-cell ${inWindow ? 'selected' : 'punct'}"></div>`;
+    } else {
+      cells += `<div class="bit-cell selected"></div>`;
+    }
+  }
+  return `
+    <div class="bits-visual">
+      <div class="bits-label">Rate matching — circular buffer read from RV${c.rv} offset</div>
+      <div class="bits-row">${cells}</div>
+      <div class="bits-legend">
+        <div class="bits-legend-item"><div class="swatch" style="background:var(--accent-green)"></div>Selected (E bits)</div>
+        ${c.isPuncturing ? '<div class="bits-legend-item"><div class="swatch" style="background:var(--accent-red);opacity:0.3"></div>Punctured</div>' : ''}
+      </div>
+      <div class="bits-label" style="margin-top:6px">RV${c.rv} starts reading at ~${Math.round([0, 33, 67, 25][c.rv])}% offset in the circular buffer</div>
+    </div>`;
+}
+
+function buildBitsVisual_Concat(c) {
+  const colors = ['var(--accent-blue)', 'var(--accent-purple)', 'var(--accent-cyan)', 'var(--accent-green)', 'var(--accent-pink)'];
+  let cells = '';
+  for (let i = 0; i < Math.min(c.C, 5); i++) {
+    const col = colors[i % colors.length];
+    for (let j = 0; j < 8; j++) cells += `<div class="bit-cell" style="background:${col}"></div>`;
+    if (i < Math.min(c.C, 5) - 1) cells += `<div class="bit-cell" style="background:transparent;width:4px"></div>`;
+  }
+  if (c.C > 5) cells += `<div class="bit-cell" style="background:transparent;color:var(--text-muted);width:20px;font-size:9px">···</div>`;
+  cells += `<div class="bit-cell" style="background:transparent;width:8px"></div>`;
+  cells += `<div class="bit-cell" style="background:var(--accent-amber);width:6px;height:12px;font-size:7px">→</div>`;
+  return `
+    <div class="bits-visual">
+      <div class="bits-label">Concatenated output → Physical Layer</div>
+      <div class="bits-row">${cells}</div>
+      <div class="bits-legend">
+        ${Array.from({length: Math.min(c.C, 5)}, (_, i) => `<div class="bits-legend-item"><div class="swatch" style="background:${colors[i % colors.length]}"></div>CB${i}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ─── SUMMARY ───
+function buildSummary(c) {
+  const items = [
+    { label: 'TB CRC', value: `${c.tbCrcLen}b` },
+    { label: 'Base Graph', value: `BG${c.bg}` },
+    { label: 'Segmentation', value: c.segRequired ? `Yes (C=${c.C})` : 'No' },
+    { label: 'CB CRC', value: c.cbCrcAdded ? '24b/CB' : 'None' },
+    { label: 'E Bits', value: c.eBits.toLocaleString() },
+    { label: 'RV', value: `${c.rv}` },
+    { label: 'Total Output', value: `${c.totalOutput.toLocaleString()} bits` },
+  ];
+  $summaryGrid.innerHTML = items.map(i => `
+    <div class="summary-item">
+      <div class="s-label">${i.label}</div>
+      <div class="s-value">${i.value}</div>
+    </div>`).join('');
+}
+
+// ─── NAVIGATION ───
+function goToStep(idx) {
+  if (idx < 0 || idx >= STEPS.length) return;
+  state.currentStep = idx;
+
+  // Update flow boxes
+  document.querySelectorAll('.step-box').forEach((box, i) => {
+    box.classList.remove('active', 'completed');
+    if (i === idx) box.classList.add('active');
+    else if (i < idx) box.classList.add('completed');
+  });
+
+  // Update arrows
+  document.querySelectorAll('.arrow-connector').forEach((arrow, i) => {
+    arrow.classList.toggle('active', i === idx - 1);
+    // Animate tokens
+    const tokens = arrow.querySelectorAll('.data-token');
+    tokens.forEach((t, ti) => {
+      t.style.animation = 'none';
+      if (i === idx - 1) {
+        t.offsetHeight; // force reflow
+        t.style.animation = `tokenFlow ${0.8 / state.speed}s ease ${ti * 0.15 / state.speed}s forwards`;
+      }
+    });
+  });
+
+  // Scroll flow into view
+  const activeBox = document.querySelector(`.step-box[data-step="${idx}"]`);
+  if (activeBox) activeBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Update explanation
+  $intro.style.display = 'none';
+  $explain.style.display = 'block';
+  $summary.style.display = 'block';
+  $explain.innerHTML = buildExplanation(idx, state.computed);
+
+  // Progress
+  $progress.style.width = `${((idx + 1) / STEPS.length) * 100}%`;
+
+  // Show formula overlay briefly
+  showFormula(idx);
+
+  // Update buttons
+  $btnStepBack.disabled = idx <= 0;
+  $btnStepFwd.disabled = idx >= STEPS.length - 1;
+}
+
+function showFormula(idx) {
+  const c = state.computed;
+  if (!c) return;
+  const formulas = [
+    `CRC = ${c.tbCrcLen}b → B = ${c.tbPlusCrc}`,
+    `BG${c.bg} selected (K_cb=${c.kcbMax})`,
+    `C = ${c.C} code block${c.C > 1 ? 's' : ''}`,
+    `Coded: ${c.cbSize} → ${c.codedBitsPerCB} bits/CB`,
+    `E = ${c.eBits} (RV${c.rv}, ${c.isPuncturing ? 'punct' : 'rep'})`,
+    `Output: ${c.totalOutput} bits → PHY`,
+  ];
+  $formula.textContent = formulas[idx];
+  $formula.classList.add('visible');
+  setTimeout(() => $formula.classList.remove('visible'), 2000 / state.speed);
+}
+
+// ─── PLAYBACK ───
+function play() {
+  state.computed = compute();
+  updateStepLabels(state.computed);
+  buildSummary(state.computed);
+
+  state.playing = true;
+  $btnPause.disabled = false;
+  $btnPause.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pause`;
+
+  if (state.currentStep < 0) state.currentStep = -1;
+  advanceStep();
+}
+
+function advanceStep() {
+  if (!state.playing) return;
+  if (state.currentStep >= STEPS.length - 1) {
+    stopPlaying();
+    return;
+  }
+  state.currentStep++;
+  goToStep(state.currentStep);
+
+  const delay = (1800 / state.speed);
+  state.timer = setTimeout(advanceStep, delay);
+}
+
+function stopPlaying() {
+  state.playing = false;
+  clearTimeout(state.timer);
+  $btnPause.disabled = true;
+}
+
+function togglePause() {
+  if (!state.playing) {
+    state.playing = true;
+    $btnPause.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pause`;
+    advanceStep();
+  } else {
+    state.playing = false;
+    clearTimeout(state.timer);
+    $btnPause.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>Resume`;
+  }
+}
+
+function resetAll() {
+  stopPlaying();
+  state.currentStep = -1;
+  state.computed = null;
+  document.querySelectorAll('.step-box').forEach(b => b.classList.remove('active', 'completed'));
+  document.querySelectorAll('.arrow-connector').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.data-token').forEach(t => t.style.animation = 'none');
+  $intro.style.display = 'flex';
+  $explain.style.display = 'none';
+  $summary.style.display = 'none';
+  $progress.style.width = '0%';
+  $btnPause.disabled = true;
+  $btnStepBack.disabled = true;
+  $btnStepFwd.disabled = true;
+  document.querySelectorAll('.step-computed').forEach(el => el.textContent = '');
+}
+
+// ─── EVENT LISTENERS ───
+$btnRun.addEventListener('click', () => {
+  resetAll();
+  setTimeout(play, 200);
+});
+
+$btnPause.addEventListener('click', togglePause);
+
+$btnStepBack.addEventListener('click', () => {
+  stopPlaying();
+  if (!state.computed) {
+    state.computed = compute();
+    updateStepLabels(state.computed);
+    buildSummary(state.computed);
+  }
+  if (state.currentStep > 0) goToStep(state.currentStep - 1);
+});
+
+$btnStepFwd.addEventListener('click', () => {
+  stopPlaying();
+  if (!state.computed) {
+    state.computed = compute();
+    updateStepLabels(state.computed);
+    buildSummary(state.computed);
+  }
+  $btnPause.disabled = false; // enable for subsequent use
+  if (state.currentStep < STEPS.length - 1) goToStep(state.currentStep + 1);
+});
+
+$btnReset.addEventListener('click', resetAll);
+
+$speedSlider.addEventListener('input', () => {
+  state.speed = parseFloat($speedSlider.value);
+  $speedVal.textContent = state.speed + '×';
+});
+
+// Auto-compute E when TB size or code rate changes
+['tbSize', 'codeRate'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    const tb = parseInt(document.getElementById('tbSize').value) || 6000;
+    const cr = parseFloat(document.getElementById('codeRate').value) || 0.45;
+    const crcLen = tb > 3824 ? 24 : 16;
+    document.getElementById('eBits').value = Math.floor((tb + crcLen) / cr);
+  });
+});
+
+// ─── INIT ───
+buildFlow();
+</script>
+</body>
+</html>

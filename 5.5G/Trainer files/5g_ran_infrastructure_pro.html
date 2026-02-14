@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G RAN Infrastructure - Ultra-Realistic Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Exo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --cyan: #00f5ff; --green: #00ff9d; --orange: #ff8c00; --purple: #a855f7; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #020306, #0a1020, #051015); min-height: 100vh; font-family: 'Exo 2', sans-serif; color: #e0e6ed; }
+        .container { max-width: 1800px; margin: 0 auto; padding: 15px; }
+        header { text-align: center; padding: 25px; background: linear-gradient(180deg, rgba(0,245,255,0.08), transparent); border-bottom: 2px solid; border-image: linear-gradient(90deg, transparent, var(--cyan), var(--green), transparent) 1; margin-bottom: 20px; }
+        h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; background: linear-gradient(135deg, var(--cyan), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 4s linear infinite; background-size: 200% auto; letter-spacing: 4px; }
+        @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+        .subtitle { font-family: 'JetBrains Mono', monospace; color: #6b8aaa; font-size: 0.9rem; margin-top: 8px; }
+        .badge { display: inline-block; background: linear-gradient(135deg, var(--cyan), var(--green)); color: #000; padding: 3px 10px; border-radius: 15px; font-size: 0.7rem; font-weight: 700; margin-left: 10px; }
+        .diagram-wrapper { background: linear-gradient(180deg, #050a15, #0a1225, #0d1830); border-radius: 20px; border: 1px solid rgba(0,245,255,0.2); overflow: hidden; box-shadow: 0 0 60px rgba(0,245,255,0.1), 0 30px 80px rgba(0,0,0,0.8); position: relative; }
+        .diagram-wrapper::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--cyan), var(--green), transparent); }
+        svg { display: block; width: 100%; height: auto; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 25px; }
+        .info-card { background: linear-gradient(135deg, rgba(10,16,32,0.95), rgba(15,25,45,0.95)); border: 1px solid rgba(0,245,255,0.2); border-radius: 16px; padding: 22px; transition: all 0.4s ease; }
+        .info-card:hover { transform: translateY(-6px); box-shadow: 0 15px 40px rgba(0,245,255,0.15); }
+        .info-card h3 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; margin-bottom: 10px; }
+        .info-card.ru h3 { color: #3b82f6; } .info-card.du h3 { color: #10b981; } .info-card.cu h3 { color: #f59e0b; } .info-card.core h3 { color: #a855f7; }
+        .info-card p { font-size: 0.9rem; line-height: 1.6; color: #a0b4c8; margin-bottom: 15px; }
+        .specs { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--green); }
+        .arch-panel { background: linear-gradient(135deg, rgba(10,16,32,0.98), rgba(15,25,45,0.98)); border: 1px solid rgba(0,245,255,0.2); border-radius: 16px; padding: 25px; margin-top: 25px; }
+        .arch-panel h2 { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: var(--cyan); text-align: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+        th { background: rgba(0,245,255,0.1); padding: 12px; text-align: left; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; color: var(--cyan); }
+        th:first-child { border-radius: 8px 0 0 8px; } th:last-child { border-radius: 0 8px 8px 0; }
+        td { background: rgba(0,0,0,0.3); padding: 12px; font-size: 0.85rem; color: #a0b4c8; }
+        tr td:first-child { border-radius: 8px 0 0 8px; font-weight: 600; } tr td:last-child { border-radius: 0 8px 8px 0; }
+        tr:hover td { background: rgba(0,245,255,0.08); }
+        footer { text-align: center; padding: 25px; margin-top: 25px; border-top: 1px solid rgba(0,245,255,0.1); font-family: 'JetBrains Mono', monospace; color: #4a6080; font-size: 0.85rem; }
+        footer a { color: var(--cyan); text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+<header>
+    <h1>5G RAN INFRASTRUCTURE</h1>
+    <p class="subtitle">Complete End-to-End O-RAN Deployment<span class="badge">PRO v3.0</span></p>
+</header>
+
+<div class="diagram-wrapper">
+<svg viewBox="0 0 1600 950" xmlns="http://www.w3.org/2000/svg">
+<defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#020408"/><stop offset="40%" stop-color="#0a1525"/><stop offset="100%" stop-color="#152540"/></linearGradient>
+    <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#1a2a20"/><stop offset="100%" stop-color="#0a1510"/></linearGradient>
+    <linearGradient id="tower" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3a4550"/><stop offset="40%" stop-color="#7a8a9a"/><stop offset="100%" stop-color="#4a5a6a"/></linearGradient>
+    <linearGradient id="antenna" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f0f4f8"/><stop offset="100%" stop-color="#90989a"/></linearGradient>
+    <linearGradient id="ru" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#4da6ff"/><stop offset="100%" stop-color="#1a5590"/></linearGradient>
+    <linearGradient id="du" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#158540"/></linearGradient>
+    <linearGradient id="cu" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#b45309"/></linearGradient>
+    <linearGradient id="dc" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#6b46c1"/><stop offset="100%" stop-color="#322659"/></linearGradient>
+    <linearGradient id="fiber1"><stop offset="0%" stop-color="#00f5ff"/><stop offset="50%" stop-color="#00ff9d"/><stop offset="100%" stop-color="#00f5ff"/></linearGradient>
+    <linearGradient id="fiber2"><stop offset="0%" stop-color="#ff8c00"/><stop offset="50%" stop-color="#ffa500"/><stop offset="100%" stop-color="#ff8c00"/></linearGradient>
+    <radialGradient id="moonGlow"><stop offset="0%" stop-color="rgba(255,253,200,0.3)"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    <radialGradient id="led"><stop offset="0%" stop-color="#ff3333"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="shadow"><feDropShadow dx="4" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/></filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="none" stroke="rgba(0,245,255,0.03)"/></pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#00f5ff"/></marker>
+    <marker id="arrowO" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#ff8c00"/></marker>
+</defs>
+
+<!-- Background -->
+<rect width="1600" height="950" fill="url(#sky)"/>
+<rect width="1600" height="950" fill="url(#grid)"/>
+
+<!-- Stars -->
+<g opacity="0.7">
+    <circle cx="100" cy="50" r="1.2" fill="#fff"><animate attributeName="opacity" values="0.7;0.2;0.7" dur="3s" repeatCount="indefinite"/></circle>
+    <circle cx="250" cy="90" r="0.8" fill="#fff"><animate attributeName="opacity" values="0.5;0.1;0.5" dur="4s" repeatCount="indefinite"/></circle>
+    <circle cx="1200" cy="70" r="1.1" fill="#fff"><animate attributeName="opacity" values="0.7;0.2;0.7" dur="3.5s" repeatCount="indefinite"/></circle>
+    <circle cx="1500" cy="50" r="1" fill="#fff"/>
+</g>
+
+<!-- Moon -->
+<g transform="translate(1400, 90)"><circle r="50" fill="url(#moonGlow)"/><circle r="22" fill="#fffde0"/></g>
+
+<!-- Ground -->
+<path d="M0 750 Q400 730 800 750 Q1200 770 1600 750 L1600 950 L0 950 Z" fill="url(#ground)"/>
+
+<!-- TOWER -->
+<g filter="url(#shadow)">
+    <rect x="180" y="735" width="180" height="25" rx="3" fill="#3a4550"/>
+    <rect x="175" y="745" width="190" height="18" rx="2" fill="#2a3540"/>
+    <path d="M200 735 L228 90 L238 90 L212 735 Z" fill="url(#tower)"/>
+    <path d="M328 735 L302 90 L312 90 L340 735 Z" fill="url(#tower)"/>
+    <g stroke="#5a6a7a" stroke-width="2.5" fill="none">
+        <line x1="206" y1="700" x2="334" y2="660"/><line x1="334" y1="700" x2="206" y2="660"/>
+        <line x1="210" y1="620" x2="330" y2="580"/><line x1="330" y1="620" x2="210" y2="580"/>
+        <line x1="214" y1="540" x2="326" y2="500"/><line x1="326" y1="540" x2="214" y2="500"/>
+        <line x1="218" y1="460" x2="322" y2="420"/><line x1="322" y1="460" x2="218" y2="420"/>
+        <line x1="222" y1="380" x2="318" y2="340"/><line x1="318" y1="380" x2="222" y2="340"/>
+        <line x1="226" y1="300" x2="314" y2="260"/><line x1="314" y1="300" x2="226" y2="260"/>
+        <line x1="228" y1="220" x2="312" y2="180"/><line x1="312" y1="220" x2="228" y2="180"/>
+        <line x1="230" y1="140" x2="310" y2="110"/><line x1="310" y1="140" x2="230" y2="110"/>
+    </g>
+    <g stroke="#6a7a8a" stroke-width="3.5" fill="none">
+        <line x1="205" y1="660" x2="335" y2="660"/><line x1="209" y1="580" x2="331" y2="580"/>
+        <line x1="213" y1="500" x2="327" y2="500"/><line x1="217" y1="420" x2="323" y2="420"/>
+        <line x1="221" y1="340" x2="319" y2="340"/><line x1="225" y1="260" x2="315" y2="260"/>
+        <line x1="227" y1="180" x2="313" y2="180"/><line x1="229" y1="110" x2="311" y2="110"/>
+    </g>
+    <rect x="222" y="85" width="96" height="8" rx="2" fill="url(#tower)"/>
+    
+    <!-- Aviation Lights -->
+    <circle cx="270" cy="78" r="5" fill="url(#led)"><animate attributeName="opacity" values="1;0.1;1" dur="1s" repeatCount="indefinite"/></circle>
+    <circle cx="270" cy="78" r="3.5" fill="#ff0000"><animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/></circle>
+    <circle cx="270" cy="340" r="3" fill="#ff0000"><animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite" begin="0.5s"/></circle>
+    <circle cx="270" cy="580" r="3" fill="#ff0000"><animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/></circle>
+</g>
+
+<!-- ANTENNAS -->
+<!-- Antenna 1 -->
+<g transform="translate(155, 40)">
+    <rect x="48" y="60" width="42" height="8" rx="2" fill="#5a6a7a"/>
+    <rect x="82" y="45" width="10" height="35" rx="2" fill="#4a5a6a"/>
+    <rect width="42" height="115" rx="4" fill="url(#antenna)" filter="url(#shadow)"/>
+    <g fill="#8a929a" opacity="0.4"><rect x="8" y="12" width="26" height="2"/><rect x="8" y="25" width="26" height="2"/><rect x="8" y="38" width="26" height="2"/><rect x="8" y="51" width="26" height="2"/><rect x="8" y="64" width="26" height="2"/><rect x="8" y="77" width="26" height="2"/><rect x="8" y="90" width="26" height="2"/></g>
+    <circle cx="21" cy="5" r="2.5" fill="#00ff88"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle>
+    <circle cx="12" cy="118" r="3.5" fill="#3a4550" stroke="#5a6a7a"/><circle cx="30" cy="118" r="3.5" fill="#3a4550" stroke="#5a6a7a"/>
+    <g opacity="0.5"><circle cx="21" cy="55" r="5" fill="none" stroke="#00f5ff" stroke-width="1.5"><animate attributeName="r" values="5;50;5" dur="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.8;0;0.8" dur="2.5s" repeatCount="indefinite"/></circle></g>
+</g>
+<g transform="translate(105, 25)"><rect width="70" height="26" rx="4" fill="rgba(0,0,0,0.85)" stroke="#00f5ff"/><text x="35" y="11" text-anchor="middle" fill="#00f5ff" font-family="Orbitron" font-size="8" font-weight="600">n78 BAND</text><text x="35" y="21" text-anchor="middle" fill="#6b8aaa" font-family="JetBrains Mono" font-size="6">3.5GHz MIMO</text></g>
+
+<!-- Antenna 2 (mMIMO) -->
+<g transform="translate(235, 20)">
+    <rect x="18" y="95" width="34" height="8" rx="2" fill="#5a6a7a"/>
+    <rect width="70" height="140" rx="5" fill="url(#antenna)" filter="url(#shadow)"/>
+    <g fill="#7a828a" opacity="0.4"><rect x="8" y="12" width="54" height="2.5"/><rect x="8" y="22" width="54" height="2.5"/><rect x="8" y="32" width="54" height="2.5"/><rect x="8" y="42" width="54" height="2.5"/><rect x="8" y="52" width="54" height="2.5"/><rect x="8" y="62" width="54" height="2.5"/><rect x="8" y="72" width="54" height="2.5"/><rect x="8" y="82" width="54" height="2.5"/><rect x="8" y="92" width="54" height="2.5"/><rect x="8" y="102" width="54" height="2.5"/><rect x="8" y="112" width="54" height="2.5"/><rect x="8" y="122" width="54" height="2.5"/></g>
+    <line x1="35" y1="10" x2="35" y2="130" stroke="#6a727a" stroke-width="1.5"/>
+    <g transform="translate(8, 5)"><circle r="2" fill="#00ff88"><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle><circle cx="10" r="2" fill="#00ff88"/><circle cx="20" r="2" fill="#ffcc00"><animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite"/></circle><circle cx="30" r="2" fill="#00ff88"/><circle cx="40" r="2" fill="#00ff88"/><circle cx="50" r="2" fill="#00ff88"/></g>
+    <circle cx="15" cy="148" r="4" fill="#3a4550" stroke="#5a6a7a"/><circle cx="35" cy="148" r="4" fill="#3a4550" stroke="#5a6a7a"/><circle cx="55" cy="148" r="4" fill="#3a4550" stroke="#5a6a7a"/>
+    <g transform="translate(35, 70)" opacity="0.6"><circle r="8" fill="none" stroke="#00ff9d" stroke-width="2"><animate attributeName="r" values="8;70;8" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.8;0;0.8" dur="3s" repeatCount="indefinite"/></circle></g>
+</g>
+<g transform="translate(230, 0)"><rect width="82" height="26" rx="4" fill="rgba(0,0,0,0.85)" stroke="#00ff9d" stroke-width="1.5"/><text x="41" y="11" text-anchor="middle" fill="#00ff9d" font-family="Orbitron" font-size="8" font-weight="700">n77 mMIMO</text><text x="41" y="21" text-anchor="middle" fill="#6b9a8a" font-family="JetBrains Mono" font-size="6">3.7GHz 64T64R</text></g>
+
+<!-- Antenna 3 -->
+<g transform="translate(340, 40)">
+    <rect x="-48" y="60" width="42" height="8" rx="2" fill="#5a6a7a"/>
+    <rect width="42" height="115" rx="4" fill="url(#antenna)" filter="url(#shadow)"/>
+    <g fill="#8a929a" opacity="0.4"><rect x="8" y="12" width="26" height="2"/><rect x="8" y="25" width="26" height="2"/><rect x="8" y="38" width="26" height="2"/><rect x="8" y="51" width="26" height="2"/><rect x="8" y="64" width="26" height="2"/><rect x="8" y="77" width="26" height="2"/><rect x="8" y="90" width="26" height="2"/></g>
+    <circle cx="21" cy="5" r="2.5" fill="#00ff88"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle>
+    <g opacity="0.5"><circle cx="21" cy="55" r="5" fill="none" stroke="#ff6b8a" stroke-width="1.5"><animate attributeName="r" values="5;45;5" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.7;0;0.7" dur="2s" repeatCount="indefinite"/></circle></g>
+</g>
+<g transform="translate(365, 25)"><rect width="70" height="26" rx="4" fill="rgba(0,0,0,0.85)" stroke="#ff6b8a"/><text x="35" y="11" text-anchor="middle" fill="#ff6b8a" font-family="Orbitron" font-size="8" font-weight="600">n41 BAND</text><text x="35" y="21" text-anchor="middle" fill="#9a6b7a" font-family="JetBrains Mono" font-size="6">2.5GHz MIMO</text></g>
+
+<!-- RADIO UNITS -->
+<g transform="translate(165, 205)">
+    <rect width="52" height="75" rx="4" fill="url(#ru)" filter="url(#shadow)"/>
+    <rect x="52" y="10" width="18" height="8" rx="2" fill="#4a5a6a"/>
+    <rect x="52" y="55" width="18" height="8" rx="2" fill="#4a5a6a"/>
+    <g fill="#1a5590"><rect x="4" y="5" width="2.5" height="60"/><rect x="10" y="5" width="2.5" height="60"/><rect x="16" y="5" width="2.5" height="60"/><rect x="22" y="5" width="2.5" height="60"/><rect x="28" y="5" width="2.5" height="60"/><rect x="34" y="5" width="2.5" height="60"/><rect x="40" y="5" width="2.5" height="60"/><rect x="46" y="5" width="2.5" height="60"/></g>
+    <g transform="translate(8, 68)"><circle r="2" fill="#00ff88"><animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/></circle><circle cx="10" r="2" fill="#00ff88"/><circle cx="20" r="2" fill="#ffcc00"><animate attributeName="opacity" values="1;0.4;1" dur="0.5s" repeatCount="indefinite"/></circle><circle cx="30" r="2" fill="#00ff88"/></g>
+</g>
+
+<g transform="translate(238, 190)">
+    <rect width="70" height="100" rx="5" fill="url(#ru)" filter="url(#shadow)"/>
+    <rect x="-15" y="15" width="15" height="10" rx="2" fill="#4a5a6a"/><rect x="-15" y="75" width="15" height="10" rx="2" fill="#4a5a6a"/>
+    <rect x="70" y="15" width="15" height="10" rx="2" fill="#4a5a6a"/><rect x="70" y="75" width="15" height="10" rx="2" fill="#4a5a6a"/>
+    <g fill="#1a5590"><rect x="4" y="6" width="3" height="85"/><rect x="11" y="6" width="3" height="85"/><rect x="18" y="6" width="3" height="85"/><rect x="25" y="6" width="3" height="85"/><rect x="32" y="6" width="3" height="85"/><rect x="39" y="6" width="3" height="85"/><rect x="46" y="6" width="3" height="85"/><rect x="53" y="6" width="3" height="85"/><rect x="60" y="6" width="3" height="85"/></g>
+    <rect x="15" y="40" width="40" height="16" rx="2" fill="rgba(0,0,0,0.5)"/><text x="35" y="50" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="7" font-weight="600">RU-01</text><text x="35" y="57" text-anchor="middle" fill="#a0c0e0" font-family="JetBrains Mono" font-size="5">O-RAN 7.2x</text>
+    <g transform="translate(10, 93)"><circle r="2.5" fill="#00ff88"><animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/></circle><circle cx="10" r="2.5" fill="#00ff88"/><circle cx="20" r="2.5" fill="#00ff88"/><circle cx="30" r="2.5" fill="#ffcc00"><animate attributeName="opacity" values="1;0.4;1" dur="0.4s" repeatCount="indefinite"/></circle><circle cx="40" r="2.5" fill="#00ff88"/><circle cx="50" r="2.5" fill="#00ff88"/></g>
+</g>
+
+<g transform="translate(330, 205)">
+    <rect width="52" height="75" rx="4" fill="url(#ru)" filter="url(#shadow)"/>
+    <rect x="-18" y="10" width="18" height="8" rx="2" fill="#4a5a6a"/>
+    <rect x="-18" y="55" width="18" height="8" rx="2" fill="#4a5a6a"/>
+    <g fill="#1a5590"><rect x="4" y="5" width="2.5" height="60"/><rect x="10" y="5" width="2.5" height="60"/><rect x="16" y="5" width="2.5" height="60"/><rect x="22" y="5" width="2.5" height="60"/><rect x="28" y="5" width="2.5" height="60"/><rect x="34" y="5" width="2.5" height="60"/><rect x="40" y="5" width="2.5" height="60"/></g>
+</g>
+
+<!-- RU Label -->
+<g transform="translate(400, 225)"><rect width="105" height="50" rx="6" fill="rgba(0,0,0,0.9)" stroke="#3b82f6" stroke-width="2"/><text x="52" y="18" text-anchor="middle" fill="#3b82f6" font-family="Orbitron" font-size="12" font-weight="700">RADIO UNIT</text><text x="52" y="32" text-anchor="middle" fill="#93c5fd" font-family="JetBrains Mono" font-size="8">O-RAN Split 7.2x</text><text x="52" y="44" text-anchor="middle" fill="#6b8aaa" font-family="JetBrains Mono" font-size="7">RF + Low-PHY</text></g>
+
+<!-- RF Cables -->
+<path d="M180 158 C175 175 190 195 195 203" stroke="#333" stroke-width="7" fill="none"/>
+<path d="M270 170 L273 188" stroke="#333" stroke-width="7" fill="none"/>
+<path d="M363 158 C368 175 355 195 352 203" stroke="#333" stroke-width="7" fill="none"/>
+
+<!-- FRONTHAUL -->
+<path id="fh" d="M273 292 C273 340 260 390 260 440 L260 540 C260 590 255 640 255 690 L255 740 L350 770 L480 770" stroke="#0a2040" stroke-width="10" fill="none" stroke-linecap="round"/>
+<path d="M273 292 C273 340 260 390 260 440 L260 540 C260 590 255 640 255 690 L255 740 L350 770 L480 770" stroke="url(#fiber1)" stroke-width="5" fill="none" stroke-dasharray="12,6" filter="url(#glow)"><animate attributeName="stroke-dashoffset" values="0;-36" dur="1.5s" repeatCount="indefinite"/></path>
+<circle r="6" fill="#00f5ff" filter="url(#glow)"><animateMotion dur="4s" repeatCount="indefinite"><mpath href="#fh"/></animateMotion></circle>
+<circle r="4" fill="#00ff9d" filter="url(#glow)"><animateMotion dur="4s" repeatCount="indefinite" begin="1.3s"><mpath href="#fh"/></animateMotion></circle>
+
+<!-- Fronthaul Label -->
+<g transform="translate(80, 490)"><rect width="135" height="65" rx="8" fill="rgba(0,0,0,0.92)" stroke="#00f5ff" stroke-width="2"/><text x="67" y="20" text-anchor="middle" fill="#00f5ff" font-family="Orbitron" font-size="13" font-weight="700">FRONTHAUL</text><text x="67" y="36" text-anchor="middle" fill="#00ff9d" font-family="JetBrains Mono" font-size="9">eCPRI / O-RAN 7.2x</text><text x="67" y="50" text-anchor="middle" fill="#6b8aaa" font-family="JetBrains Mono" font-size="8">25Gbps SFP28 Fiber</text><text x="67" y="61" text-anchor="middle" fill="#4a6080" font-family="JetBrains Mono" font-size="7">Latency: &lt;100μs</text></g>
+
+<!-- EQUIPMENT SHELTER -->
+<g transform="translate(480, 700)">
+    <rect x="-25" y="115" width="280" height="18" rx="2" fill="#2a3a4a"/>
+    <rect width="230" height="115" rx="4" fill="#3a4a5a" filter="url(#shadow)"/>
+    <path d="M-10 0 L115 -22 L240 0 Z" fill="#4a5a6a"/>
+    
+    <!-- Door -->
+    <rect x="15" y="22" width="50" height="88" rx="3" fill="#2a3a4a" stroke="#4a5a6a"/>
+    <circle cx="55" cy="70" r="4" fill="#5a6a7a"/>
+    
+    <!-- Equipment Window -->
+    <rect x="75" y="12" width="80" height="85" rx="3" fill="#0a1525" stroke="#3a4a5a"/>
+    
+    <!-- DU Inside -->
+    <g transform="translate(80, 18)">
+        <rect width="70" height="32" rx="2" fill="url(#du)" stroke="#34c06a"/>
+        <text x="35" y="13" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="8" font-weight="700">DU-01</text>
+        <text x="35" y="24" text-anchor="middle" fill="#c6f6d5" font-family="JetBrains Mono" font-size="6">L1/L2 Processing</text>
+        <g transform="translate(5, 27)"><circle r="2" fill="#00ff88"><animate attributeName="opacity" values="1;0.3;1" dur="0.7s" repeatCount="indefinite"/></circle><circle cx="10" r="2" fill="#00ff88"/><circle cx="20" r="2" fill="#ffcc00"><animate attributeName="opacity" values="1;0.4;1" dur="0.4s" repeatCount="indefinite"/></circle><circle cx="30" r="2" fill="#00ff88"/></g>
+        
+        <!-- Switch -->
+        <rect y="37" width="70" height="18" rx="2" fill="#3a4a5a"/>
+        <text x="35" y="49" text-anchor="middle" fill="#a0b0c0" font-family="JetBrains Mono" font-size="6">L3 SWITCH</text>
+        
+        <!-- PSU -->
+        <rect y="58" width="70" height="15" rx="2" fill="#3a4a5a"/>
+        <text x="35" y="68" text-anchor="middle" fill="#a0b0c0" font-family="JetBrains Mono" font-size="6">PSU -48VDC</text>
+    </g>
+    
+    <!-- HVAC -->
+    <g transform="translate(170, 50)">
+        <rect width="45" height="55" rx="3" fill="#3a4a5a" stroke="#4a5a6a"/>
+        <circle cx="22" cy="25" r="15" fill="#2a3a4a" stroke="#4a5a6a"/>
+        <g transform="translate(22, 25)"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1.5s" repeatCount="indefinite"/><line x1="-10" x2="10" stroke="#5a6a7a" stroke-width="2"/><line y1="-10" y2="10" stroke="#5a6a7a" stroke-width="2"/></g>
+        <text x="22" y="48" text-anchor="middle" fill="#6a7a8a" font-family="JetBrains Mono" font-size="5">HVAC</text>
+    </g>
+    
+    <!-- Fiber Entry -->
+    <g transform="translate(-18, 60)"><rect width="22" height="25" rx="2" fill="#2a3a4a" stroke="#4a5a6a"/><circle cx="11" cy="18" r="4" fill="#00f5ff"><animate attributeName="opacity" values="1;0.3;1" dur="0.3s" repeatCount="indefinite"/></circle></g>
+</g>
+
+<!-- DU Label -->
+<g transform="translate(550, 660)"><rect width="110" height="50" rx="6" fill="rgba(0,0,0,0.92)" stroke="#10b981" stroke-width="2"/><text x="55" y="18" text-anchor="middle" fill="#10b981" font-family="Orbitron" font-size="12" font-weight="700">DU</text><text x="55" y="32" text-anchor="middle" fill="#86efac" font-family="JetBrains Mono" font-size="9">Distributed Unit</text><text x="55" y="44" text-anchor="middle" fill="#6b8aaa" font-family="JetBrains Mono" font-size="7">High-PHY + MAC + RLC</text></g>
+
+<!-- POWER -->
+<g transform="translate(380, 775)">
+    <rect width="65" height="75" rx="3" fill="#3a4a5a" filter="url(#shadow)"/>
+    <rect x="5" y="5" width="55" height="18" rx="2" fill="#2a3a4a"/>
+    <text x="32" y="17" text-anchor="middle" fill="#8a9aaa" font-family="Orbitron" font-size="7" font-weight="600">POWER</text>
+    <g transform="translate(8, 28)"><rect width="14" height="10" fill="#1a2a3a" rx="1"/><rect x="17" width="14" height="10" fill="#1a2a3a" rx="1"/><rect x="34" width="14" height="10" fill="#1a2a3a" rx="1"/><circle cx="7" cy="5" r="2.5" fill="#00ff88"/><circle cx="24" cy="5" r="2.5" fill="#00ff88"/><circle cx="41" cy="5" r="2.5" fill="#00ff88"/></g>
+    <rect x="8" y="45" width="48" height="25" rx="2" fill="#0a1520"/>
+    <text x="32" y="57" text-anchor="middle" fill="#00ff88" font-family="JetBrains Mono" font-size="9" font-weight="600">2.8kW</text>
+    <text x="32" y="67" text-anchor="middle" fill="#5a7a9a" font-family="JetBrains Mono" font-size="5">48VDC / 58A</text>
+</g>
+
+<!-- MIDHAUL -->
+<path id="mh" d="M710 770 L790 770 Q840 770 840 720 L840 600 Q840 560 890 560 L1070 560" stroke="#1a1a1a" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M710 770 L790 770 Q840 770 840 720 L840 600 Q840 560 890 560 L1070 560" stroke="url(#fiber2)" stroke-width="6" fill="none" stroke-dasharray="15,8" filter="url(#glow)"><animate attributeName="stroke-dashoffset" values="0;-46" dur="1.8s" repeatCount="indefinite"/></path>
+<circle r="7" fill="#ff8c00" filter="url(#glow)"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#mh"/></animateMotion></circle>
+<circle r="5" fill="#ffa500" filter="url(#glow)"><animateMotion dur="3s" repeatCount="indefinite" begin="1s"><mpath href="#mh"/></animateMotion></circle>
+
+<!-- Underground label -->
+<rect x="710" y="825" width="100" height="12" rx="2" fill="rgba(0,0,0,0.7)"/><text x="760" y="834" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono" font-size="7">UNDERGROUND</text>
+
+<!-- Midhaul Label -->
+<g transform="translate(900, 600)"><rect width="125" height="60" rx="8" fill="rgba(0,0,0,0.92)" stroke="#ff8c00" stroke-width="2"/><text x="62" y="18" text-anchor="middle" fill="#ff8c00" font-family="Orbitron" font-size="13" font-weight="700">MIDHAUL</text><text x="62" y="34" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono" font-size="9">F1 Interface</text><text x="62" y="48" text-anchor="middle" fill="#6b8aaa" font-family="JetBrains Mono" font-size="8">25-100Gbps QSFP28</text></g>
+
+<!-- DATA CENTER -->
+<g transform="translate(1070, 360)">
+    <rect x="10" y="10" width="400" height="350" rx="8" fill="rgba(0,0,0,0.4)"/>
+    <rect width="390" height="340" rx="8" fill="url(#dc)" filter="url(#shadow)"/>
+    <path d="M-10 0 L195 -30 L400 0 Z" fill="#5a4a7a"/>
+    
+    <rect x="65" y="12" width="260" height="30" rx="4" fill="rgba(0,0,0,0.5)"/>
+    <text x="195" y="32" text-anchor="middle" fill="#d8b4fe" font-family="Orbitron" font-size="14" font-weight="800">REGIONAL DATA CENTER</text>
+    
+    <!-- Server Room -->
+    <rect x="18" y="52" width="354" height="210" rx="5" fill="#0d0820" stroke="#6b46c1"/>
+    
+    <!-- CU Rack -->
+    <g transform="translate(28, 62)">
+        <rect width="95" height="190" rx="3" fill="#1a1040" stroke="#7c3aed"/>
+        <text x="47" y="16" text-anchor="middle" fill="#d8b4fe" font-family="Orbitron" font-size="9" font-weight="700">CU RACK</text>
+        
+        <rect x="5" y="25" width="85" height="40" rx="2" fill="url(#cu)" stroke="#f59e0b"/>
+        <text x="47" y="40" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="9" font-weight="700">CU-CP</text>
+        <text x="47" y="52" text-anchor="middle" fill="#fef3c7" font-family="JetBrains Mono" font-size="6">Control Plane</text>
+        <text x="47" y="60" text-anchor="middle" fill="#fcd34d" font-family="JetBrains Mono" font-size="5">RRC / Mobility</text>
+        <g transform="translate(10, 28)"><circle r="2" fill="#00ff88"><animate attributeName="opacity" values="1;0.3;1" dur="0.6s" repeatCount="indefinite"/></circle><circle cx="10" r="2" fill="#00ff88"/><circle cx="20" r="2" fill="#ffcc00"/></g>
+        
+        <rect x="5" y="70" width="85" height="40" rx="2" fill="url(#cu)" stroke="#f59e0b"/>
+        <text x="47" y="85" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="9" font-weight="700">CU-UP</text>
+        <text x="47" y="97" text-anchor="middle" fill="#fef3c7" font-family="JetBrains Mono" font-size="6">User Plane</text>
+        <text x="47" y="105" text-anchor="middle" fill="#fcd34d" font-family="JetBrains Mono" font-size="5">PDCP / SDAP</text>
+        
+        <rect x="5" y="115" width="85" height="28" rx="2" fill="#2d2050"/>
+        <text x="47" y="133" text-anchor="middle" fill="#a0b0c0" font-family="JetBrains Mono" font-size="7">SPINE SWITCH</text>
+        
+        <rect x="5" y="148" width="85" height="28" rx="2" fill="#2d2050"/>
+        <text x="47" y="166" text-anchor="middle" fill="#a0b0c0" font-family="JetBrains Mono" font-size="7">NVMe STORAGE</text>
+    </g>
+    
+    <!-- 5GC Rack -->
+    <g transform="translate(133, 62)">
+        <rect width="95" height="190" rx="3" fill="#1a1040" stroke="#7c3aed"/>
+        <text x="47" y="16" text-anchor="middle" fill="#d8b4fe" font-family="Orbitron" font-size="9" font-weight="700">5G CORE</text>
+        
+        <rect x="5" y="25" width="85" height="26" rx="2" fill="#667eea"/><text x="47" y="42" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-size="8" font-weight="600">AMF</text>
+        <rect x="5" y="55" width="85" height="26" rx="2" fill="#667eea"/><text x="47" y="72" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-size="8" font-weight="600">SMF</text>
+        <rect x="5" y="85" width="85" height="26" rx="2" fill="#667eea"/><text x="47" y="102" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-size="8" font-weight="600">UPF</text>
+        
+        <rect x="5" y="115" width="40" height="32" rx="2" fill="#5b4ba0"/><text x="25" y="130" text-anchor="middle" fill="#e0e8f0" font-family="JetBrains Mono" font-size="6">AUSF</text><text x="25" y="140" text-anchor="middle" fill="#c0c8d0" font-family="JetBrains Mono" font-size="5">UDM</text>
+        <rect x="50" y="115" width="40" height="32" rx="2" fill="#5b4ba0"/><text x="70" y="130" text-anchor="middle" fill="#e0e8f0" font-family="JetBrains Mono" font-size="6">PCF</text><text x="70" y="140" text-anchor="middle" fill="#c0c8d0" font-family="JetBrains Mono" font-size="5">NRF</text>
+        
+        <rect x="5" y="152" width="85" height="24" rx="2" fill="#4c4180"/><text x="47" y="168" text-anchor="middle" fill="#c0c8d0" font-family="JetBrains Mono" font-size="6">NSSF / NEF / BSF</text>
+    </g>
+    
+    <!-- MGMT Rack -->
+    <g transform="translate(238, 62)">
+        <rect width="115" height="190" rx="3" fill="#1a1040" stroke="#7c3aed"/>
+        <text x="57" y="16" text-anchor="middle" fill="#d8b4fe" font-family="Orbitron" font-size="9" font-weight="700">O-RAN MGMT</text>
+        
+        <rect x="5" y="25" width="105" height="38" rx="2" fill="#667eea"/><text x="57" y="40" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="9" font-weight="600">Near-RT RIC</text><text x="57" y="52" text-anchor="middle" fill="#e0e8f0" font-family="JetBrains Mono" font-size="6">xApps Platform</text>
+        
+        <rect x="5" y="68" width="105" height="38" rx="2" fill="#667eea"/><text x="57" y="83" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="9" font-weight="600">SMO</text><text x="57" y="95" text-anchor="middle" fill="#e0e8f0" font-family="JetBrains Mono" font-size="6">Service Orchestration</text>
+        
+        <rect x="5" y="111" width="105" height="38" rx="2" fill="#14b8a6"/><text x="57" y="126" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="9" font-weight="600">AI/ML Engine</text><text x="57" y="138" text-anchor="middle" fill="#ccfbf1" font-family="JetBrains Mono" font-size="6">rApps / Inference</text>
+        
+        <rect x="5" y="154" width="105" height="24" rx="2" fill="#2d2050"/><text x="57" y="170" text-anchor="middle" fill="#a0b0c0" font-family="JetBrains Mono" font-size="7">Prometheus/Grafana</text>
+    </g>
+    
+    <!-- Status Bar -->
+    <rect x="18" y="272" width="354" height="55" rx="3" fill="#0d0820"/>
+    <g transform="translate(28, 282)">
+        <text y="10" fill="#d8b4fe" font-family="Orbitron" font-size="8" font-weight="600">STATUS:</text>
+        <circle cx="60" cy="6" r="4" fill="#00ff88"><animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/></circle>
+        <text x="70" y="10" fill="#00ff88" font-family="JetBrains Mono" font-size="8" font-weight="600">OPERATIONAL</text>
+        <text y="26" fill="#8a9aaa" font-family="JetBrains Mono" font-size="7">UPTIME: 99.9997%</text>
+        <text x="110" y="26" fill="#8a9aaa" font-family="JetBrains Mono" font-size="7">CPU: 42%</text>
+        <text x="180" y="26" fill="#8a9aaa" font-family="JetBrains Mono" font-size="7">MEM: 68%</text>
+        <text x="250" y="26" fill="#8a9aaa" font-family="JetBrains Mono" font-size="7">TEMP: 21°C</text>
+        <g transform="translate(0, 32)">
+            <text y="8" fill="#8a9aaa" font-family="JetBrains Mono" font-size="6">THROUGHPUT:</text>
+            <rect x="75" width="250" height="10" fill="#1a1040" rx="2"/>
+            <g transform="translate(80, 2)"><rect width="7" height="6" fill="#00ff88"><animate attributeName="height" values="2;6;4;6;2" dur="1s" repeatCount="indefinite"/></rect><rect x="10" width="7" height="6" fill="#00ff88"><animate attributeName="height" values="4;2;6;3;4" dur="1s" repeatCount="indefinite"/></rect><rect x="20" width="7" height="6" fill="#00ff88"><animate attributeName="height" values="6;4;2;6;6" dur="1s" repeatCount="indefinite"/></rect><rect x="30" width="7" height="6" fill="#00ff88"><animate attributeName="height" values="3;6;4;2;3" dur="1s" repeatCount="indefinite"/></rect><rect x="40" width="7" height="6" fill="#ffcc00"><animate attributeName="height" values="5;3;6;4;5" dur="1s" repeatCount="indefinite"/></rect><rect x="50" width="7" height="6" fill="#00ff88"><animate attributeName="height" values="2;5;3;6;2" dur="1s" repeatCount="indefinite"/></rect></g>
+            <text x="240" y="8" fill="#00ff88" font-family="JetBrains Mono" font-size="6">78.5 Gbps</text>
+        </g>
+    </g>
+</g>
+
+<!-- CU Label -->
+<g transform="translate(1090, 315)"><rect width="110" height="50" rx="6" fill="rgba(0,0,0,0.92)" stroke="#f59e0b" stroke-width="2"/><text x="55" y="18" text-anchor="middle" fill="#f59e0b" font-family="Orbitron" font-size="12" font-weight="700">CU</text><text x="55" y="32" text-anchor="middle" fill="#fde68a" font-family="JetBrains Mono" font-size="9">Centralized Unit</text><text x="55" y="44" text-anchor="middle" fill="#6b8aaa" font-family="JetBrains Mono" font-size="7">RRC + PDCP + SDAP</text></g>
+
+<!-- BACKHAUL -->
+<path d="M1460 560 L1540 560" stroke="#ef4444" stroke-width="5" stroke-dasharray="8,4" marker-end="url(#arrow)"><animate attributeName="stroke-dashoffset" values="0;-24" dur="0.6s" repeatCount="indefinite"/></path>
+<text x="1500" y="548" text-anchor="middle" fill="#f87171" font-family="JetBrains Mono" font-size="8" font-weight="600">N2/N3</text>
+<text x="1500" y="580" text-anchor="middle" fill="#6b8aaa" font-family="JetBrains Mono" font-size="7">→ Internet/DN</text>
+
+<!-- FUNCTIONAL SPLIT -->
+<g transform="translate(50, 870)">
+    <rect width="580" height="75" rx="6" fill="rgba(0,0,0,0.9)" stroke="rgba(0,245,255,0.3)"/>
+    <text x="290" y="18" text-anchor="middle" fill="#00f5ff" font-family="Orbitron" font-size="11" font-weight="700">O-RAN FUNCTIONAL SPLIT (OPTION 7.2x)</text>
+    <rect x="20" y="30" width="125" height="38" rx="3" fill="url(#ru)"/><text x="82" y="48" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="10" font-weight="600">RADIO UNIT</text><text x="82" y="60" text-anchor="middle" fill="#bfdbfe" font-family="JetBrains Mono" font-size="7">RF + Low-PHY</text>
+    <path d="M150 49 L195 49" stroke="#00f5ff" stroke-width="3" marker-end="url(#arrow)"/><text x="172" y="43" text-anchor="middle" fill="#00f5ff" font-family="JetBrains Mono" font-size="7" font-weight="600">7.2x</text>
+    <rect x="200" y="30" width="145" height="38" rx="3" fill="url(#du)"/><text x="272" y="48" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="10" font-weight="600">DU</text><text x="272" y="60" text-anchor="middle" fill="#bbf7d0" font-family="JetBrains Mono" font-size="7">High-PHY + MAC + RLC</text>
+    <path d="M350 49 L395 49" stroke="#ff8c00" stroke-width="3" marker-end="url(#arrowO)"/><text x="372" y="43" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono" font-size="7" font-weight="600">F1</text>
+    <rect x="400" y="30" width="160" height="38" rx="3" fill="url(#cu)"/><text x="480" y="48" text-anchor="middle" fill="#fff" font-family="Orbitron" font-size="10" font-weight="600">CU-CP / CU-UP</text><text x="480" y="60" text-anchor="middle" fill="#fef3c7" font-family="JetBrains Mono" font-size="7">RRC + PDCP + SDAP</text>
+</g>
+
+<!-- LEGEND -->
+<g transform="translate(660, 870)">
+    <rect width="240" height="75" rx="6" fill="rgba(0,0,0,0.9)" stroke="rgba(0,245,255,0.3)"/>
+    <text x="120" y="18" text-anchor="middle" fill="#00f5ff" font-family="Orbitron" font-size="10" font-weight="600">CONNECTION LEGEND</text>
+    <line x1="20" y1="35" x2="65" y2="35" stroke="url(#fiber1)" stroke-width="4" stroke-dasharray="8,4"/><text x="80" y="39" fill="#a0b4c8" font-family="JetBrains Mono" font-size="8">Fronthaul (eCPRI)</text>
+    <line x1="20" y1="52" x2="65" y2="52" stroke="#ff8c00" stroke-width="4" stroke-dasharray="8,4"/><text x="80" y="56" fill="#a0b4c8" font-family="JetBrains Mono" font-size="8">Midhaul (F1)</text>
+    <line x1="20" y1="69" x2="65" y2="69" stroke="#ef4444" stroke-width="4" stroke-dasharray="8,4"/><text x="80" y="73" fill="#a0b4c8" font-family="JetBrains Mono" font-size="8">Backhaul (N2/N3)</text>
+</g>
+
+<!-- SPECS -->
+<g transform="translate(930, 870)">
+    <rect width="210" height="75" rx="6" fill="rgba(0,0,0,0.9)" stroke="rgba(0,245,255,0.3)"/>
+    <text x="105" y="18" text-anchor="middle" fill="#00f5ff" font-family="Orbitron" font-size="10" font-weight="600">SITE SPECIFICATIONS</text>
+    <text x="18" y="35" fill="#a0b4c8" font-family="JetBrains Mono" font-size="8">Bands: n77 / n78 / n41</text>
+    <text x="18" y="48" fill="#a0b4c8" font-family="JetBrains Mono" font-size="8">Config: 64T64R mMIMO + 4x4</text>
+    <text x="18" y="61" fill="#a0b4c8" font-family="JetBrains Mono" font-size="8">BW: 100MHz TDD (DDDSU)</text>
+    <text x="18" y="74" fill="#00ff9d" font-family="JetBrains Mono" font-size="8">Peak: 20Gbps/cell</text>
+</g>
+
+<!-- Watermark -->
+<text x="1540" y="940" text-anchor="end" fill="#3a4a5a" font-family="JetBrains Mono" font-size="9">CafeTele Training | 5G RAN Infrastructure v3.0 PRO | www.cafetele.com</text>
+</svg>
+</div>
+
+<!-- INFO CARDS -->
+<div class="info-grid">
+    <div class="info-card ru">
+        <h3>Radio Unit (RU)</h3>
+        <p>Handles RF transmission/reception and Low-PHY layer processing. Mounted close to antennas for minimal signal loss. Supports mMIMO with beamforming.</p>
+        <div class="specs">• Functions: RF, ADC/DAC, FFT/iFFT, CP<br>• Interface: eCPRI over 25G SFP28<br>• Latency: &lt;100μs one-way<br>• Power: ~800W per RU</div>
+    </div>
+    <div class="info-card du">
+        <h3>Distributed Unit (DU)</h3>
+        <p>Processes High-PHY, MAC scheduling, and RLC layers. Located at cell site for ultra-low latency requirements.</p>
+        <div class="specs">• Functions: High-PHY, MAC, RLC<br>• F1 Interface: 25-100Gbps QSFP28<br>• Latency to RU: &lt;250μs RTT<br>• Deployment: Edge/Cell Site</div>
+    </div>
+    <div class="info-card cu">
+        <h3>Centralized Unit (CU)</h3>
+        <p>Split into CU-CP (Control) and CU-UP (User). Handles RRC, PDCP, SDAP. Can be virtualized in data centers.</p>
+        <div class="specs">• CU-CP: RRC, Mobility, Security<br>• CU-UP: PDCP, SDAP, User Data<br>• E1 Interface: CP ↔ UP separation<br>• Latency to DU: &lt;10ms F1</div>
+    </div>
+    <div class="info-card core">
+        <h3>5G Core (5GC)</h3>
+        <p>Cloud-native SBA with AMF, SMF, UPF, AUSF, UDM, PCF, NRF for authentication and session management.</p>
+        <div class="specs">• AMF: Access & Mobility<br>• SMF: Session Management<br>• UPF: User Plane Function<br>• Interface: SBI (HTTP/2)</div>
+    </div>
+</div>
+
+<!-- ARCHITECTURE TABLE -->
+<div class="arch-panel">
+    <h2>O-RAN FUNCTIONAL SPLIT ARCHITECTURE</h2>
+    <table>
+        <tr><th>Component</th><th>Layer Functions</th><th>Interface</th><th>Latency</th><th>Bandwidth</th><th>Location</th></tr>
+        <tr><td style="color:#3b82f6">Radio Unit (RU)</td><td>RF, ADC/DAC, FFT/iFFT, CP, PRACH, Beamforming</td><td>7.2x (eCPRI)</td><td>&lt;100μs</td><td>25Gbps/RU</td><td>Tower</td></tr>
+        <tr><td style="color:#10b981">Distributed Unit (DU)</td><td>High-PHY, MAC Scheduler, RLC (ARQ)</td><td>F1-C/F1-U</td><td>&lt;1ms</td><td>25-100Gbps</td><td>Cell Site</td></tr>
+        <tr><td style="color:#f59e0b">CU-CP (Control)</td><td>RRC, Mobility, Security (AS/NAS)</td><td>E1, N2</td><td>&lt;10ms</td><td>1-10Gbps</td><td>Regional DC</td></tr>
+        <tr><td style="color:#f59e0b">CU-UP (User)</td><td>PDCP (Ciphering), SDAP (QoS)</td><td>E1, N3</td><td>&lt;10ms</td><td>10-100Gbps</td><td>Regional DC</td></tr>
+        <tr><td style="color:#a855f7">5G Core (5GC)</td><td>AMF, SMF, UPF, AUSF, UDM, PCF, NRF</td><td>SBI (HTTP/2)</td><td>&lt;50ms</td><td>Variable</td><td>Central DC</td></tr>
+        <tr><td style="color:#14b8a6">Near-RT RIC</td><td>xApps, Optimization, Load Balancing</td><td>E2</td><td>10ms-1s</td><td>1-10Gbps</td><td>Regional DC</td></tr>
+    </table>
+</div>
+
+<footer>
+    <strong style="color:#00f5ff">CafeTele</strong> | 5G RAN Infrastructure v3.0 PRO | <a href="https://www.cafetele.com" target="_blank">www.cafetele.com</a> | © 2025
+</footer>
+</div>
+</body>
+</html>
